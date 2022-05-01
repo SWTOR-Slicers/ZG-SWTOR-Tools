@@ -1,6 +1,6 @@
 # ZeroGravitas' SWTOR Tools.
 
-This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: The Old Republic**'s game assets, including an Uber Materials Processor for static game models. It will grow in features as they occur to me 😛. Quality of code-wise, "this is not a place of honor". Still, it works, kindasorta.
+This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: The Old Republic**'s game assets, including an Uber Materials Processor for static game models. It will grow in features as new ideas come up. Quality of code-wise, "this is not a place of honor": It Just (Hardly) Works™.
 
 * [Installation.](#installation)
 * [Materials Tools:](#swtor-materials-tools)
