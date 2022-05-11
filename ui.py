@@ -12,7 +12,17 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+
+
+        # external_shaders_linker UI
+        tool_section = layout.box().column(align=True)
+        tool_section.operator("zgswtor.external_shaders_linker", text="Link Custom SWTOR Shaders")
         
+
+        # swtor_smart_materials_dumbifier UI
+        tool_section.operator("zgswtor.swtor_smart_materials_dumbifier", text="Dumbify SWTOR Shaders")
+
+
         # process_uber_mats UI
         tool_section = layout.box().column(align=True)
         tool_section.operator("zgswtor.process_uber_mats", text="Process Uber Materials")
@@ -101,12 +111,11 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
 
         # set_modifiers UI
         tool_section = layout.box()
-        row = tool_section.row()
-        row.operator("zgswtor.set_modifiers", text="Add SubD").action = "add_subd"
-        row.operator("zgswtor.set_modifiers", text="Add Multires").action = "add_multires"
-        row = tool_section.row()
-        row.operator("zgswtor.set_modifiers", text="Add Displace").action = "add_displace"
-        row.operator("zgswtor.set_modifiers", text="Add Solidify").action = "add_solidify"
+        grid = tool_section.grid_flow(columns=2, align=True)
+        grid.operator("zgswtor.set_modifiers", text="Add SubD").action = "add_subd"
+        grid.operator("zgswtor.set_modifiers", text="Add Displace").action = "add_displace"
+        grid.operator("zgswtor.set_modifiers", text="Add Multires").action = "add_multires"
+        grid.operator("zgswtor.set_modifiers", text="Add Solidify").action = "add_solidify"
         row = tool_section.row()
         row.operator("zgswtor.set_modifiers", text="Remove These Modifiers").action = "remove_them"
         row = tool_section.row()
@@ -128,9 +137,9 @@ class ZGSWTOR_PT_scene_tools(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+        tool_section = layout.box()
 
         # Simplify (copy of existing operators)
-        tool_section = layout.box()
         row = tool_section.row(align=True)
         row.prop(context.scene.render, "use_simplify", text=" Simplify")
         in_row = row.row()  # for a non-50% contiguous row region
@@ -138,7 +147,6 @@ class ZGSWTOR_PT_scene_tools(bpy.types.Panel):
         in_row.prop(context.scene.render, "simplify_subdivision", text="Max SubD")
 
         # Pose Position / Reset Position (copy of existing operators)
-        tool_section = layout.box()
         row = tool_section.row(align=True)
         if context.object:
             if context.object.type == "ARMATURE":
@@ -147,6 +155,10 @@ class ZGSWTOR_PT_scene_tools(bpy.types.Panel):
                 row.label(text="POSE / REST an Active Armature")
         else:
             row.label(text="POSE / REST an Active Armature")
+
+        # Lock camera to view
+        row = tool_section.row(align=True)
+        row.prop(context.space_data, "lock_camera", text="Camera to View")            
 
 
         

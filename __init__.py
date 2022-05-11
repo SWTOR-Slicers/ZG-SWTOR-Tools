@@ -27,8 +27,10 @@ modulesNames = [
     'deduplicate_nodegroups',
     'set_backface_culling',
     'quickscale',
-    'adjust_normals_emissives',
+#    'adjust_normals_emissives',
     'set_modifiers',
+    'swtor_smart_materials_dumbifier',
+    'external_shaders_linker'
     ]
   
 modulesFullNames = {}
