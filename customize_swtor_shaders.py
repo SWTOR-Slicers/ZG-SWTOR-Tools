@@ -1,10 +1,10 @@
 import bpy
 
 
-class ZGSWTOR_OT_swtor_smart_materials_dumbifier(bpy.types.Operator):
+class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
     bl_label = "SWTOR Tools"
-    bl_idname = "zgswtor.swtor_smart_materials_dumbifier"
+    bl_idname = "zgswtor.customize_swtor_shaders"
     bl_description = 'Converts Darth Atroxa\'s smart modern SWTOR shaders to "dumb",\ntextures outside-type ones for easier customization.\nRequires the modern .gr2 add-on to be active\nduring the conversion'
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -235,10 +235,10 @@ class ZGSWTOR_OT_swtor_smart_materials_dumbifier(bpy.types.Operator):
 # Registrations
 
 def register():
-    bpy.utils.register_class(ZGSWTOR_OT_swtor_smart_materials_dumbifier)
+    bpy.utils.register_class(ZGSWTOR_OT_customize_swtor_shaders)
 
 def unregister():    
-    bpy.utils.unregister_class(ZGSWTOR_OT_swtor_smart_materials_dumbifier)
+    bpy.utils.unregister_class(ZGSWTOR_OT_customize_swtor_shaders)
 
 if __name__ == "__main__":
     register()

@@ -19,8 +19,8 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         tool_section.operator("zgswtor.external_shaders_linker", text="Link Custom SWTOR Shaders")
         
 
-        # swtor_smart_materials_dumbifier UI
-        tool_section.operator("zgswtor.swtor_smart_materials_dumbifier", text="Dumbify SWTOR Shaders")
+        # customize_swtor_shaders UI
+        tool_section.operator("zgswtor.customize_swtor_shaders", text="Customize SWTOR Shaders")
 
 
         # process_uber_mats UI

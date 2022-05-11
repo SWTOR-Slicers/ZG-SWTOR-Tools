@@ -28,7 +28,7 @@ modulesNames = [
     'set_backface_culling',
     'quickscale',
     'set_modifiers',
-    'swtor_smart_materials_dumbifier',
+    'customize_swtor_shaders',
     'external_shaders_linker'
     ]
   
