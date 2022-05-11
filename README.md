@@ -14,6 +14,7 @@ This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: 
 * [Misc. Tools:](#swtor-misc-tools)
   * [Simplify Scene.](#simplify)
   * [Switch Skeleton between Pose and Rest Position.](#pose-position--rest-position)
+  * [Camera to View.](#camera-to-view)
 
 
 ## Installation.
@@ -104,3 +105,6 @@ Usually in the Properties Editor > Render Properties >Simplify section, it lets 
 
 ### Pose Position / Rest Position.
 It shows the Pose Position and Rest Position buttons that appear at the Properties Editor > Object Properties, Skeleton section when a skeleton is selected, letting us quickly alternate between those two states. It only acts on the Active armature (the Active Object that happens to be an armature at the moment) instead of all selected armatures. Having it act on all of them is in the works.
+
+### Camera to View.
+Same checkbox as View Tab > View Lock section > Lock Camera to View, for easily switching from framing the scene from the camera POV to keeping the camera unaffected while navigating the viewport.
