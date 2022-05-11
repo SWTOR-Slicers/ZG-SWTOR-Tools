@@ -1,4 +1,6 @@
 import bpy
+import os
+from pathlib import Path
 
 class addonPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
@@ -10,8 +12,7 @@ class addonPreferences(bpy.types.AddonPreferences):
         name = "SWTOR Resources",
         description = 'Path to the "resources" folder produced by a SWTOR assets extraction',
         subtype = "DIR_PATH",
-        default = "/Volumes/RECURSOS/3D SWTOR/extracted_swtor/resources/",
-#        default = "Choose or type the folder's path",
+        default = "Choose or type the folder's path",
         maxlen = 1024
     )
 
@@ -29,7 +30,8 @@ class addonPreferences(bpy.types.AddonPreferences):
         col.label(text="produced by the Slicers GUI app, EasyMYP, or any similar tool.")
         pref_box.prop(self, 'swtor_resources_path', expand=True)
 
-        
+
+
 
 # Registrations
 
