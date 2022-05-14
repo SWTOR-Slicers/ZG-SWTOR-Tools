@@ -21,7 +21,7 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
     # SWTOR shader TYPES to new shader names
     
-    shader_renames = {
+    atroxa_shaders_to_new = {
         "CREATURE": "SWTOR - Creature Shader",
         "EYE"     : "SWTOR - Eye Shader",
         "GARMENT" : "SWTOR - Garment Shader",
@@ -47,36 +47,36 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
         ]
 
     # Texture maps
-    swtor_txtr_maps_names = [
-        "diffuseMap",
-        "rotationMap",
-        "glossMap",
-        "paletteMap",
-        "paletteMaskMap",
-        "ageMap",
-        "complexionMap",
-        "facepaintMap",
-        "directionMap",
-        ]
+    new_txmaps_to_atroxa = {
+        "_d DiffuseMap"     : "diffuseMap",
+        "_n RotationMap"    : "rotationMap",
+        "_s GlossMap"       : "glossMap",
+        "_h PaletteMap"     : "paletteMap",
+        "_m PaletteMaskMap" : "paletteMaskMap",
+        "AgeMap"            : "ageMap",
+        "ComplexionMap"     : "complexionMap",
+        "FacepaintMap"      : "facepaintMap",
+        "DirectionMap"      : "directionMap",
+        }
+
 
     # Simple factors or RGB values
-    swtor_shdr_params_names = [
-        "palette1_hue",
-        "palette1_saturation",
-        "palette1_brightness",
-        "palette1_contrast",
-        "palette1_specular",
-        "palette1_metallic_specular",
-        "palette2_hue",
-        "palette2_saturation",
-        "palette2_brightness",
-        "palette2_contrast",
-        "palette2_specular",
-        "palette2_metallic_specular",
-        "flesh_brightness",
-        "flush_tone"
-    ]
-
+    new_params_to_atroxa = {
+        "Palette1 Hue"               : "palette1_hue",
+        "Palette1 Saturation"        : "palette1_saturation",
+        "Palette1 Brightness"        : "palette1_brightness",
+        "Palette1 Contrast"          : "palette1_contrast",
+        "Palette1 Specular"          : "palette1_specular",
+        "Palette1 Metallic Specular" : "palette1_metallic_specular",
+        "Palette2 Hue"               : "palette2_hue",
+        "Palette2 Saturation"        : "palette2_saturation",
+        "Palette2 Brightness"        : "palette2_brightness",
+        "Palette2 Contrast"          : "palette2_contrast",
+        "Palette2 Specular"          : "palette2_specular",
+        "Palette2 Metallic Specular" : "palette2_metallic_specular",
+        "Flesh Brightness"           : "flesh_brightness",
+        "Flush Tone"                 : "flush_tone"
+    }
 
     print("\n\n\n\n\n\n\n\n\n\n")
  
@@ -119,111 +119,82 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                         atroxa_node = mat_nodes["SWTOR"]
                         atroxa_node.location = 600, 0
 
-                            
                         # Start working on the material
 
                         derived = atroxa_node.derived
                         print(derived)
 
-                        # Safety check
-                        if derived not in self.shader_renames.keys():
+                        # Check for new shader existence to avoid duplicates 
+                        if self.atroxa_shaders_to_new[derived] in mat_nodes:
                             continue
 
 
                         # Add SWTOR Nodegroup
                         new_node = mat_nodes.new(type="ShaderNodeGroup")
-                        new_node.node_tree = bpy.data.node_groups[self.shader_renames[derived]]
+                        new_node.node_tree = bpy.data.node_groups[self.atroxa_shaders_to_new[derived]]
 
                         new_node.location = 0, 0
                         new_node.width = 250
-                        new_node.name = new_node.label = self.shader_renames[derived]
+                        new_node.name = new_node.label = self.atroxa_shaders_to_new[derived]
 
                         # Link it to Material Output Node
                         mat_links.new(output_node.inputs[0],new_node.outputs[0])
 
-                        # Create a dict of the new shader' inputs' names and positions
-                        new_node_input_names = {}
-                        for pos in range(len(new_node.inputs)):
-                            input_names = new_node.inputs[pos].name
-                            new_node_input_names[input_names] = pos
                                                 
-                        #### Cycle through Standard SWTOR input names to read and copy their values.
-                        # It tests which inputs the new Nodegroup has and copies Atroxa's
-                        # inputs' values obtained thorugh its methods. As Atroxa's Nodegroup
-                        # doesn't vary the number of properties and methods per Derived type,
-                        # I use the new Nodegroup's inputs as reference. That's why the input
-                        # names' massaging to facilitate looking them up, which maybe it's a
-                        # bit too smart and a correspondence table would be simpler if slower.
-                        #
-                        # EDIT: I just discovered node inputs/outputs CAN be selected by name.
-                        # So, all this will be simplified later on.
+                        #### Copy Atroxa node values to new node,
 
-                        for swtor_shdr_param_name in self.swtor_shdr_params_names:
-                            new_node_name = swtor_shdr_param_name.title().replace('_', ' ')
-                            new_node_input_position = new_node_input_names.get(new_node_name)
-                            if new_node_input_position != None:
-                                new_value = atroxa_node[swtor_shdr_param_name] 
-                                print(new_node_name, new_value, "\n")
-                                new_node.inputs[new_node_input_position].default_value = atroxa_node[swtor_shdr_param_name]
+                        new_node_inputs_enum = enumerate(new_node.inputs)
+                        for new_node_input_index, new_node_input in new_node_inputs_enum:
+                            
+                            new_node_input_name = new_node_input.name
+                            if new_node_input_name in self.new_params_to_atroxa:  # Non-texturemap data
+                                new_node_input.default_value= getattr(atroxa_node, self.new_params_to_atroxa[new_node_input.name])
+                            else:
+                                new_node_input_name = new_node_input_name.replace(" Color", "")  # texturemap data 
+                                if new_node_input_name in self.new_txmaps_to_atroxa:
 
-                        #### Cycle through standard SWTOR texturemap names to add them and link them.
-                        # It tests which inputs the new Nodegroup has and copies Atroxa's
-                        # inputs' values obtained thorugh its methods. As Atroxa's Nodegroup
-                        # doesn't vary the number of properties and methods per Derived type,
-                        # I use the new Nodegroup's inputs as reference. I couldn't make the
-                        # lookup smart enough, so, I loop through
-                        #
-                        # EDIT: I just discovered node inputs/outputs CAN be selected by name.
-                        # So, all this will be simplified later on.
-                        
-                        for swtor_txtr_map_name in self.swtor_txtr_maps_names:
-                            for name in new_node_input_names:
-                                if (swtor_txtr_map_name.lower() + " color") in name.lower():
-                                    txtr_node_name = name.replace(" Color","")
-                                    new_node_input_position = new_node_input_names[name]
-                                    print(name, new_node_input_position, "\n")
+                                    # Create texture node if it doesn't previously exist
+                                    # Adjust position, size and other details
+                                    if not new_node_input_name in mat_nodes:
+                                        txtr_node = mat_nodes.new(type='ShaderNodeTexImage')
+                                        txtr_node.name = txtr_node.label = new_node_input_name
+                                    else:
+                                        txtr_node = mat_nodes[new_node_input_name]
+
                                     
-                                    if new_node_input_position != None:
-                                        # Create texture node if it doesn't previously exist
-                                        if not txtr_node_name in mat_nodes:
-                                            txtr_node = mat_nodes.new(type='ShaderNodeTexImage')
-                                            txtr_node.name = txtr_node.label = txtr_node_name
-                                        else:
-                                            txtr_node = mat_nodes[txtr_node_name]
+                                    txtr_node.location = (-350 - new_node_input_index * 16, -150 - new_node_input_index * 20)
+                                    txtr_node.width = txtr_node.width_hidden = 300
+                                    txtr_node.hide = True
 
-                                        # Adjust position, size and other details
-                                        txtr_node.location = (-350 - new_node_input_position * 16, -150 - new_node_input_position * 20)
-                                        txtr_node.width = txtr_node.width_hidden = 300
-                                        txtr_node.hide = True
+                                    #link it to the SWTOR nodegroup (Color and Alpha)
+                                    mat_links.new(txtr_node.outputs[0], new_node.inputs[new_node_input_index])
+                                    mat_links.new(txtr_node.outputs[1], new_node.inputs[new_node_input_index+1])
 
-                                        #link it to the SWTOR nodegroup (Color and Alpha)
-                                        mat_links.new(txtr_node.outputs[0], new_node.inputs[new_node_input_position])
-                                        mat_links.new(txtr_node.outputs[1], new_node.inputs[new_node_input_position+1])
+                                    # Assign image to the texturemap node.
+                                    # If it has no assigned image, mute the node.
+                                    if atroxa_node[self.new_txmaps_to_atroxa[new_node_input_name] ]:
+                                        txtr_node.image = atroxa_node[self.new_txmaps_to_atroxa[new_node_input_name] ]
+                                    else:
+                                        txtr_node.mute = True
 
-                                        # If the texturemap node has no assigned image, mute it
-                                        if atroxa_node[swtor_txtr_map_name]:
-                                            txtr_node.image = atroxa_node[swtor_txtr_map_name]
-                                        else:
-                                            txtr_node.mute = True
-
-                                        # Create the links for feeding a DirectionMap with
-                                        # the Specular Lookup calculated inside the Nodegroup
-                                        if name == "DirectionMap Color":
-                                            
-                                            rerouter_1 = mat_nodes.new(type="NodeReroute")
-                                            rerouter_1.location = 350, -250
-                                            rerouter_2 = mat_nodes.new(type="NodeReroute")
-                                            rerouter_2.location = 350, -50 - len(new_node.inputs)*30
-                                            rerouter_3 = mat_nodes.new(type="NodeReroute")
-                                            rerouter_3.location = -650, -50 - len(new_node.inputs)*30
-                                            rerouter_4 = mat_nodes.new(type="NodeReroute")
-                                            rerouter_4.location = -650, txtr_node.location[1]-10
-                                            
-                                            mat_links.new(new_node.outputs["Specular Lookup AUX"], rerouter_1.inputs[0])
-                                            mat_links.new(rerouter_1.outputs[0], rerouter_2.inputs[0])
-                                            mat_links.new(rerouter_2.outputs[0], rerouter_3.inputs[0])
-                                            mat_links.new(rerouter_3.outputs[0], rerouter_4.inputs[0])
-                                            mat_links.new(rerouter_4.outputs[0], txtr_node.inputs[0])
+                                    # Create the links for feeding a DirectionMap with
+                                    # the Specular Lookup calculated inside the Nodegroup
+                                    if new_node_input_name == "DirectionMap Color":
+                                        
+                                        rerouter_1 = mat_nodes.new(type="NodeReroute")
+                                        rerouter_1.location = 350, -250
+                                        rerouter_2 = mat_nodes.new(type="NodeReroute")
+                                        rerouter_2.location = 350, -50 - len(new_node.inputs)*30
+                                        rerouter_3 = mat_nodes.new(type="NodeReroute")
+                                        rerouter_3.location = -650, -50 - len(new_node.inputs)*30
+                                        rerouter_4 = mat_nodes.new(type="NodeReroute")
+                                        rerouter_4.location = -650, txtr_node.location[1]-10
+                                        
+                                        mat_links.new(new_node.outputs["Specular Lookup AUX"], rerouter_1.inputs[0])
+                                        mat_links.new(rerouter_1.outputs[0], rerouter_2.inputs[0])
+                                        mat_links.new(rerouter_2.outputs[0], rerouter_3.inputs[0])
+                                        mat_links.new(rerouter_3.outputs[0], rerouter_4.inputs[0])
+                                        mat_links.new(rerouter_4.outputs[0], txtr_node.inputs[0])
 
         return {"FINISHED"}
 
