@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from bpy.app.handlers import persistent
 
-@persistent
+#@persistent
 def handler_new_scene(scene):
     # Check that we aren't editing the custom shaders template file
     # to prevent from appending/linking the shaders to itself
@@ -14,7 +14,7 @@ def handler_new_scene(scene):
     open_blend_file = bpy.data.filepath
     
     bpy.types.Scene.blendfile_is_template_bool = new_shaders_filepath != open_blend_file
-
+bpy.app.handlers.load_pre.append(handler_new_scene)
 
 class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
@@ -104,10 +104,8 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
         "Flush Tone"                 : "flush_tone"
         }
 
-    print("\n\n\n\n\n\n\n\n\n\n")
  
     def execute(self, context):
-        print(bpy.types.Scene.blendfile_is_template_bool)
         bpy.context.window.cursor_set("DEFAULT")
 
         # I'm reading the selected objects here because for some reason
@@ -120,7 +118,7 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
         open_blend_file = bpy.data.filepath
         
-        bpy.types.Scene.blendfile_is_template_bool = new_shaders_filepath != open_blend_file
+        # bpy.types.Scene.blendfile_is_template_bool = new_shaders_filepath != open_blend_file
 
 
 
@@ -138,8 +136,12 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                     mat = mat_slot.material
                     mat_nodes = mat.node_tree.nodes
                     mat_links = mat.node_tree.links
-                    
-                    output_node = mat_nodes["Material Output"]
+
+                    if "Material Output" in mat_nodes:
+                        output_node = mat_nodes["Material Output"]
+                    else:
+                        output_node = mat_nodes.new(type="ShaderNodeOutputMaterial")
+
                     output_node.location = 400, 0
 
 
@@ -150,9 +152,11 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                         # Set material's alpha, shadow and backface culling settings
                         mat.blend_method = atroxa_node.alpha_mode
                         mat.alpha_threshold = atroxa_node.alpha_test_value
-                        print(atroxa_node.alpha_mode)
-                        if mat.blend_method == 'OPAQUE':
-                            mat.shadow_method = 'NONE'
+                        if mat.blend_method != 'HASHED':
+                            # Set to Clip o be able to use full transparency
+                            # even in opaque objects
+                            mat.blend_method == 'CLIP'
+                            mat.shadow_method = 'CLIP'
                         else:
                             mat.shadow_method = 'HASHED'
 
@@ -161,7 +165,6 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
                         # Start conversion to new shader
                         derived = atroxa_node.derived
-                        print(derived)
 
                         # Check for new shader existence to avoid duplicates 
                         if self.atroxa_shaders_to_new[derived] in mat_nodes:
@@ -214,11 +217,11 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                                     mat_links.new(txtr_node.outputs[1], new_node.inputs[new_node_input_index+1])
 
                                     # Assign image to the texturemap node.
-                                    # If it has no assigned image, mute the node.
+                                    # If it has no assigned image, mute the node?
                                     if atroxa_node[self.new_txmaps_to_atroxa[new_node_input_name] ]:
                                         txtr_node.image = atroxa_node[self.new_txmaps_to_atroxa[new_node_input_name] ]
-                                    else:
-                                        txtr_node.mute = True
+                                    # else:
+                                    #     txtr_node.mute = True
 
                                     # Create the links for feeding a DirectionMap with
                                     # the Specular Lookup calculated inside the Nodegroup
