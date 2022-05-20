@@ -249,17 +249,11 @@ def register():
         description='Keep the original SWTOR shader, unconnected',
         default = True,
     )
-    bpy.types.Scene.blendfile_is_template_bool = bpy.props.BoolProperty(
-        name="Blend File is Shaders Template File",
-        description='Flag to hide UI options while editing the .blend file containing the custom shaders',
-        default = False,
-    )
     
     bpy.utils.register_class(ZGSWTOR_OT_customize_swtor_shaders)
 
 def unregister():
     del bpy.types.Scene.preserve_atroxa_bool
-    del bpy.types.Scene.blendfile_is_template_bool
     
     bpy.utils.unregister_class(ZGSWTOR_OT_customize_swtor_shaders)
 
