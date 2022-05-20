@@ -15,10 +15,6 @@ def handler_new_scene(scene):
     
     bpy.types.Scene.blendfile_is_template_bool = new_shaders_filepath != open_blend_file
 
-    print("-----------")
-    print(bpy.types.Scene.blendfile_is_template_bool)
-    print("-----------")    
-
 
 class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
@@ -160,7 +156,6 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                         if self.atroxa_shaders_to_new[derived] in mat_nodes:
                             continue
 
-
                         # Add SWTOR Nodegroup
                         new_node = mat_nodes.new(type="ShaderNodeGroup")
                         new_node.node_tree = bpy.data.node_groups[self.atroxa_shaders_to_new[derived]]
@@ -168,7 +163,9 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                         new_node.location = 0, 0
                         new_node.width = 250
                         new_node.name = new_node.label = self.atroxa_shaders_to_new[derived]
-                        txtr_nodes_y_offset = -len(new_node.inputs) * 16 - 46
+                        nodes_io_y_incrmt = 21
+                        nodes_io_y_offset = -len(new_node.outputs) * nodes_io_y_incrmt - 76
+
 
                         # Link it to Material Output Node
                         mat_links.new(output_node.inputs[0],new_node.outputs[0])
@@ -196,7 +193,8 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                                         txtr_node = mat_nodes[new_node_input_name]
 
                                     
-                                    txtr_node.location = (-350 - new_node_input_index * 16, txtr_nodes_y_offset - new_node_input_index * 21)
+                                    txtr_node.location = (-350 - new_node_input_index * 16,
+                                                          nodes_io_y_offset - new_node_input_index * nodes_io_y_incrmt)
                                     txtr_node.width = txtr_node.width_hidden = 300
                                     txtr_node.hide = True
 
@@ -213,12 +211,12 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
                                     # Create the links for feeding a DirectionMap with
                                     # the Specular Lookup calculated inside the Nodegroup
-                                    if new_node_input_name == "DirectionMap Color":
+                                    if new_node_input_name == "DirectionMap":
 
-                                        bottom_y = txtr_nodes_y_offset - len(new_node.inputs)*21 - 50
+                                        bottom_y = nodes_io_y_offset - len(new_node.inputs) * nodes_io_y_incrmt - 50
                                         
                                         rerouter_1 = mat_nodes.new(type="NodeReroute")
-                                        rerouter_1.location = 350, -250
+                                        rerouter_1.location = 350, txtr_node.location[1]-10
                                         rerouter_2 = mat_nodes.new(type="NodeReroute")
                                         rerouter_2.location = 350, bottom_y
                                         rerouter_3 = mat_nodes.new(type="NodeReroute")
@@ -226,12 +224,15 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                                         rerouter_4 = mat_nodes.new(type="NodeReroute")
                                         rerouter_4.location = -650, txtr_node.location[1]-10
                                         
-                                        mat_links.new(new_node.outputs["Specular Lookup AUX"], rerouter_1.inputs[0])
+                                        mat_links.new(new_node.outputs["DirectionMap Vector"], rerouter_1.inputs[0])
                                         mat_links.new(rerouter_1.outputs[0], rerouter_2.inputs[0])
                                         mat_links.new(rerouter_2.outputs[0], rerouter_3.inputs[0])
                                         mat_links.new(rerouter_3.outputs[0], rerouter_4.inputs[0])
                                         mat_links.new(rerouter_4.outputs[0], txtr_node.inputs[0])
-
+                                        
+                        if context.scene.preserve_atroxa_bool == False:
+                            mat_nodes = mat_nodes.remove(atroxa_node)
+    
         return {"FINISHED"}
 
 
