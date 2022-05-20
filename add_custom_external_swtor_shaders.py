@@ -78,7 +78,7 @@ def register():
     bpy.types.Scene.blendfile_is_template_bool = bpy.props.BoolProperty(
         name="Blend File is Shaders Template File",
         description='Flag to hide UI options while editing the .blend file containing the custom shaders',
-        default = False,
+        default = True,
     )
 
     bpy.utils.register_class(ZGSWTOR_OT_add_custom_external_swtor_shaders)
