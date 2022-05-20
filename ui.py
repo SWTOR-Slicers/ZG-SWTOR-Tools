@@ -1,6 +1,4 @@
-from email.policy import default
 import bpy
-
 
 
 # Materials Tools sub-panel
@@ -14,20 +12,30 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         layout = self.layout
 
 
-        # external_shaders_linker UI
-        tool_section = layout.box().column(align=True)
-        tool_section.operator("zgswtor.external_shaders_linker", text="Link Custom SWTOR Shaders")
-        
-
-        # customize_swtor_shaders UI
-        tool_section.operator("zgswtor.customize_swtor_shaders", text="Customize SWTOR Shaders")
-
-
         # process_uber_mats UI
         tool_section = layout.box().column(align=True)
         tool_section.operator("zgswtor.process_uber_mats", text="Process Uber Materials")
         tool_section.prop(context.scene, "use_overwrite_bool", text="Overwrite Uber Materials")
         tool_section.prop(context.scene, "use_collect_colliders_bool", text="Collect Collider Objects")
+
+
+        # add_custom_external_swtor_shaders UI
+        
+        tool_section = layout.box().column(align=True)
+        dimmable_row = tool_section.row(align=True)
+        dimmable_row.enabled = not context.scene.blendfile_is_template_bool
+        dimmable_row.operator("zgswtor.add_custom_external_swtor_shaders", text="Add Custom SWTOR Shaders")
+        # customize_swtor_shaders UI
+        tool_section.operator("zgswtor.customize_swtor_shaders", text="Convert to Custom SWTOR Shaders")
+        print("bpy.types.Scene.blendfile_is_template_bool =",context.scene.blendfile_is_template_bool)
+        dimmable_row = tool_section.row(align=True)
+        new_shaders_filepath = bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path        
+        open_blend_file = bpy.data.filepath
+
+        dimmable_row.enabled = not new_shaders_filepath == open_blend_file
+        dimmable_row.prop(context.scene, "use_linking_bool", text="Link instead of Append")
+        tool_section.prop(context.scene, "preserve_atroxa_bool", text="Preserve Original Shaders")
+        
 
 
         # deduplicate_nodegroups UI

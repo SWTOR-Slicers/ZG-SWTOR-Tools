@@ -1,11 +1,30 @@
 import bpy
+import os
+from pathlib import Path
+from bpy.app.handlers import persistent
+
+@persistent
+def handler_new_scene(scene):
+    # Check that we aren't editing the custom shaders template file
+    # to prevent from appending/linking the shaders to itself
+    # and set a prop to control the UI's related widgets
+    
+    new_shaders_filepath = bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path
+    
+    open_blend_file = bpy.data.filepath
+    
+    bpy.types.Scene.blendfile_is_template_bool = new_shaders_filepath != open_blend_file
+
+    print("-----------")
+    print(bpy.types.Scene.blendfile_is_template_bool)
+    print("-----------")    
 
 
 class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
     bl_label = "SWTOR Tools"
     bl_idname = "zgswtor.customize_swtor_shaders"
-    bl_description = 'Converts Darth Atroxa\'s smart modern SWTOR shaders to "dumb",\ntextures outside-type ones for easier customization.\nRequires the modern .gr2 add-on to be active\nduring the conversion'
+    bl_description = 'Converts Darth Atroxa\'s smart modern SWTOR shaders to "dumb",\ntextures outside-type ones for easier customization.\n\n• Requires the modern .gr2 add-on to be enabled during the conversion'
     bl_options = {'REGISTER', 'UNDO'}
 
     # ------------------------------------------------------------------
@@ -19,8 +38,19 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
             return False
 
 
-    # SWTOR shader TYPES to new shader names
+    # Properties
+
+    # preserve_atroxa_bool: bpy.props.BoolProperty(
+    #     name="Preserve original shaders",
+    #     description='Keep the original SWTOR shader, unconnected',
+    #     default = True,
+    #     options={'HIDDEN'}
+    #     )
+
+
+    # Some lists and dicts:
     
+    # SWTOR shader types to new shader names
     atroxa_shaders_to_new = {
         "CREATURE": "SWTOR - Creature Shader",
         "EYE"     : "SWTOR - Eye Shader",
@@ -76,27 +106,29 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
         "Palette2 Metallic Specular" : "palette2_metallic_specular",
         "Flesh Brightness"           : "flesh_brightness",
         "Flush Tone"                 : "flush_tone"
-    }
+        }
 
     print("\n\n\n\n\n\n\n\n\n\n")
  
     def execute(self, context):
+        print(bpy.types.Scene.blendfile_is_template_bool)
         bpy.context.window.cursor_set("DEFAULT")
-
-        zgswtor_shaders_path = "/Volumes/RECURSOS/3D SWTOR/SWTOR SHADERS/New SWTOR Custom Shaders.blend"
 
         # I'm reading the selected objects here because for some reason
         # if I execute the external shaders linker the selection is lost.
-        # Maybe because it works in a different context?
         selected_objs = bpy.context.selected_objects
 
+        # Check that we aren't editing the custom shaders template file
+        # to prevent from appending/linking the shaders to itself
+        new_shaders_filepath = bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path
 
-        if "SWTOR - Creature Shader" not in bpy.data.node_groups:
-            try:
-                bpy.ops.zgswtor.external_shaders_linker()
-            except:
-                self.report({"WARNING"}, "External Shaders Linker not found")
-                return {"CANCELLED"}
+        open_blend_file = bpy.data.filepath
+        
+        bpy.types.Scene.blendfile_is_template_bool = new_shaders_filepath != open_blend_file
+
+
+
+
 
         # ----------------------------------------------------
         
@@ -136,12 +168,14 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                         new_node.location = 0, 0
                         new_node.width = 250
                         new_node.name = new_node.label = self.atroxa_shaders_to_new[derived]
+                        txtr_nodes_y_offset = -len(new_node.inputs) * 16 - 46
 
                         # Link it to Material Output Node
                         mat_links.new(output_node.inputs[0],new_node.outputs[0])
 
                                                 
-                        #### Copy Atroxa node values to new node,
+                        # Copy Atroxa node values to new node,
+                        # creating texturemap nodes as needed
 
                         new_node_inputs_enum = enumerate(new_node.inputs)
                         for new_node_input_index, new_node_input in new_node_inputs_enum:
@@ -162,7 +196,7 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                                         txtr_node = mat_nodes[new_node_input_name]
 
                                     
-                                    txtr_node.location = (-350 - new_node_input_index * 16, -150 - new_node_input_index * 20)
+                                    txtr_node.location = (-350 - new_node_input_index * 16, txtr_nodes_y_offset - new_node_input_index * 21)
                                     txtr_node.width = txtr_node.width_hidden = 300
                                     txtr_node.hide = True
 
@@ -180,13 +214,15 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                                     # Create the links for feeding a DirectionMap with
                                     # the Specular Lookup calculated inside the Nodegroup
                                     if new_node_input_name == "DirectionMap Color":
+
+                                        bottom_y = txtr_nodes_y_offset - len(new_node.inputs)*21 - 50
                                         
                                         rerouter_1 = mat_nodes.new(type="NodeReroute")
                                         rerouter_1.location = 350, -250
                                         rerouter_2 = mat_nodes.new(type="NodeReroute")
-                                        rerouter_2.location = 350, -50 - len(new_node.inputs)*30
+                                        rerouter_2.location = 350, bottom_y
                                         rerouter_3 = mat_nodes.new(type="NodeReroute")
-                                        rerouter_3.location = -650, -50 - len(new_node.inputs)*30
+                                        rerouter_3.location = -650, bottom_y
                                         rerouter_4 = mat_nodes.new(type="NodeReroute")
                                         rerouter_4.location = -650, txtr_node.location[1]-10
                                         
@@ -206,9 +242,25 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 # Registrations
 
 def register():
+    bpy.app.handlers.load_pre.append(handler_new_scene)
+    
+    bpy.types.Scene.preserve_atroxa_bool = bpy.props.BoolProperty(
+        name="Preserve original shaders",
+        description='Keep the original SWTOR shader, unconnected',
+        default = True,
+    )
+    bpy.types.Scene.blendfile_is_template_bool = bpy.props.BoolProperty(
+        name="Blend File is Shaders Template File",
+        description='Flag to hide UI options while editing the .blend file containing the custom shaders',
+        default = False,
+    )
+    
     bpy.utils.register_class(ZGSWTOR_OT_customize_swtor_shaders)
 
-def unregister():    
+def unregister():
+    del bpy.types.Scene.preserve_atroxa_bool
+    del bpy.types.Scene.blendfile_is_template_bool
+    
     bpy.utils.unregister_class(ZGSWTOR_OT_customize_swtor_shaders)
 
 if __name__ == "__main__":

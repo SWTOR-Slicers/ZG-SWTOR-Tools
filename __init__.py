@@ -29,7 +29,7 @@ modulesNames = [
     'quickscale',
     'set_modifiers',
     'customize_swtor_shaders',
-    'external_shaders_linker'
+    'add_custom_external_swtor_shaders'
     ]
   
 modulesFullNames = {}

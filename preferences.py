@@ -18,10 +18,10 @@ class addonPreferences(bpy.types.AddonPreferences):
     )
     # Custom SWTOR shaders blendfile folderpath
     swtor_custom_shaders_blendfile_path: bpy.props.StringProperty(
-        name = "Custom Shaders Template",
-        description = "Path to a Blend file holding custom SWTOR shaders.\nPoints to a default one held in this Add-on's folder",
-        subtype = "DIR_PATH",
-        default = os.path.dirname(os.path.abspath(__file__)),
+        name = "Custom Shaders .blend",
+        description = "Path to a Blend file holding custom replacement\nSWTOR shaders for the current modern ones.",
+        subtype = "FILE_PATH",
+        default = "/Volumes/RECURSOS/3D SWTOR/SWTOR SHADERS/New SWTOR Custom Shaders.blend",
         maxlen = 1024
     )
 
@@ -43,8 +43,8 @@ class addonPreferences(bpy.types.AddonPreferences):
         pref_box = layout.box()
         col=pref_box.column()
         col.scale_y = 0.7
-        col.label(text="Path to .blend file holding custom SWTOR shaders")
-        col.label(text="(defaults to .blend file inside this add-on)")
+        col.label(text="Path to a Blend file holding custom replacement")
+        col.label(text="SWTOR shaders for the current modern ones.")
         pref_box.prop(self, 'swtor_custom_shaders_blendfile_path', expand=True)
 
 
