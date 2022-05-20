@@ -130,8 +130,8 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
 
 
 
-# Scene Tools sub-panel
-class ZGSWTOR_PT_scene_tools(bpy.types.Panel):
+# Misc. Tools sub-panel
+class ZGSWTOR_PT_misc_tools(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "ZG SWTOR"
@@ -139,16 +139,23 @@ class ZGSWTOR_PT_scene_tools(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        tool_section = layout.box()
 
-        # Simplify (copy of existing operators)
+        #### Block of simple custom operators:
+        tool_section = layout.box()
+        row = tool_section.row(align=True)
+        row.operator("zgswtor.set_dds", text="Set all .dds to Raw/Packed")
+
+        #### Block of simple already existing Blender operators:
+        tool_section = layout.box()
+        
+        # Simplify
         row = tool_section.row(align=True)
         row.prop(context.scene.render, "use_simplify", text=" Simplify")
         in_row = row.row()  # for a non-50% contiguous row region
         in_row.scale_x = 1.2
         in_row.prop(context.scene.render, "simplify_subdivision", text="Max SubD")
 
-        # Pose Position / Reset Position (copy of existing operators)
+        # Pose Position / Reset Position
         row = tool_section.row(align=True)
         if context.object:
             if context.object.type == "ARMATURE":
@@ -169,7 +176,7 @@ class ZGSWTOR_PT_scene_tools(bpy.types.Panel):
 classes = [
     ZGSWTOR_PT_materials_tools,
     ZGSWTOR_PT_objects_tools,
-    ZGSWTOR_PT_scene_tools
+    ZGSWTOR_PT_misc_tools
 ]
 
 def register():

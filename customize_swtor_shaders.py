@@ -144,11 +144,22 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
 
                     if "SWTOR" in mat_nodes:
+
                         atroxa_node = mat_nodes["SWTOR"]
-                        atroxa_node.location = 600, 0
 
-                        # Start working on the material
+                        # Set material's alpha, shadow and backface culling settings
+                        mat.blend_method = atroxa_node.alpha_mode
+                        mat.alpha_threshold = atroxa_node.alpha_test_value
+                        print(atroxa_node.alpha_mode)
+                        if mat.blend_method == 'OPAQUE':
+                            mat.shadow_method = 'NONE'
+                        else:
+                            mat.shadow_method = 'HASHED'
 
+                        mat.use_backface_culling = False
+
+
+                        # Start conversion to new shader
                         derived = atroxa_node.derived
                         print(derived)
 
@@ -230,7 +241,10 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                                         mat_links.new(rerouter_3.outputs[0], rerouter_4.inputs[0])
                                         mat_links.new(rerouter_4.outputs[0], txtr_node.inputs[0])
                                         
-                        if context.scene.preserve_atroxa_bool == False:
+                        if context.scene.preserve_atroxa_bool == True:
+                            # Reposition smart shader out of the way
+                            atroxa_node.location = 600, 0
+                        else:
                             mat_nodes = mat_nodes.remove(atroxa_node)
     
         return {"FINISHED"}
