@@ -1,20 +1,7 @@
 import bpy
 import os
 from pathlib import Path
-from bpy.app.handlers import persistent
 
-#@persistent
-def handler_new_scene(scene):
-    # Check that we aren't editing the custom shaders template file
-    # to prevent from appending/linking the shaders to itself
-    # and set a prop to control the UI's related widgets
-    
-    new_shaders_filepath = bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path
-    
-    open_blend_file = bpy.data.filepath
-    
-    bpy.types.Scene.blendfile_is_template_bool = new_shaders_filepath != open_blend_file
-bpy.app.handlers.load_pre.append(handler_new_scene)
 
 class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
@@ -36,12 +23,12 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
     # Properties
 
-    # preserve_atroxa_bool: bpy.props.BoolProperty(
-    #     name="Preserve original shaders",
-    #     description='Keep the original SWTOR shader, unconnected',
-    #     default = True,
-    #     options={'HIDDEN'}
-    #     )
+    preserve_atroxa_bool: bpy.props.BoolProperty(
+        name="Preserve original shaders",
+        description='Keep the original SWTOR shader, unconnected',
+        default = True,
+        options={'HIDDEN'}
+        )
 
 
     # Some lists and dicts:
@@ -112,17 +99,16 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
         # if I execute the external shaders linker the selection is lost.
         selected_objs = bpy.context.selected_objects
 
-        # Check that we aren't editing the custom shaders template file
-        # to prevent from appending/linking the shaders to itself
-        new_shaders_filepath = bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path
-
-        open_blend_file = bpy.data.filepath
+        # Call external shaders linker/appender operator
+        shaders_lib_filepath = bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path
         
-        # bpy.types.Scene.blendfile_is_template_bool = new_shaders_filepath != open_blend_file
+        open_blend_filepath = bpy.data.filepath
 
-
-
-
+        if open_blend_filepath != shaders_lib_filepath:
+            if context.scene.use_linking_bool == True:
+                bpy.ops.zgswtor.add_custom_external_swtor_shaders().link
+            else:
+                bpy.ops.zgswtor.add_custom_external_swtor_shaders()
 
         # ----------------------------------------------------
         
@@ -260,7 +246,6 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 # Registrations
 
 def register():
-    bpy.app.handlers.load_pre.append(handler_new_scene)
     
     bpy.types.Scene.preserve_atroxa_bool = bpy.props.BoolProperty(
         name="Preserve original shaders",

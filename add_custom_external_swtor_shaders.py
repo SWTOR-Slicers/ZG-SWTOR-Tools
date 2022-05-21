@@ -1,6 +1,41 @@
 import bpy
 import os
 from pathlib import Path
+from bpy.app.handlers import persistent
+
+print("-------------")
+print("CALLED")
+print("-------------")
+
+# Handler for detecting opening a new blendfile and updating
+# UI options properties accordingly
+@persistent
+def handler_new_blendfile(scene):
+    # Check that we aren't editing the custom shaders template file
+    # to prevent from appending/linking the shaders to itself
+    # and set a prop to control the UI's related widgets
+    
+    shaders_lib_filepath = bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path
+        
+    open_blend_filepath = bpy.data.filepath
+        
+    if open_blend_filepath == shaders_lib_filepath:
+        bpy.context.scene.enable_adding_custom_shaders = False
+        bpy.context.scene.enable_linking_custom_shaders = False
+    else:
+        bpy.context.scene.enable_adding_custom_shaders = True
+        bpy.context.scene.enable_linking_custom_shaders = True
+
+    print("----------------------")
+    print("Pref =", shaders_lib_filepath)
+    print("blend=", open_blend_filepath)
+
+    print("HANDL - adding = ",bpy.context.scene.enable_adding_custom_shaders)
+    print("HANDL - linking= ",bpy.context.scene.enable_linking_custom_shaders)
+
+        
+bpy.app.handlers.load_post.append(handler_new_blendfile)
+
 
 
 class ZGSWTOR_OT_add_custom_external_swtor_shaders(bpy.types.Operator):
@@ -9,18 +44,14 @@ class ZGSWTOR_OT_add_custom_external_swtor_shaders(bpy.types.Operator):
     bl_description = "Appends or links custom SWTOR shaders from\nan external .blend templates file."
     bl_options = {'REGISTER', 'UNDO'}
 
-
-    # Checks that we aren't working on the .blend file holding the
-    # customized SWTOR shaders templates, greying out the UI widgets otherwise.
-    @classmethod
-    def poll(cls,context):
-        new_shaders_filepath = bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path        
-        open_blend_file = bpy.data.filepath
-        if new_shaders_filepath == open_blend_file:
-            return False
-        else:
-            return True
-
+    # @classmethod
+    # def poll(cls,context):
+    #     shaders_lib_filepath = context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path
+    #     open_blend_filepath = bpy.data.filepath
+    #     if open_blend_filepath != shaders_lib_filepath:
+    #         return True
+    #     else:
+    #         return False
 
     # linking vs appending flag property
     link: bpy.props.BoolProperty(
@@ -30,19 +61,21 @@ class ZGSWTOR_OT_add_custom_external_swtor_shaders(bpy.types.Operator):
         options={'HIDDEN'}
         )
 
-
     def execute(self, context):
 
-        new_shaders_filepath = bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path
+        shaders_lib_filepath = context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path
         
-        open_blend_file = bpy.data.filepath
+        open_blend_filepath = bpy.data.filepath
         
-        if open_blend_file == new_shaders_filepath:
-            context.scene.blendfile_is_template_bool = True
-        else:
-            context.scene.blendfile_is_template_bool = False
+        # if open_blend_filepath == shaders_lib_filepath:
+        #     context.scene.enable_adding_custom_shaders = False
+        #     context.scene.enable_linking_custom_shaders = False
+        # else:
+        #     context.scene.enable_adding_custom_shaders = True
+        #     context.scene.enable_linking_custom_shaders = True
 
-        swtor_shaders_path = bpy.path.native_pathsep(bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path + "/NodeTree")
+
+        swtor_shaders_path = bpy.path.native_pathsep(shaders_lib_filepath + "/NodeTree")
 
         if bpy.data.scenes["Scene"].use_linking_bool:
             self.link = bpy.data.scenes["Scene"].use_linking_bool
@@ -70,24 +103,32 @@ class ZGSWTOR_OT_add_custom_external_swtor_shaders(bpy.types.Operator):
 # Registrations
 
 def register():
+    bpy.app.handlers.load_pre.append(handler_new_blendfile)
+
     bpy.types.Scene.use_linking_bool = bpy.props.BoolProperty(
         name="Link custom materials",
         description='If adding custom SWTOR shaders,\nlink them instead of appending them',
-        default = True
+        default = False
     )
-    bpy.types.Scene.blendfile_is_template_bool = bpy.props.BoolProperty(
-        name="Blend File is Shaders Template File",
-        description='Flag to hide UI options while editing the .blend file containing the custom shaders',
-        default = True,
+    bpy.types.Scene.enable_adding_custom_shaders = bpy.props.BoolProperty(
+        name="Disable adding custom SWTOR shaders",
+        description='Disable linking custom SWTOR shaders',
+    )
+    bpy.types.Scene.enable_linking_custom_shaders = bpy.props.BoolProperty(
+        name="Disable linking custom SWTOR shaders",
+        description='Disable linking custom SWTOR shaders',
     )
 
     bpy.utils.register_class(ZGSWTOR_OT_add_custom_external_swtor_shaders)
 
 
 def unregister():
-    del bpy.types.Scene.use_linking_bool
-    del bpy.types.Scene.blendfile_is_template_bool
+    bpy.app.handlers.load_pre.append(handler_new_blendfile)
 
+    del bpy.types.Scene.use_linking_bool
+    del bpy.types.Scene.enable_adding_custom_shaders
+    del bpy.types.Scene.enable_linking_custom_shaders
+    
     bpy.utils.unregister_class(ZGSWTOR_OT_add_custom_external_swtor_shaders)
 
 if __name__ == "__main__":

@@ -21,16 +21,21 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
 
         # add_custom_external_swtor_shaders UI
         tool_section = layout.box().column(align=True)
-        dimmable_row = tool_section.row(align=True)
-        dimmable_row.enabled = not context.scene.blendfile_is_template_bool
-        dimmable_row.operator("zgswtor.add_custom_external_swtor_shaders", text="Add Custom SWTOR Shaders")
+        dimmable_row1 = tool_section.row(align=True)
+        dimmable_row1.enabled = context.scene.enable_adding_custom_shaders
+        dimmable_row1.operator("zgswtor.add_custom_external_swtor_shaders", text="Add Custom SWTOR Shaders")
+        
         # customize_swtor_shaders UI
         tool_section.operator("zgswtor.customize_swtor_shaders", text="Convert to Custom SWTOR Shaders")
-        dimmable_row = tool_section.row(align=True)
-        dimmable_row.enabled = not context.scene.blendfile_is_template_bool
-        dimmable_row.prop(context.scene, "use_linking_bool", text="Link instead of Append")
-        tool_section.prop(context.scene, "preserve_atroxa_bool", text="Preserve Original Shaders")
         
+        dimmable_row2 = tool_section.row(align=True)
+        dimmable_row2.enabled = context.scene.enable_linking_custom_shaders
+        dimmable_row2.prop(context.scene, "use_linking_bool", text="Link instead of Append")
+        tool_section.prop(context.scene, "preserve_atroxa_bool", text="Preserve Original Shaders")
+
+        print("----------------------")
+        print("adding = ",context.scene.enable_adding_custom_shaders)
+        print("linking= ",context.scene.enable_linking_custom_shaders)
 
         # deduplicate_nodegroups UI
         tool_section = layout.box()
