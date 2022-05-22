@@ -105,10 +105,7 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
         open_blend_filepath = bpy.data.filepath
 
         if open_blend_filepath != shaders_lib_filepath:
-            if context.scene.use_linking_bool == True:
-                bpy.ops.zgswtor.add_custom_external_swtor_shaders().link
-            else:
-                bpy.ops.zgswtor.add_custom_external_swtor_shaders()
+            bpy.ops.zgswtor.add_custom_external_swtor_shaders(link = context.scene.use_linking_bool)
 
         # ----------------------------------------------------
         
@@ -135,16 +132,16 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
                         atroxa_node = mat_nodes["SWTOR"]
 
-                        # Set material's alpha, shadow and backface culling settings
-                        mat.blend_method = atroxa_node.alpha_mode
+                        # Set material's alpha, shadow and backface culling settings.
+                        # Blend Mode to CLIP as a minimum for the extra
+                        # transparency setting to work.
+                        mat.blend_method = "CLIP"
                         mat.alpha_threshold = atroxa_node.alpha_test_value
-                        if mat.blend_method != 'HASHED':
-                            # Set to Clip o be able to use full transparency
-                            # even in opaque objects
-                            mat.blend_method == 'CLIP'
-                            mat.shadow_method = 'CLIP'
-                        else:
+                        
+                        if mat.blend_method == 'HASHED':
                             mat.shadow_method = 'HASHED'
+                        else:
+                            mat.shadow_method = 'CLIP'
 
                         mat.use_backface_culling = False
 
@@ -206,8 +203,8 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                                     # If it has no assigned image, mute the node?
                                     if atroxa_node[self.new_txmaps_to_atroxa[new_node_input_name] ]:
                                         txtr_node.image = atroxa_node[self.new_txmaps_to_atroxa[new_node_input_name] ]
-                                    # else:
-                                    #     txtr_node.mute = True
+                                    else:
+                                        txtr_node.mute = True
 
                                     # Create the links for feeding a DirectionMap with
                                     # the Specular Lookup calculated inside the Nodegroup
