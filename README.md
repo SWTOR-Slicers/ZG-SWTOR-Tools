@@ -27,7 +27,7 @@ The installation of the Add-on in Blender follows the usual directions:
 4. The Add-on will appear in the Add-ons list with its checkbox un-ticked. Tick it to enable the Add-on.
 5. Twirl the arrow preceding the check-box to reveal some information and, most importantly, **the Add-on's Preferences**. Note that it asks for **the path of a "resources" folder**.
 
-      ![](https://github.com/ZeroGravitasIndeed/zg_swtor_tools/blob/main/doc_files/010.png)
+      ![](/doc_files/010.png)
 
     Some of the Add-on's features depend on looking for information and game assets inside a SWTOR assets extraction (typically produced by apps such as SWTOR Slicers or EasyMYP). In the case of a SWTOR Slicers extraction, the "resources" folder is inside the folder set as that app's Output Folder.
     
@@ -35,7 +35,7 @@ The installation of the Add-on in Blender follows the usual directions:
         
 The Add-on's tools will appear in the 3D Viewport's Sidebar ('n' key), in the "ZG SWTOR" tab.
 
-![](https://github.com/ZeroGravitasIndeed/zg_swtor_tools/blob/main/doc_files/020.png)
+![](/doc_files/020.png)
 
 The current tools are:
 
@@ -67,7 +67,7 @@ It sets all the materials in the selected objects' Backface Culling setting to o
 
 The usefulness of this tool becomes apparent when having to deal with interior scenes such as spaceship rooms, where we have to place models (characters, furniture, props.) while having the walls and ceilings occluding our view. There are cumbersome solutions to that, such as hiding polygons, playing with the camera clipping settings, or using a booleaning object to "eat" walls or ceilings away. This is simpler and faster. Also, it doesn't affect the rendering when placing the camera inside, as there the one-sided objects are facing the camera in the intended manner.
 
-![](https://github.com/ZeroGravitasIndeed/zg_swtor_tools/blob/main/doc_files/030.jpg)
+![](/doc_files/030.jpg)
 
 When assembling multi-object locations, it's typical that a same material is shared between several objects. That can lead to unselected objects showing the effects of this tool as if they would have been included in the selection. This is an expected behavior.
 
