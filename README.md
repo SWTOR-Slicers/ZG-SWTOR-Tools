@@ -12,6 +12,7 @@ This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: 
   * [Merge Double Vertices.](#merge-double-vertices)
   * [Modifiers Tools.](#modifiers-tools)
 * [Misc. Tools:](#swtor-misc-tools)
+  * [Set all .dds to Raw/Packed.](#set-all-dds-to-rawpacked)
   * [Simplify Scene.](#simplify)
   * [Switch Skeleton between Pose and Rest Position.](#pose-position--rest-position)
   * [Camera to View.](#camera-to-view)
@@ -99,6 +100,11 @@ They add to all selected objects Modifiers like Subdivision or Multires (for hid
 
 ## SWTOR Misc. Tools:
 For now these are simply a few already existing Blender tools that are a little too buried inside their panels and would be nice to have more at hand.
+
+### Set all .dds to Raw/Packed.
+It sets all images in the blender project whose names end with the .dds extension to Color Space: Raw and Alpha: Channel Packed, which are the settings our SWTOR shaders expect in order to work properly.
+* It acts on all the images of a scene, and doesn't require a selection of objects.
+(It's typical to set some texture map images, such as complexion maps, to sRGB because that makes them appear a little bit darker. Such a thing should be no longer necessary by using the new customizable shaders' extra Complexion Gamma settings).
 
 ### Simplify.
 Usually in the Properties Editor > Render Properties >Simplify section, it lets us temporarily switch a few common and somewhat costly options, such as Subdivision Modifiers' levels, number of particles, etc., to lower values, at the scene level. For example, we can disable subdivision while animating a character, which will make its meshes react to our posing far faster.
