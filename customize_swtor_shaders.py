@@ -200,7 +200,7 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                                     mat_links.new(txtr_node.outputs[1], new_node.inputs[new_node_input_index+1])
 
                                     # Assign image to the texturemap node.
-                                    # If it has no assigned image, mute the node?
+                                    # If it has no assigned image, mute the node
                                     if atroxa_node[self.new_txmaps_to_atroxa[new_node_input_name] ]:
                                         txtr_node.image = atroxa_node[self.new_txmaps_to_atroxa[new_node_input_name] ]
                                     else:

@@ -18,10 +18,9 @@ class ZGSWTOR_OT_remove_doubles(bpy.types.Operator):
             return True
         else:
             return False
-    
+
 
     def execute(self, context):
-
 
         bpy.context.window.cursor_set("WAIT")
 

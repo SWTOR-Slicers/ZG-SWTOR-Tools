@@ -27,7 +27,9 @@ class ZGSWTOR_OT_deduplicate_nodegroups(bpy.types.Operator):
     bl_description = "Replaces all Nodegroups with numbered suffixes (.001, .002, etc.)\nwith instances of the non-suffixed original Nodegroups.\n\nThis operator affects all Nodegroups in the current Scene\nand doesn't require a selection"
     bl_options = {'REGISTER', "UNDO"}
 
-    def execute( self, context ):
+
+
+    def execute(self, context):
         bpy.context.window.cursor_set("WAIT")
 
         #--- Search for duplicates in actual node groups

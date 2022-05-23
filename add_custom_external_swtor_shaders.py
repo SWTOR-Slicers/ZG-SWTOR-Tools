@@ -1,9 +1,11 @@
 import bpy
+from bpy import app
+
 import os
 from pathlib import Path
 from bpy.app.handlers import persistent
 
-
+# -------------------------------------------------------------
 # Handler for detecting opening a new blendfile and updating
 # UI options properties accordingly
 @persistent
@@ -11,51 +13,53 @@ def handler_new_blendfile(scene):
     # Check that we aren't editing the custom shaders template file
     # to prevent from appending/linking the shaders to itself
     # and set a prop to control the UI's related widgets
-    
-    shaders_lib_filepath = bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path
-        
+
+    shaders_lib_filepath = bpy.context.preferences.addons[
+        __package__].preferences.swtor_custom_shaders_blendfile_path
+
     open_blend_filepath = bpy.data.filepath
-        
+
     if open_blend_filepath == shaders_lib_filepath:
         bpy.context.scene.enable_adding_custom_shaders = False
         bpy.context.scene.enable_linking_custom_shaders = False
     else:
         bpy.context.scene.enable_adding_custom_shaders = True
         bpy.context.scene.enable_linking_custom_shaders = True
-        
+
 bpy.app.handlers.load_post.append(handler_new_blendfile)
 
 
-
+# -------------------------------------------------------------
 class ZGSWTOR_OT_add_custom_external_swtor_shaders(bpy.types.Operator):
     bl_idname = "zgswtor.add_custom_external_swtor_shaders"
     bl_label = "SWTOR Tools"
     bl_description = "Appends or links custom SWTOR shaders from\nan external .blend templates file."
     bl_options = {'REGISTER', 'UNDO'}
 
-
     # linking vs appending flag property
     link: bpy.props.BoolProperty(
         name="Link custom shaders",
         description='If adding custom SWTOR shaders,\nlink them instead of appending them',
-        default = False,
+        default=False,
         options={'HIDDEN'}
-        )
+    )
 
     def execute(self, context):
 
-        shaders_lib_filepath = context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path
-        
+        shaders_lib_filepath = context.preferences.addons[
+            __package__].preferences.swtor_custom_shaders_blendfile_path
+
         open_blend_filepath = bpy.data.filepath
-        
-        swtor_shaders_path = bpy.path.native_pathsep(shaders_lib_filepath + "/NodeTree")
+
+        swtor_shaders_path = bpy.path.native_pathsep(
+            shaders_lib_filepath + "/NodeTree")
 
         if bpy.data.scenes["Scene"].use_linking_bool:
             self.link = bpy.data.scenes["Scene"].use_linking_bool
             report_text_ending = "linked."
         else:
             report_text_ending = "appended."
-    
+
         swtor_shaders_names = [
             "SWTOR - Creature Shader",
             "SWTOR - Eye Shader",
@@ -64,20 +68,37 @@ class ZGSWTOR_OT_add_custom_external_swtor_shaders(bpy.types.Operator):
             "SWTOR - SkinB Shader",
             "SWTOR - Uber Shader"
         ]
-        for swtor_shader_name in swtor_shaders_names:
-            bpy.ops.wm.append(
-                filename = swtor_shader_name,
-                directory = swtor_shaders_path,
-                do_reuse_local_id = True,
-                set_fake = True,
-                link = self.link
+        
+        if app.version >= (3, 0, 0):
+            for swtor_shader_name in swtor_shaders_names:
+                bpy.ops.wm.append(
+                filename=swtor_shader_name,
+                directory=swtor_shaders_path,
+                do_reuse_local_id=True,
+                set_fake=True,
+                link=self.link
                 )
+        else:
+            # Blender 2.x.x has no do_reuse_local_id, so,
+            # a dedupe of nodegroups is needed.
+            for swtor_shader_name in swtor_shaders_names:
+                bpy.ops.wm.append(
+                filename=swtor_shader_name,
+                directory=swtor_shaders_path,
+                set_fake=True,
+                link=self.link
+                )
+            bpy.ops.zgswtor.deduplicate_nodegroups()
+                
+
 
         self.report({'INFO'}, "Custom SWTOR Shaders " + report_text_ending)
 
         return {"FINISHED"}
 
 
+
+# -------------------------------------------------------------
 # Registrations
 
 def register():
@@ -86,7 +107,7 @@ def register():
     bpy.types.Scene.use_linking_bool = bpy.props.BoolProperty(
         name="Link custom materials",
         description='If adding custom SWTOR shaders,\nlink them instead of appending them',
-        default = True
+        default=True
     )
     bpy.types.Scene.enable_adding_custom_shaders = bpy.props.BoolProperty(
         name="Disable adding custom SWTOR shaders",
@@ -106,8 +127,9 @@ def unregister():
     del bpy.types.Scene.use_linking_bool
     del bpy.types.Scene.enable_adding_custom_shaders
     del bpy.types.Scene.enable_linking_custom_shaders
-    
+
     bpy.utils.unregister_class(ZGSWTOR_OT_add_custom_external_swtor_shaders)
+
 
 if __name__ == "__main__":
     register()
