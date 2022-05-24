@@ -1,6 +1,4 @@
-from email.policy import default
 import bpy
-
 
 
 # Materials Tools sub-panel
@@ -19,6 +17,20 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         tool_section.operator("zgswtor.process_uber_mats", text="Process Uber Materials")
         tool_section.prop(context.scene, "use_overwrite_bool", text="Overwrite Uber Materials")
         tool_section.prop(context.scene, "use_collect_colliders_bool", text="Collect Collider Objects")
+
+
+        # add_custom_external_swtor_shaders UI
+        # combined with
+        # customize_swtor_shaders UI
+        tool_section = layout.box().column(align=True)
+        dimmable_row1 = tool_section.row(align=True)
+        dimmable_row1.enabled = context.scene.enable_adding_custom_shaders
+        dimmable_row1.operator("zgswtor.add_custom_external_swtor_shaders", text="Add Custom SWTOR Shaders")
+        tool_section.operator("zgswtor.customize_swtor_shaders", text="Convert to Custom SWTOR Shaders")
+        dimmable_row2 = tool_section.row(align=True)
+        dimmable_row2.enabled = context.scene.enable_linking_custom_shaders
+        dimmable_row2.prop(context.scene, "use_linking_bool", text="Link instead of Append")
+        tool_section.prop(context.scene, "preserve_atroxa_bool", text="Preserve Original Shaders")
 
 
         # deduplicate_nodegroups UI
@@ -119,8 +131,8 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
 
 
 
-# Scene Tools sub-panel
-class ZGSWTOR_PT_scene_tools(bpy.types.Panel):
+# Misc. Tools sub-panel
+class ZGSWTOR_PT_misc_tools(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "ZG SWTOR"
@@ -128,18 +140,23 @@ class ZGSWTOR_PT_scene_tools(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+
+        #### Block of simple custom operators:
         tool_section = layout.box()
+        row = tool_section.row(align=True)
+        row.operator("zgswtor.set_dds", text="Set all .dds to Raw/Packed")
 
-
-        # Simplify (copy of existing operators)
+        #### Block of simple already existing Blender operators:
+        tool_section = layout.box()
+        
+        # Simplify
         row = tool_section.row(align=True)
         row.prop(context.scene.render, "use_simplify", text=" Simplify")
         in_row = row.row()  # for a non-50% contiguous row region
         in_row.scale_x = 1.2
         in_row.prop(context.scene.render, "simplify_subdivision", text="Max SubD")
 
-
-        # Pose Position / Reset Position (copy of existing operators)
+        # Pose Position / Reset Position
         row = tool_section.row(align=True)
         if context.object:
             if context.object.type == "ARMATURE":
@@ -148,7 +165,6 @@ class ZGSWTOR_PT_scene_tools(bpy.types.Panel):
                 row.label(text="POSE / REST an Active Armature")
         else:
             row.label(text="POSE / REST an Active Armature")
-
 
         # Lock camera to view
         row = tool_section.row(align=True)
@@ -161,7 +177,7 @@ class ZGSWTOR_PT_scene_tools(bpy.types.Panel):
 classes = [
     ZGSWTOR_PT_materials_tools,
     ZGSWTOR_PT_objects_tools,
-    ZGSWTOR_PT_scene_tools
+    ZGSWTOR_PT_misc_tools
 ]
 
 def register():

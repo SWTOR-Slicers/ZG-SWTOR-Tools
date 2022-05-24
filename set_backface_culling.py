@@ -2,7 +2,7 @@ import bpy
 
 class ZGSWTOR_OT_set_backface_culling(bpy.types.Operator):
     bl_idname = "zgswtor.set_backface_culling"
-    bl_label = "SWTOR Tools"
+    bl_label = "ZG Backface Culling"
     bl_options = {'REGISTER', "UNDO"}
     bl_description = "Sets the selected objects' materials' Backface Culling.\nIf set to on, single-sided objects' rear faces become invisible.\n\nIf the materials are shared by several objects,\nthe effect will affect those objects, too, even if not selected"
 

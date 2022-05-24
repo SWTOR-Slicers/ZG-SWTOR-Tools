@@ -12,7 +12,16 @@ class addonPreferences(bpy.types.AddonPreferences):
         name = "SWTOR Resources",
         description = 'Path to the "resources" folder produced by a SWTOR assets extraction',
         subtype = "DIR_PATH",
-        default = "Choose or type the folder's path",
+        default = "/Volumes/RECURSOS/3D SWTOR/extracted_swtor/resources/",
+#        default = "Choose or type the folder's path",
+        maxlen = 1024
+    )
+    # Custom SWTOR shaders blendfile folderpath
+    swtor_custom_shaders_blendfile_path: bpy.props.StringProperty(
+        name = "Custom Shaders .blend",
+        description = "Path to a Blend file holding custom replacement\nSWTOR shaders for the current modern ones.",
+        subtype = "FILE_PATH",
+        default = "/Volumes/RECURSOS/3D SWTOR/SWTOR SHADERS/New SWTOR Custom Shaders.blend",
         maxlen = 1024
     )
 
@@ -30,7 +39,13 @@ class addonPreferences(bpy.types.AddonPreferences):
         col.label(text="produced by the Slicers GUI app, EasyMYP, or any similar tool.")
         pref_box.prop(self, 'swtor_resources_path', expand=True)
 
-
+        # Custom SWTOR shaders blendfile folderpath UI
+        pref_box = layout.box()
+        col=pref_box.column()
+        col.scale_y = 0.7
+        col.label(text="Path to a Blend file holding custom replacement")
+        col.label(text="SWTOR shaders for the current modern ones.")
+        pref_box.prop(self, 'swtor_custom_shaders_blendfile_path', expand=True)
 
 
 # Registrations
