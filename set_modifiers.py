@@ -3,7 +3,7 @@ import bpy
 
 class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
     bl_idname = "zgswtor.set_modifiers"
-    bl_label = "SWTOR Tools"
+    bl_label = "ZG Set Modifiers"
     bl_options = {'REGISTER', "UNDO"}
     bl_description = "Adds / removes Subdivision, MultiRes, Displace and Solidify Modifiers,\nwith sensible settings for SWTOR asset work.\n\n• Requires a selection of objects.\n• Preserves Armature Modifiers from removal and allows for their repositioning"
 

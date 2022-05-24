@@ -2,7 +2,7 @@ import bpy
 
 class ZGSWTOR_OT_set_dds(bpy.types.Operator):
     bl_idname = "zgswtor.set_dds"
-    bl_label = "SWTOR Tools"
+    bl_label = "ZG Set .dds"
     bl_options = {'REGISTER', "UNDO"}
     bl_description = "Sets all .dds texture files to Raw, Channel-Packed.\n\nThis operator affects all .dds in the current Scene\nand doesn't require a selection"
 

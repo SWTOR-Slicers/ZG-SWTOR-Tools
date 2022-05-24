@@ -32,7 +32,7 @@ bpy.app.handlers.load_post.append(handler_new_blendfile)
 # -------------------------------------------------------------
 class ZGSWTOR_OT_add_custom_external_swtor_shaders(bpy.types.Operator):
     bl_idname = "zgswtor.add_custom_external_swtor_shaders"
-    bl_label = "SWTOR Tools"
+    bl_label = "ZG Add Custom SWTOR Shaders"
     bl_description = "Appends or links custom SWTOR shaders from\nan external .blend templates file."
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -46,13 +46,15 @@ class ZGSWTOR_OT_add_custom_external_swtor_shaders(bpy.types.Operator):
 
     def execute(self, context):
 
-        shaders_lib_filepath = context.preferences.addons[
-            __package__].preferences.swtor_custom_shaders_blendfile_path
+        shaders_lib_filepath = context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path
+
+        if Path(shaders_lib_filepath).exists() == False:
+            self.report({"WARNING"}, "Unable to find a custom SWTOR shaders .blend file. Please check this add-on's preference settings: either the path to such file hasn't been introduced or is incorrect.")
+            return {"CANCELLED"}
 
         open_blend_filepath = bpy.data.filepath
 
-        swtor_shaders_path = bpy.path.native_pathsep(
-            shaders_lib_filepath + "/NodeTree")
+        swtor_shaders_path = bpy.path.native_pathsep(shaders_lib_filepath + "/NodeTree")
 
         if bpy.data.scenes["Scene"].use_linking_bool:
             self.link = bpy.data.scenes["Scene"].use_linking_bool
@@ -71,27 +73,34 @@ class ZGSWTOR_OT_add_custom_external_swtor_shaders(bpy.types.Operator):
         
         if app.version >= (3, 0, 0):
             for swtor_shader_name in swtor_shaders_names:
-                bpy.ops.wm.append(
-                filename=swtor_shader_name,
-                directory=swtor_shaders_path,
-                do_reuse_local_id=True,
-                set_fake=True,
-                link=self.link
-                )
+                try:
+                    bpy.ops.wm.append(
+                    filename=swtor_shader_name,
+                    directory=swtor_shaders_path,
+                    do_reuse_local_id=True,
+                    set_fake=True,
+                    link=self.link
+                    )
+                except:
+                    self.report({"WARNING"}, "Unable to find some or all of the required custom SWTOR Shaders in the .blend file set in this add-on's preference settings. Please check that the filepath is correct and that the .blend file contains all six basic SWTOR shaders.")
+                    return {"CANCELLED"}
+
         else:
             # Blender 2.x.x has no do_reuse_local_id, so,
             # a dedupe of nodegroups is needed.
             for swtor_shader_name in swtor_shaders_names:
-                bpy.ops.wm.append(
-                filename=swtor_shader_name,
-                directory=swtor_shaders_path,
-                set_fake=True,
-                link=self.link
-                )
+                try:
+                    bpy.ops.wm.append(
+                    filename=swtor_shader_name,
+                    directory=swtor_shaders_path,
+                    set_fake=True,
+                    link=self.link
+                    )
+                except:
+                    self.report({"WARNING"}, "Unable to find some or all of the required custom SWTOR Shaders in the .blend file set in this add-on's preference settings. Please check that the filepath is correct and that the .blend file contains all six basic SWTOR shaders.")
+                    return {"CANCELLED"}
             bpy.ops.zgswtor.deduplicate_nodegroups()
                 
-
-
         self.report({'INFO'}, "Custom SWTOR Shaders " + report_text_ending)
 
         return {"FINISHED"}

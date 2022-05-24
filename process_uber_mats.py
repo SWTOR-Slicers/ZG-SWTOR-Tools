@@ -10,7 +10,7 @@ import addon_utils
 
 class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
 
-    bl_label = "SWTOR Tools"
+    bl_label = "ZG Process Uber Materials"
     bl_idname = "zgswtor.process_uber_mats"
     bl_description = "Scans for Uber materials in selected objects and places in them\nUber shaders and their associated textures.\n\n• Requires a selection of objects.\n• Requires an enabled SWTOR .gr2 Importer Add-on."
     bl_options = {'REGISTER', 'UNDO'}

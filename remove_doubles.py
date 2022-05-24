@@ -6,7 +6,7 @@ import bmesh
 
 class ZGSWTOR_OT_remove_doubles(bpy.types.Operator):
     bl_idname = "zgswtor.remove_doubles"
-    bl_label = "SWTOR Tools"
+    bl_label = "ZG Remove Doubles"
     bl_options = {'REGISTER', "UNDO"}
     bl_description = "Removes double vertices (does a Merge by Distance\nin selected objects using a threshold of 0.0000001),\nand applies a Normals > Average > Face Area.\n\n• Requires a selection of objects.\n• Processes each selected object individually."
 
