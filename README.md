@@ -5,6 +5,9 @@ This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: 
 * [Installation.](#installation)
 * [Materials Tools:](#swtor-materials-tools)
   * [Process Uber Materials.](#process-uber-materials)
+  * [Custom SWTOR Shaders:](#custom-swtor-shaders)
+  * * [Add Custom SWTOR Shaders.](add-custom-swtor-shaders)
+  * * [Convert to Custom SWTOR Shaders.](convert-to-custom-swtor-shaders)
   * [Deduplicate Scene's Nodegroups.](#deduplicate-scenes-nodegroups)
   * [Set Backface Culling On/Off.](#set-backface-culling-onoff)
 * [Objects Tools:](#swtor-objects-tools)
@@ -26,7 +29,9 @@ The installation of the Add-on in Blender follows the usual directions:
 2. In Blender, go to Edit menu > Preferences option > Add-ons tab > Install… button.
 3. Select the Add-on in the file dialog box and click on the Install Add-on button.
 4. The Add-on will appear in the Add-ons list with its checkbox un-ticked. Tick it to enable the Add-on.
-5. Twirl the arrow preceding the check-box to reveal some information and, most importantly, **the Add-on's Preferences**. Note that it asks for **the path of a "resources" folder**.
+5. Twirl the arrow preceding the check-box to reveal some information and, most importantly, **the Add-on's Preference settings**. Filling those is crucial for some of the tools to work correctly.
+
+Note that it asks for **the path of a "resources" folder**.
 
       ![](/doc_files/010.png)
 
@@ -65,14 +70,14 @@ So, what we've done here is two things:
 * We've "dumbed down" the modern shaders: no smarts, the texturemap nodes are back to dangling from the SWTOR Shader nodegroups (so allowing to interpose color correction nodes and stuff as usual).
 * Instead of having an add-on code generate the shaders on the fly, the shaders are stored in a .blend file, and the add-on replaces the normal modern shaders with these dumb ones, placing the texturemaps' nodes alongside and linking them correctly.
 
-What are the advantages of this?
+What are the advantages to this?
 
 * The most important one is that any modifications to our SWTOR shaders "library" of sorts can be tried and saved quickly just by playing in that Blender project. What's more: if we choose to have the add-on replace the modern shaders in a given object with these dumb ones by **linking** to them instead of **appending** them, any improvement done to the shaders in the future will become available to older projects automatically. And if we need to do a per-project custom work, we can always convert a linked shader into a permanent one.
 * Another one: **these customizable shaders can coexist with the modern, automated ones**. What's more: one can keep both in a given material and alternate linking them to the Material Output node for comparison sake (or put a Mix Shader in-between) or as a backup of sorts.
 
-What's more: we can keep several SWTOR shader library files at once and alternate among them.
+* We can even keep several SWTOR shader library files at once, if needed.
 
-So, how does this work in a practical level? The available tools are:
+So, how does this work at a practical level? The available tools are:
 
 #### Add Custom SWTOR Shaders:
 It simply adds the customizable shaders to the currently open Blender project, which will become available through add > Group submenu (if one can see an add > SWTOR submenu, too, that one leads to the modern shaders instead). This operator is disabled if we happen to be editing the .blend file we selected as a library in the add-on's preference settings, to avoid accidental duplications or loopbacks. Its options are:
