@@ -6,8 +6,11 @@ This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: 
 * [Materials Tools:](#swtor-materials-tools)
   * [Process Uber Materials.](#process-uber-materials)
   * [Custom SWTOR Shaders (beta):](#custom-swtor-shaders)
-	  * [Add Custom SWTOR Shaders.](add-custom-swtor-shaders)
+	  * [Add Custom SWTOR Shaders.](#add-custom-swtor-shaders)
 	  * [Convert to Custom SWTOR Shaders.](#convert-to-custom-swtor-shaders)
+	  * [About the included Custom Shaders.](#about-the-included-custom-shaders)
+	  * [Custom Shaders' Extras.](#custom-shader-extras)
+	  * [About the current Beta state.](#about-the-beta-state)
   * [Deduplicate Scene's Nodegroups.](#deduplicate-scenes-nodegroups)
   * [Set Backface Culling On/Off.](#set-backface-culling-onoff)
 * [Objects Tools:](#swtor-objects-tools)
@@ -31,7 +34,7 @@ The installation of the Add-on in Blender follows the usual directions:
 4. The Add-on will appear in the Add-ons list with its checkbox un-ticked. Tick it to enable the Add-on.
 5. Twirl the arrow preceding the check-box to reveal some information and, most importantly, **the Add-on's Preference settings**. Filling those is crucial for some of the tools to work correctly. They are:
 
-	![](/doc_files/010.png)
+	![](/images/010.png)
 	* **Path of a "resources" folder**: some of the Add-on's features depend on looking for information and game assets inside a SWTOR assets extraction (typically produced by apps such as SWTOR Slicers or EasyMYP). In the case of a SWTOR Slicers extraction, the "resources" folder is inside the folder set as that app's Output Folder.
 	
 		Click on the folder icon to produce a file browser dialog window where to locate the "resources" folder, or type or copy its path inside the filepath field.
@@ -42,7 +45,7 @@ The installation of the Add-on in Blender follows the usual directions:
         
 The Add-on's tools will appear in the 3D Viewport's Sidebar ('n' key), in the "ZG SWTOR" tab.
 
-![](/doc_files/020.png)
+![](/images/020.png)
 
 The current tools are:
 
@@ -102,8 +105,6 @@ It simply adds the customizable shaders to the currently open Blender project, w
 
 	This option is on by default except when editing a library file, in which case it wouldn't make sense to use linking.
 
-![](/doc_files/040.png)
-
 #### Convert to Custom SWTOR Shaders:
 **Doesn't require to previously use the Add Custom SWTOR Shaders**: it does that by itself.
 
@@ -111,6 +112,8 @@ It goes through all the materials in a selection of objects, detects the presenc
 
 * **Link instead of Append**: it works exactly like in the previous tool.
 * **Preserve Original Shaders**: it doesn't delete the original modern shaders, simply pushing them aside inside the material, unlinked. If anything were to go wrong, sometime further on our experimentations, we can always unlink the customizable ones and relink the originals. This option is on by default.
+
+	![](/images/040.png)
 
 #### About the included custom shaders:
 Alongside this Add-on's .zip file, there comes a sample .blend file holding just the customizable shaders. It can be renamed and stored wherever however and wherever we want, although we should decide a stable location for it and its derivatives, and moving it somewhere else after being applied in linked mode would lead to having to tell each Blender project using it where it was moved to.
@@ -130,6 +133,8 @@ Everything else inside these Blender project files can be altered any way we wan
 
 #### Custom Shader Extras:
 Just as a first example of adding custom stuff to the shaders, the ones included in the .blend file come with a few extras already, not just in their inputs and settings but in their outputs, too:
+
+![](/images/050.png)
 
 Inputs:
 * **Specular and Roughness strength**: they try to simulate the Principled BSDF shader's settings of the same name.
@@ -153,7 +158,7 @@ These channels are mostly there for experimenting with adding our own node trees
 
 * **DirectionMap Vector**: as DirectionMaps (a kind of anisotropic glossmap used in hairs, some species' furs and skins, and other cases) require pre-calculated data that is internally generated in the automatic modern shaders, this is a bit of a cludgey way to produce that information and link it to the DirectionMaps' vector input. The Converter tool puts those links by itself.
 
-#### About the beta stage:
+#### About the beta state:
 The Add-on, as it is now, needs work in things like failing gracefully to errors, providing support for older Blender and .gr2 add-on versions, refining the existing extra features (for example, per dye area-Spec/Rough/Emissive/Normal strength settings), and most probably rearranging the shaders' node trees into something a bit more wieldable.
 
 That said, we should point out that these shaders, as such, are meant to be further customized and evolved by everybody based on their particular interests. For example, the current implementation of glossiness is meant to replicate SWTOR's own, but someone might prefer to discard that and do their own Blender specular node or Principled BSDF node-based one, or substitute its Flush Tone-based pseudo-subsurface scattering effect with Blender's own, add adjustable noise-based skin pores, etc. The sky is the limit.
@@ -175,7 +180,7 @@ It sets all the materials in the selected objects' Backface Culling setting to o
 
 The usefulness of this tool becomes apparent when having to deal with interior scenes such as spaceship rooms, where we have to place models (characters, furniture, props.) while having the walls and ceilings occluding our view. There are cumbersome solutions to that, such as hiding polygons, playing with the camera clipping settings, or using a booleaning object to "eat" walls or ceilings away. This is simpler and faster. Also, it doesn't affect the rendering when placing the camera inside, as there the one-sided objects are facing the camera in the intended manner.
 
-![](/doc_files/030.jpg)
+![](/images/030.jpg)
 
 When assembling multi-object locations, it's typical that a same material is shared between several objects. That can lead to unselected objects showing the effects of this tool as if they would have been included in the selection. This is an expected behavior.
 
