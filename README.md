@@ -31,7 +31,7 @@ The installation of the Add-on in Blender follows the usual directions:
 4. The Add-on will appear in the Add-ons list with its checkbox un-ticked. Tick it to enable the Add-on.
 5. Twirl the arrow preceding the check-box to reveal some information and, most importantly, **the Add-on's Preference settings**. Filling those is crucial for some of the tools to work correctly. They are:
 
-	![](/doc_files/010.png)
+	![](/images/010.png)
 	* **Path of a "resources" folder**: some of the Add-on's features depend on looking for information and game assets inside a SWTOR assets extraction (typically produced by apps such as SWTOR Slicers or EasyMYP). In the case of a SWTOR Slicers extraction, the "resources" folder is inside the folder set as that app's Output Folder.
 	
 		Click on the folder icon to produce a file browser dialog window where to locate the "resources" folder, or type or copy its path inside the filepath field.
@@ -42,7 +42,7 @@ The installation of the Add-on in Blender follows the usual directions:
         
 The Add-on's tools will appear in the 3D Viewport's Sidebar ('n' key), in the "ZG SWTOR" tab.
 
-![](/doc_files/020.png)
+![](/images/020.png)
 
 The current tools are:
 
@@ -102,7 +102,7 @@ It simply adds the customizable shaders to the currently open Blender project, w
 
 	This option is on by default except when editing a library file, in which case it wouldn't make sense to use linking.
 
-![](/doc_files/040.png)
+	![](/images/040.png)
 
 #### Convert to Custom SWTOR Shaders:
 **Doesn't require to previously use the Add Custom SWTOR Shaders**: it does that by itself.
@@ -130,7 +130,7 @@ Everything else inside these Blender project files can be altered any way we wan
 
 #### Custom Shader Extras:
 Just as a first example of adding custom stuff to the shaders, the ones included in the .blend file come with a few extras already, not just in their inputs and settings but in their outputs, too:
-
+![](/images/050.png)
 Inputs:
 * **Specular and Roughness strength**: they try to simulate the Principled BSDF shader's settings of the same name.
 * **Emission Strength**: for turning dashboard and gear's glowy bits decidedly incandescent! 
@@ -175,7 +175,7 @@ It sets all the materials in the selected objects' Backface Culling setting to o
 
 The usefulness of this tool becomes apparent when having to deal with interior scenes such as spaceship rooms, where we have to place models (characters, furniture, props.) while having the walls and ceilings occluding our view. There are cumbersome solutions to that, such as hiding polygons, playing with the camera clipping settings, or using a booleaning object to "eat" walls or ceilings away. This is simpler and faster. Also, it doesn't affect the rendering when placing the camera inside, as there the one-sided objects are facing the camera in the intended manner.
 
-![](/doc_files/030.jpg)
+![](/images/030.jpg)
 
 When assembling multi-object locations, it's typical that a same material is shared between several objects. That can lead to unselected objects showing the effects of this tool as if they would have been included in the selection. This is an expected behavior.
 
