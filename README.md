@@ -28,8 +28,8 @@ This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: 
 
 The installation of the Add-on in Blender follows the usual directions:
 
-1. [**Download the Add-on's "zg_swtors_tool.zip" file from this link**](https://github.com/ZeroGravitasIndeed/zg_swtor_tools/raw/main/zg_swtor_tools.zip). Don't unZip it: it's used as such .zip.
-2. [**Download the "custom_swtor_shaders.zip" file from this link**](https://github.com/ZeroGravitasIndeed/zg_swtor_tools/raw/main/custom_swtor_shaders.zip). UnZip this one and keep the resulting Blender file somewhere in handy.
+1. [**Download the Add-on's "zg_swtors_tool.zip" file from this link**](https://github.com/SWTOR-Slicers/zg_swtor_tools/raw/main/zg_swtor_tools.zip). Don't unZip it: it's used as such .zip.
+2. [**Download the "custom_swtor_shaders.zip" file from this link**](https://github.com/SWTOR-Slicers/zg_swtor_tools/raw/main/custom_swtor_shaders.zip). UnZip this one and keep the resulting Blender file somewhere in handy.
 3. In Blender, go to Edit menu > Preferences option > Add-ons tab > Install… button.
 4. Select the Add-on in the file dialog box and click on the Install Add-on button.
 5. The Add-on will appear in the Add-ons list with its checkbox un-ticked. Tick it to enable the Add-on.
