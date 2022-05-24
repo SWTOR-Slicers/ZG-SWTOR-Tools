@@ -154,9 +154,9 @@ These channels are mostly there for experimenting with adding our own node trees
 * **DirectionMap Vector**: as DirectionMaps (a kind of anisotropic glossmap used in hairs, some species' furs and skins, and other cases) require pre-calculated data that is internally generated in the automatic modern shaders, this is a bit of a cludgey way to produce that information and link it to the DirectionMaps' vector input. The Converter tool puts those links by itself.
 
 #### About the beta stage:
-The Add-on, as it is now, needs work in things like failing gracefully to errors, providing support for older Blender and .gr2 add-on versions, and refining the existing extra features (for example, per dye area-Spec/Rough/Emissive/Normal strength settings).
+The Add-on, as it is now, needs work in things like failing gracefully to errors, providing support for older Blender and .gr2 add-on versions, refining the existing extra features (for example, per dye area-Spec/Rough/Emissive/Normal strength settings), and most probably rearranging the shaders' node trees into something a bit more wieldable.
 
-That said, we should point out that these shaders, as such, are meant to be further customized and evolved by anybody based on their particular interests. For example, the current implementation of glossiness is meant to replicate SWTOR's own, but someone might prefer to discard that and do their own Blender specular node or Principled BSDF node-based one, or substitute its Flush Tone-based pseudo-subsurface scattering effect with Blender's own, etc. The sky is the limit.
+That said, we should point out that these shaders, as such, are meant to be further customized and evolved by everybody based on their particular interests. For example, the current implementation of glossiness is meant to replicate SWTOR's own, but someone might prefer to discard that and do their own Blender specular node or Principled BSDF node-based one, or substitute its Flush Tone-based pseudo-subsurface scattering effect with Blender's own, add adjustable noise-based skin pores, etc. The sky is the limit.
 
 
 
