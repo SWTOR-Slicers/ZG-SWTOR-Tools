@@ -29,10 +29,11 @@ This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: 
 The installation of the Add-on in Blender follows the usual directions:
 
 1. [**Download the Add-on's "zg_swtors_tool.zip" file from this link**](https://github.com/ZeroGravitasIndeed/zg_swtor_tools/raw/main/zg_swtor_tools.zip). Don't unZip it: it's used as such .zip.
-2. In Blender, go to Edit menu > Preferences option > Add-ons tab > Install… button.
-3. Select the Add-on in the file dialog box and click on the Install Add-on button.
-4. The Add-on will appear in the Add-ons list with its checkbox un-ticked. Tick it to enable the Add-on.
-5. Twirl the arrow preceding the check-box to reveal some information and, most importantly, **the Add-on's Preference settings**. Filling those is crucial for some of the tools to work correctly. They are:
+2. [**Download the "custom_swtor_shaders.zip" file from this link**](https://github.com/ZeroGravitasIndeed/zg_swtor_tools/raw/main/custom_swtor_shaders.zip). UnZip this one and keep the resulting Blender file somewhere in handy.
+3. In Blender, go to Edit menu > Preferences option > Add-ons tab > Install… button.
+4. Select the Add-on in the file dialog box and click on the Install Add-on button.
+5. The Add-on will appear in the Add-ons list with its checkbox un-ticked. Tick it to enable the Add-on.
+6. Twirl the arrow preceding the check-box to reveal some information and, most importantly, **the Add-on's Preference settings**. Filling those is crucial for some of the tools to work correctly. They are:
 
 	![](/images/zg_010.png)
 	* **Path of a "resources" folder**: some of the Add-on's features depend on looking for information and game assets inside a SWTOR assets extraction (typically produced by apps such as SWTOR Slicers or EasyMYP). In the case of a SWTOR Slicers extraction, the "resources" folder is inside the folder set as that app's Output Folder.
@@ -41,7 +42,7 @@ The installation of the Add-on in Blender follows the usual directions:
 		
 	* **Path to a Custom Shaders .blend file (if any)**: needed for a tool that allows us to replace the current .gr2 Add-on's modern SWTOR shaders with custom ones held in one Blender file, meant for us to experiment with and improve upon. See: [Custom SWTOR Shaders (beta)](#custom-swtor-shaders).
 
-		Click on the file icon to produce a file browser dialog window where to select a such a Blender project file, or type or copy its path inside the filepath field.
+		Click on the file icon to produce a file browser dialog window where to select such a Blender project file, like the one linked in the second step of the installation instructions, or type or copy its path inside the filepath field.
         
 The Add-on's tools will appear in the 3D Viewport's Sidebar ('n' key), in the "ZG SWTOR" tab.
 
