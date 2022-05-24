@@ -29,15 +29,16 @@ The installation of the Add-on in Blender follows the usual directions:
 2. In Blender, go to Edit menu > Preferences option > Add-ons tab > Install… button.
 3. Select the Add-on in the file dialog box and click on the Install Add-on button.
 4. The Add-on will appear in the Add-ons list with its checkbox un-ticked. Tick it to enable the Add-on.
-5. Twirl the arrow preceding the check-box to reveal some information and, most importantly, **the Add-on's Preference settings**. Filling those is crucial for some of the tools to work correctly.
+5. Twirl the arrow preceding the check-box to reveal some information and, most importantly, **the Add-on's Preference settings**. Filling those is crucial for some of the tools to work correctly. They are:
 
-  Note that it asks for **the path of a "resources" folder**.
+	![](/doc_files/010.png)
+	* **Path of a "resources" folder**: some of the Add-on's features depend on looking for information and game assets inside a SWTOR assets extraction (typically produced by apps such as SWTOR Slicers or EasyMYP). In the case of a SWTOR Slicers extraction, the "resources" folder is inside the folder set as that app's Output Folder.
+	
+		Click on the folder icon to produce a file browser dialog window where to locate the "resources" folder, or type or copy its path inside the filepath field.
+		
+	* **Path to a Custom Shaders .blend file (if any)**: needed for a tool that allows us to replace the current .gr2 Add-on's modern SWTOR shaders with custom ones held in template-like Blender files, meant for us to experiment with and improve upon. See: [Custom SWTOR Shaders (beta)](#custom-swtor-shaders).
 
-  ![](/doc_files/010.png)
-
-  Some of the Add-on's features depend on looking for information and game assets inside a SWTOR assets extraction (typically produced by apps such as SWTOR Slicers or EasyMYP). In the case of a SWTOR Slicers extraction, the "resources" folder is inside the folder set as that app's Output Folder.
-    
-  Click on the folder icon to produce a file browser dialog window where to locate the "resources" folder, or type or copy the folder path inside the filepath field.
+		Click on the file icon to produce a file browser dialog window where to select a such a Blender project file, or type or copy its path inside the filepath field.
         
 The Add-on's tools will appear in the 3D Viewport's Sidebar ('n' key), in the "ZG SWTOR" tab.
 
