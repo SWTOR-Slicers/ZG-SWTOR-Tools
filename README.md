@@ -5,7 +5,7 @@ This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: 
 * [Installation.](#installation)
 * [Materials Tools:](#swtor-materials-tools)
   * [Process Uber Materials.](#process-uber-materials)
-  * [Custom SWTOR Shaders (beta):](#custom-swtor-shaders)
+  * [**NEW!!!** Custom SWTOR Shaders (beta):](#custom-swtor-shaders)
 	  * [Add Custom SWTOR Shaders.](#add-custom-swtor-shaders)
 	  * [Convert to Custom SWTOR Shaders.](#convert-to-custom-swtor-shaders)
 	  * [About the included Custom Shaders.](#about-the-included-custom-shaders)
