@@ -53,6 +53,7 @@ The current tools are:
 
 ### Process Uber Materials.
 ![](/images/zg_ui_010.png)
+
 **Requirements:**
 * **Selecting a "resources" folder in this Add-on's preferences settings.**
 * **An enabled SWTOR .gr2 Add-on, be it the Legacy or the modern current one.**
@@ -74,6 +75,7 @@ As some sets of objects, such as spaceship interiors, can easily have a hundred 
 
 ### Custom SWTOR Shaders.
 ![](/images/zg_ui_020.png)
+
 **THIS FEATURE IS IN A BETA STAGE. It shouldn't break anything but itself at its worst, though.**
 
 **Requirements:**
@@ -168,6 +170,7 @@ That said, we should point out that these shaders, as such, are meant to be furt
 
 ### Deduplicate Scene's Nodegroups.
 ![](/images/zg_ui_030.png)
+
 **Requirements: none.**
 
 Consolidates all duplicates of a node in the scene ("node.001", "node.002", etc.) so that they become instances of the original instead of independent ones. The copies are marked as "zero users" so that, after saving the project, the next time it is opened they will be discarded (that's how Blender deals with such things).
@@ -175,6 +178,7 @@ Consolidates all duplicates of a node in the scene ("node.001", "node.002", etc.
 
 ### Set Backface Culling On/Off.
 ![](/images/zg_ui_040.png)
+
 **Requirements: none.**
 
 It sets all the materials in the selected objects' Backface Culling setting to on or off (the setting is fully reversible). Many SWTOR objects, especially floors, walls, and ceilings of spaceships and some buildings, are single-sided by nature, which ought to make their sides facing away from the camera invisible. Blender, by default, renders single-sided objects as double-sided unless Backface Culling is enabled.
@@ -192,7 +196,8 @@ When assembling multi-object locations, it's typical that a same material is sha
 ## SWTOR Objects Tools:
 
 ### Quickscaler.
-![](/images/zg_ui_060.png)
+![](/images/zg_ui_050.png)
+
 **Requirements: a selection of objects.**
 
 Scales all selected objects up or down by a factor, preserving their relative distances if their origins don't match. The idea behind the tool is to be able to quickly upscale all objects of a character or a scene to real life-like sizes (1 Blender unit = 1 m. or equivalent), as Blender requires such sizes to successfully calculate things like automatic weightmaps, physics, etc.
@@ -204,7 +209,8 @@ Any number between 1 and 100 can be manually entered. Recommended factors are:
 * Around 7-8 for more realistic human heights.
 
 ### Merge Double Vertices.
-![](/images/zg_ui_070.png)
+![](/images/zg_ui_060.png)
+
 **Requirements: a selection of objects.**
 
 Merges "duplicate" vertices (applies a "Merge By Distance" with a tolerance of 0.000001 m.), which usually solves many issues when fusing body parts or applying Subdivision or Multiresolution Modifiers.
@@ -214,7 +220,8 @@ Merges "duplicate" vertices (applies a "Merge By Distance" with a tolerance of 0
 * Also, it sets each object's Auto Smooth to On (it's typically on by default, but, just in case…).
 
 ### Modifiers Tools.
-![](/images/zg_ui_080.png)
+![](/images/zg_ui_070.png)
+
 **Requirements: a selection of objects.**
 
 They add to all selected objects Modifiers like Subdivision or Multires (for hiding SWTOR's models' low poly nature) and Displace and Solidify (to facilitate gear-over-full body workflows), with sensible settings as an easy starting point. There is a Modifiers removal button that only affects those Modifier types, preserving any other, such as the Armature modifier that results from parenting a skeleton. Also, there are buttons for moving such Armature modifiers to the top or the bottom of the Modifier Stack, for both usefulness and experimentation.
@@ -226,7 +233,8 @@ They add to all selected objects Modifiers like Subdivision or Multires (for hid
 For now these are simply a few already existing Blender tools that are a little too buried inside their panels and would be nice to have more at hand.
 
 ### Set all .dds to Raw/Packed.
-![](/images/zg_ui_090.png)
+![](/images/zg_ui_080.png)
+
 **Requirements: none.**
 
 It sets all images in the blender project whose names end with the .dds extension to Color Space: Raw and Alpha: Channel Packed, which are the settings our SWTOR shaders expect in order to work properly.
@@ -234,19 +242,22 @@ It sets all images in the blender project whose names end with the .dds extensio
 (It's typical to set some texturemap images, such as complexion maps, to sRGB because that makes them appear a little bit darker. Such a thing should be no longer necessary by using the new customizable shaders' extra Complexion Gamma settings).
 
 ### Simplify.
-![](/images/zg_ui_100.png)
+![](/images/zg_ui_090.png)
+
 **Requirements: a selection of objects.**
 
 Usually in the Properties Editor > Render Properties >Simplify section, it lets us temporarily switch a few common and somewhat costly options, such as Subdivision Modifiers' levels, number of particles, etc., to lower values, at the scene level. For example, we can disable subdivision while animating a character, which will make its meshes react to our posing far faster.
 
 ### Pose Position / Rest Position.
-![](/images/zg_ui_100.png)
+![](/images/zg_ui_090.png)
+
 **Requirements: a selection of objects including an armature.**
 
 It shows the Pose Position and Rest Position buttons that appear at the Properties Editor > Object Properties, Skeleton section when a skeleton is selected, letting us quickly alternate between those two states. It only acts on the Active armature (the Active Object that happens to be an armature at the moment) instead of all selected armatures. Having it act on all of them is in the works.
 
 ### Camera to View.
-![](/images/zg_ui_100.png)
+![](/images/zg_ui_090.png)
+
 **Requirements: none.**
 
 Same checkbox as View Tab > View Lock section > Lock Camera to View, for easily switching from framing the scene from the camera POV to keeping the camera unaffected while navigating the viewport.
