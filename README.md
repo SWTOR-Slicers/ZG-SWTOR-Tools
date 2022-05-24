@@ -29,31 +29,33 @@ This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: 
 The installation of the Add-on in Blender follows the usual directions:
 
 1. [**Download the Add-on's "zg_swtors_tool.zip" file from this link**](https://github.com/ZeroGravitasIndeed/zg_swtor_tools/raw/main/zg_swtor_tools.zip). Don't unZip it: it's used as such .zip.
-2. In Blender, go to Edit menu > Preferences option > Add-ons tab > Install… button.
-3. Select the Add-on in the file dialog box and click on the Install Add-on button.
-4. The Add-on will appear in the Add-ons list with its checkbox un-ticked. Tick it to enable the Add-on.
-5. Twirl the arrow preceding the check-box to reveal some information and, most importantly, **the Add-on's Preference settings**. Filling those is crucial for some of the tools to work correctly. They are:
+2. [**Download the "custom_swtor_shaders.zip" file from this link**](https://github.com/ZeroGravitasIndeed/zg_swtor_tools/raw/main/custom_swtor_shaders.zip). UnZip this one and keep the resulting Blender file somewhere in handy.
+3. In Blender, go to Edit menu > Preferences option > Add-ons tab > Install… button.
+4. Select the Add-on in the file dialog box and click on the Install Add-on button.
+5. The Add-on will appear in the Add-ons list with its checkbox un-ticked. Tick it to enable the Add-on.
+6. Twirl the arrow preceding the check-box to reveal some information and, most importantly, **the Add-on's Preference settings**. Filling those is crucial for some of the tools to work correctly. They are:
 
-	![](/images/010.png)
+	![](/images/zg_010.png)
 	* **Path of a "resources" folder**: some of the Add-on's features depend on looking for information and game assets inside a SWTOR assets extraction (typically produced by apps such as SWTOR Slicers or EasyMYP). In the case of a SWTOR Slicers extraction, the "resources" folder is inside the folder set as that app's Output Folder.
 	
 		Click on the folder icon to produce a file browser dialog window where to locate the "resources" folder, or type or copy its path inside the filepath field.
 		
 	* **Path to a Custom Shaders .blend file (if any)**: needed for a tool that allows us to replace the current .gr2 Add-on's modern SWTOR shaders with custom ones held in one Blender file, meant for us to experiment with and improve upon. See: [Custom SWTOR Shaders (beta)](#custom-swtor-shaders).
 
-		Click on the file icon to produce a file browser dialog window where to select a such a Blender project file, or type or copy its path inside the filepath field.
+		Click on the file icon to produce a file browser dialog window where to select such a Blender project file, like the one linked in the second step of the installation instructions, or type or copy its path inside the filepath field.
         
 The Add-on's tools will appear in the 3D Viewport's Sidebar ('n' key), in the "ZG SWTOR" tab.
 
-![](/images/020.png)
+![](/images/zg_020.png)
 
 The current tools are:
 
 ## SWTOR Materials Tools:
 
 ### Process Uber Materials.
-**Requirements:**
+![](/images/zg_ui_010.png)
 
+**Requirements:**
 * **Selecting a "resources" folder in this Add-on's preferences settings.**
 * **An enabled SWTOR .gr2 Add-on, be it the Legacy or the modern current one.**
 * **A selection of objects.**
@@ -73,6 +75,8 @@ As some sets of objects, such as spaceship interiors, can easily have a hundred 
 **If a selected object's material is shared with objects that haven't been selected** (and that's very typical in architectural objects like spaceships or buildings) **they'll show those processed materials, too, as if they would have been included in the selection.** This is their expected behavior. If needed, the way to avoid this would be to isolate the material we don't want to be processed by changing its name to one that doesn't exist in SWTOR's shaders folder.
 
 ### Custom SWTOR Shaders.
+![](/images/zg_ui_020.png)
+
 **THIS FEATURE IS IN A BETA STAGE. It shouldn't break anything but itself at its worst, though.**
 
 **Requirements:**
@@ -113,7 +117,7 @@ It goes through all the materials in a selection of objects, detects the presenc
 * **Link instead of Append**: it works exactly like in the previous tool.
 * **Preserve Original Shaders**: it doesn't delete the original modern shaders, simply pushing them aside inside the material, unlinked. If anything were to go wrong, sometime further on our experimentations, we can always unlink the customizable ones and relink the originals. This option is on by default.
 
-	![](/images/040.png)
+	![](/images/zg_040.png)
 
 #### About the included custom shaders:
 Alongside this Add-on's .zip file, there comes a sample .blend file holding just the customizable shaders. It can be renamed and stored wherever however and wherever we want, although we should decide a stable location for it and its derivatives, and moving it somewhere else after being applied in linked mode would lead to having to tell each Blender project using it where it was moved to.
@@ -134,7 +138,7 @@ Everything else inside these Blender project files can be altered any way we wan
 #### Custom Shader Extras:
 Just as a first example of adding custom stuff to the shaders, the ones included in the .blend file come with a few extras already, not just in their inputs and settings but in their outputs, too:
 
-![](/images/050.png)
+![](/images/zg_050.png)
 
 Inputs:
 * **Specular and Roughness strength**: they try to simulate the Principled BSDF shader's settings of the same name.
@@ -166,12 +170,16 @@ That said, we should point out that these shaders, as such, are meant to be furt
 
 
 ### Deduplicate Scene's Nodegroups.
+![](/images/zg_ui_030.png)
+
 **Requirements: none.**
 
 Consolidates all duplicates of a node in the scene ("node.001", "node.002", etc.) so that they become instances of the original instead of independent ones. The copies are marked as "zero users" so that, after saving the project, the next time it is opened they will be discarded (that's how Blender deals with such things).
 * It acts on all the nodes of a scene, and doesn't require a selection of objects.
 
 ### Set Backface Culling On/Off.
+![](/images/zg_ui_040.png)
+
 **Requirements: none.**
 
 It sets all the materials in the selected objects' Backface Culling setting to on or off (the setting is fully reversible). Many SWTOR objects, especially floors, walls, and ceilings of spaceships and some buildings, are single-sided by nature, which ought to make their sides facing away from the camera invisible. Blender, by default, renders single-sided objects as double-sided unless Backface Culling is enabled.
@@ -180,7 +188,7 @@ It sets all the materials in the selected objects' Backface Culling setting to o
 
 The usefulness of this tool becomes apparent when having to deal with interior scenes such as spaceship rooms, where we have to place models (characters, furniture, props.) while having the walls and ceilings occluding our view. There are cumbersome solutions to that, such as hiding polygons, playing with the camera clipping settings, or using a booleaning object to "eat" walls or ceilings away. This is simpler and faster. Also, it doesn't affect the rendering when placing the camera inside, as there the one-sided objects are facing the camera in the intended manner.
 
-![](/images/030.jpg)
+![](/images/zg_050.jpg)
 
 When assembling multi-object locations, it's typical that a same material is shared between several objects. That can lead to unselected objects showing the effects of this tool as if they would have been included in the selection. This is an expected behavior.
 
@@ -189,6 +197,8 @@ When assembling multi-object locations, it's typical that a same material is sha
 ## SWTOR Objects Tools:
 
 ### Quickscaler.
+![](/images/zg_ui_050.png)
+
 **Requirements: a selection of objects.**
 
 Scales all selected objects up or down by a factor, preserving their relative distances if their origins don't match. The idea behind the tool is to be able to quickly upscale all objects of a character or a scene to real life-like sizes (1 Blender unit = 1 m. or equivalent), as Blender requires such sizes to successfully calculate things like automatic weightmaps, physics, etc.
@@ -200,6 +210,8 @@ Any number between 1 and 100 can be manually entered. Recommended factors are:
 * Around 7-8 for more realistic human heights.
 
 ### Merge Double Vertices.
+![](/images/zg_ui_060.png)
+
 **Requirements: a selection of objects.**
 
 Merges "duplicate" vertices (applies a "Merge By Distance" with a tolerance of 0.000001 m.), which usually solves many issues when fusing body parts or applying Subdivision or Multiresolution Modifiers.
@@ -209,6 +221,8 @@ Merges "duplicate" vertices (applies a "Merge By Distance" with a tolerance of 0
 * Also, it sets each object's Auto Smooth to On (it's typically on by default, but, just in case…).
 
 ### Modifiers Tools.
+![](/images/zg_ui_070.png)
+
 **Requirements: a selection of objects.**
 
 They add to all selected objects Modifiers like Subdivision or Multires (for hiding SWTOR's models' low poly nature) and Displace and Solidify (to facilitate gear-over-full body workflows), with sensible settings as an easy starting point. There is a Modifiers removal button that only affects those Modifier types, preserving any other, such as the Armature modifier that results from parenting a skeleton. Also, there are buttons for moving such Armature modifiers to the top or the bottom of the Modifier Stack, for both usefulness and experimentation.
@@ -220,6 +234,8 @@ They add to all selected objects Modifiers like Subdivision or Multires (for hid
 For now these are simply a few already existing Blender tools that are a little too buried inside their panels and would be nice to have more at hand.
 
 ### Set all .dds to Raw/Packed.
+![](/images/zg_ui_080.png)
+
 **Requirements: none.**
 
 It sets all images in the blender project whose names end with the .dds extension to Color Space: Raw and Alpha: Channel Packed, which are the settings our SWTOR shaders expect in order to work properly.
@@ -227,16 +243,22 @@ It sets all images in the blender project whose names end with the .dds extensio
 (It's typical to set some texturemap images, such as complexion maps, to sRGB because that makes them appear a little bit darker. Such a thing should be no longer necessary by using the new customizable shaders' extra Complexion Gamma settings).
 
 ### Simplify.
+![](/images/zg_ui_090.png)
+
 **Requirements: a selection of objects.**
 
 Usually in the Properties Editor > Render Properties >Simplify section, it lets us temporarily switch a few common and somewhat costly options, such as Subdivision Modifiers' levels, number of particles, etc., to lower values, at the scene level. For example, we can disable subdivision while animating a character, which will make its meshes react to our posing far faster.
 
 ### Pose Position / Rest Position.
+![](/images/zg_ui_090.png)
+
 **Requirements: a selection of objects including an armature.**
 
 It shows the Pose Position and Rest Position buttons that appear at the Properties Editor > Object Properties, Skeleton section when a skeleton is selected, letting us quickly alternate between those two states. It only acts on the Active armature (the Active Object that happens to be an armature at the moment) instead of all selected armatures. Having it act on all of them is in the works.
 
 ### Camera to View.
+![](/images/zg_ui_090.png)
+
 **Requirements: none.**
 
 Same checkbox as View Tab > View Lock section > Lock Camera to View, for easily switching from framing the scene from the camera POV to keeping the camera unaffected while navigating the viewport.
