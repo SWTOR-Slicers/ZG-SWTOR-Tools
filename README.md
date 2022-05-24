@@ -5,9 +5,9 @@ This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: 
 * [Installation.](#installation)
 * [Materials Tools:](#swtor-materials-tools)
   * [Process Uber Materials.](#process-uber-materials)
-  * [Custom SWTOR Shaders:](#custom-swtor-shaders)
-  * * [Add Custom SWTOR Shaders.](add-custom-swtor-shaders)
-  * * [Convert to Custom SWTOR Shaders.](convert-to-custom-swtor-shaders)
+  * [Custom SWTOR Shaders (beta):](#custom-swtor-shaders)
+     * [Add Custom SWTOR Shaders.](add-custom-swtor-shaders)
+     * [Convert to Custom SWTOR Shaders.](convert-to-custom-swtor-shaders)
   * [Deduplicate Scene's Nodegroups.](#deduplicate-scenes-nodegroups)
   * [Set Backface Culling On/Off.](#set-backface-culling-onoff)
 * [Objects Tools:](#swtor-objects-tools)
@@ -39,9 +39,9 @@ The installation of the Add-on in Blender follows the usual directions:
     
   Click on the folder icon to produce a file browser dialog window where to locate the "resources" folder, or type or copy the folder path inside the filepath field.
         
-  The Add-on's tools will appear in the 3D Viewport's Sidebar ('n' key), in the "ZG SWTOR" tab.
+The Add-on's tools will appear in the 3D Viewport's Sidebar ('n' key), in the "ZG SWTOR" tab.
 
-  ![](/doc_files/020.png)
+![](/doc_files/020.png)
 
 The current tools are:
 
