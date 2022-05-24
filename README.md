@@ -8,6 +8,9 @@ This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: 
   * [Custom SWTOR Shaders (beta):](#custom-swtor-shaders)
 	  * [Add Custom SWTOR Shaders.](add-custom-swtor-shaders)
 	  * [Convert to Custom SWTOR Shaders.](#convert-to-custom-swtor-shaders)
+	  * [About the included Custom Shaders.](#about-the-included-custom-shaders)
+	  * [Shaders' Extras.](#about-the-included-custom-shaders)
+	  * [About the current Beta state.](#about-the-beta-state)
   * [Deduplicate Scene's Nodegroups.](#deduplicate-scenes-nodegroups)
   * [Set Backface Culling On/Off.](#set-backface-culling-onoff)
 * [Objects Tools:](#swtor-objects-tools)
@@ -102,8 +105,6 @@ It simply adds the customizable shaders to the currently open Blender project, w
 
 	This option is on by default except when editing a library file, in which case it wouldn't make sense to use linking.
 
-	![](/images/040.png)
-
 #### Convert to Custom SWTOR Shaders:
 **Doesn't require to previously use the Add Custom SWTOR Shaders**: it does that by itself.
 
@@ -111,6 +112,8 @@ It goes through all the materials in a selection of objects, detects the presenc
 
 * **Link instead of Append**: it works exactly like in the previous tool.
 * **Preserve Original Shaders**: it doesn't delete the original modern shaders, simply pushing them aside inside the material, unlinked. If anything were to go wrong, sometime further on our experimentations, we can always unlink the customizable ones and relink the originals. This option is on by default.
+
+	![](/images/040.png)
 
 #### About the included custom shaders:
 Alongside this Add-on's .zip file, there comes a sample .blend file holding just the customizable shaders. It can be renamed and stored wherever however and wherever we want, although we should decide a stable location for it and its derivatives, and moving it somewhere else after being applied in linked mode would lead to having to tell each Blender project using it where it was moved to.
@@ -130,7 +133,9 @@ Everything else inside these Blender project files can be altered any way we wan
 
 #### Custom Shader Extras:
 Just as a first example of adding custom stuff to the shaders, the ones included in the .blend file come with a few extras already, not just in their inputs and settings but in their outputs, too:
+
 ![](/images/050.png)
+
 Inputs:
 * **Specular and Roughness strength**: they try to simulate the Principled BSDF shader's settings of the same name.
 * **Emission Strength**: for turning dashboard and gear's glowy bits decidedly incandescent! 
@@ -153,7 +158,7 @@ These channels are mostly there for experimenting with adding our own node trees
 
 * **DirectionMap Vector**: as DirectionMaps (a kind of anisotropic glossmap used in hairs, some species' furs and skins, and other cases) require pre-calculated data that is internally generated in the automatic modern shaders, this is a bit of a cludgey way to produce that information and link it to the DirectionMaps' vector input. The Converter tool puts those links by itself.
 
-#### About the beta stage:
+#### About the beta state:
 The Add-on, as it is now, needs work in things like failing gracefully to errors, providing support for older Blender and .gr2 add-on versions, refining the existing extra features (for example, per dye area-Spec/Rough/Emissive/Normal strength settings), and most probably rearranging the shaders' node trees into something a bit more wieldable.
 
 That said, we should point out that these shaders, as such, are meant to be further customized and evolved by everybody based on their particular interests. For example, the current implementation of glossiness is meant to replicate SWTOR's own, but someone might prefer to discard that and do their own Blender specular node or Principled BSDF node-based one, or substitute its Flush Tone-based pseudo-subsurface scattering effect with Blender's own, add adjustable noise-based skin pores, etc. The sky is the limit.
