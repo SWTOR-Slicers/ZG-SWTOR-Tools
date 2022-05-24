@@ -9,7 +9,7 @@ This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: 
 	  * [Add Custom SWTOR Shaders.](#add-custom-swtor-shaders)
 	  * [Convert to Custom SWTOR Shaders.](#convert-to-custom-swtor-shaders)
 	  * [About the included Custom Shaders.](#about-the-included-custom-shaders)
-	  * [Shaders' Extras.](#about-the-included-custom-shaders.)
+	  * [Shaders' Extras.](#custom-shaders-extras)
 	  * [About the current Beta state.](#about-the-beta-state)
   * [Deduplicate Scene's Nodegroups.](#deduplicate-scenes-nodegroups)
   * [Set Backface Culling On/Off.](#set-backface-culling-onoff)
