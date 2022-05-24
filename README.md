@@ -49,6 +49,12 @@ The current tools are:
 ## SWTOR Materials Tools:
 
 ### Process Uber Materials.
+**Requirements:
+
+* Selecting a "resources" folder in this Add-on's preferences settings.
+* An enabled SWTOR .gr2 Add-on, be it the Legacy or the modern current one.
+* A selection of objects.**
+
 Processes all the Uber-type materials detected in a selection of objects, locating their related texturemaps and linking them to a SWTOR Uber shader (modern or legacy, whichever are active). It processes any EmissiveOnly-type (glass) materials, too. It's particularly fast, as it (only) works with an asset extraction's "resources" folder.
 
 Options:
@@ -64,6 +70,12 @@ As some sets of objects, such as spaceship interiors, can easily have a hundred 
 **If a selected object's material is shared with objects that haven't been selected** (and that's very typical in architectural objects like spaceships or buildings) **they'll show those processed materials, too, as if they would have been included in the selection.** This is their expected behavior. If needed, the way to avoid this would be to isolate the material we don't want to be processed by changing its name to one that doesn't exist in SWTOR's shaders folder.
 
 ### Custom SWTOR Shaders.
+Requirements:
+
+* Selecting a template .blend file in this Add-on's preferences settings.
+* An enabled current modern SWTOR .gr2 Add-on, only needed at the moment this tool is being used (supporting the Legacy one is being condidered).
+* A selection of objects.
+
 As convenient as our modern, *smart* SWTOR shaders for Blender are, especially for the novice (no dangling texturemap nodes, not having to manually adjust Material or texturemap images' settings, no risk of overwriting template materials), they are a little harder to customize than the previous, now Legacy ones. Both versions, being generated programmatically (the .gr2 Add-ons' code produce them on the fly while importing SWTOR object files), are harder to customize in a reusable manner, too: most modifications can be done once applied to objects, but those modifications have to be redone or copied (if feasible) between projects.
 
 So, what we've done here is two things:
@@ -107,10 +119,14 @@ It goes through all the materials in a selection of objects, detects the presenc
 
 
 ### Deduplicate Scene's Nodegroups.
+Requirements: none.
+
 Consolidates all duplicates of a node in the scene ("node.001", "node.002", etc.) so that they become instances of the original instead of independent ones. The copies are marked as "zero users" so that, after saving the project, the next time it is opened they will be discarded (that's how Blender deals with such things).
 * It acts on all the nodes of a scene, and doesn't require a selection of objects.
 
 ### Set Backface Culling On/Off.
+Requirements: none.
+
 It sets all the materials in the selected objects' Backface Culling setting to on or off (the setting is fully reversible). Many SWTOR objects, especially floors, walls, and ceilings of spaceships and some buildings, are single-sided by nature, which ought to make their sides facing away from the camera invisible. Blender, by default, renders single-sided objects as double-sided unless Backface Culling is enabled.
 * It **doesn't** depend on the presence of a .gr2 importer Add-on: this setting works in any kind of Blender material, no matter if SWTOR-based or any other kind.
 * **The setting only acts through the Eevee renderer** (either while in Viewport Shading mode or as a final renderer). Cycles enforces double-sidedness, despite ticking the Material Properties Inspector's Backface Culling checkbox. If the intention is to do the final render through Cycles, a dual 3D Viewer setup, one in Material Preview mode (Eevee) and the other displaying the Render Preview might be the best way to finetune lighting and texturing. 
@@ -126,6 +142,8 @@ When assembling multi-object locations, it's typical that a same material is sha
 ## SWTOR Objects Tools:
 
 ### Quickscaler.
+Requirements: a selection of objects.
+
 Scales all selected objects up or down by a factor, preserving their relative distances if their origins don't match. The idea behind the tool is to be able to quickly upscale all objects of a character or a scene to real life-like sizes (1 Blender unit = 1 m. or equivalent), as Blender requires such sizes to successfully calculate things like automatic weightmaps, physics, etc.
 
 **Cameras, lights and armatures are correctly scaled, and it acts only on non-parented and parent objects**, to avoid double-scaling children objects (typically, objects parented to a skeleton). **Objects set as insensitive to selection operations in the Outliner aren't affected by this tool**.
@@ -135,6 +153,8 @@ Any number between 1 and 100 can be manually entered. Recommended factors are:
 * Around 7-8 for more realistic human heights.
 
 ### Merge Double Vertices.
+Requirements: a selection of objects.
+
 Merges "duplicate" vertices (applies a "Merge By Distance" with a tolerance of 0.000001 m.), which usually solves many issues when fusing body parts or applying Subdivision or Multiresolution Modifiers.
 * Requires a selection of one or several game objects.
 * When selecting multiple objects, the tool acts on each of them separately so as not to merge vertices of different objects by accident.
@@ -142,6 +162,8 @@ Merges "duplicate" vertices (applies a "Merge By Distance" with a tolerance of 0
 * Also, it sets each object's Auto Smooth to On (it's typically on by default, but, just in case…).
 
 ### Modifiers Tools.
+Requirements: a selection of objects.
+
 They add to all selected objects Modifiers like Subdivision or Multires (for hiding SWTOR's models' low poly nature) and Displace and Solidify (to facilitate gear-over-full body workflows), with sensible settings as an easy starting point. There is a Modifiers removal button that only affects those Modifier types, preserving any other, such as the Armature modifier that results from parenting a skeleton. Also, there are buttons for moving such Armature modifiers to the top or the bottom of the Modifier Stack, for both usefulness and experimentation.
 
 * Requires a selection of one or several game objects.
@@ -151,15 +173,23 @@ They add to all selected objects Modifiers like Subdivision or Multires (for hid
 For now these are simply a few already existing Blender tools that are a little too buried inside their panels and would be nice to have more at hand.
 
 ### Set all .dds to Raw/Packed.
+Requirements: none.
+
 It sets all images in the blender project whose names end with the .dds extension to Color Space: Raw and Alpha: Channel Packed, which are the settings our SWTOR shaders expect in order to work properly.
 * It acts on all the images of a scene, and doesn't require a selection of objects.
 (It's typical to set some texturemap images, such as complexion maps, to sRGB because that makes them appear a little bit darker. Such a thing should be no longer necessary by using the new customizable shaders' extra Complexion Gamma settings).
 
 ### Simplify.
+Requirements: a selection of objects.
+
 Usually in the Properties Editor > Render Properties >Simplify section, it lets us temporarily switch a few common and somewhat costly options, such as Subdivision Modifiers' levels, number of particles, etc., to lower values, at the scene level. For example, we can disable subdivision while animating a character, which will make its meshes react to our posing far faster.
 
 ### Pose Position / Rest Position.
+Requirements: a selection of objects including an armature.
+
 It shows the Pose Position and Rest Position buttons that appear at the Properties Editor > Object Properties, Skeleton section when a skeleton is selected, letting us quickly alternate between those two states. It only acts on the Active armature (the Active Object that happens to be an armature at the moment) instead of all selected armatures. Having it act on all of them is in the works.
 
 ### Camera to View.
+Requirements: none.
+
 Same checkbox as View Tab > View Lock section > Lock Camera to View, for easily switching from framing the scene from the camera POV to keeping the camera unaffected while navigating the viewport.
