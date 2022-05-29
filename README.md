@@ -82,7 +82,7 @@ As some sets of objects, such as spaceship interiors, can easily have a hundred 
 **Requirements:**
 
 * **Blender 3.x** (Blender 2.8x-9.x support coming soon).
-* * **Selecting a custom SWTOR shaders-holding .blend file in this Add-on's preferences settings.**
+* **Selecting a custom SWTOR shaders-holding .blend file in this Add-on's preferences settings.**
 * **An enabled latest version of the SWTOR .gr2 Add-on, only needed at the very moment this tool is being used (supporting the Legacy one is being considered).**
 * **A selection of objects.**
 
