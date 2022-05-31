@@ -103,9 +103,9 @@ What are the advantages to this?
 So, how does this work on a practical level? The available tools are:
 
 #### Add Custom SWTOR Shaders:
-This tool is only needed if we want to add the shaders to a Blender project that has no previously textured SWTOR objects we could just convert. It simply adds them to the currently open Blender project: they'll become available through add > Group submenu (the ones at the add > SWTOR submenu, too, are the usual modern shaders instead). This tool is disabled if we happen to be editing the .blend file we selected as a library in the Add-on's preference settings, to avoid accidental duplications or loopbacks. Its options are:
+This tool is only needed if we want to add the shaders to a Blender project that has no previously textured SWTOR objects we could just convert. It simply adds them to the currently open Blender project: they'll become available through add > Group submenu (the ones in the add > SWTOR submenu are the usual modern shaders, instead). This tool is disabled if we happen to be editing the .blend file we selected as a library in the Add-on's preference settings, to avoid accidental duplications or loopbacks. Its options are:
 
-* **Link instead of Append**: as explained, Append adds a fully modifiable copy of the shaders. Link, instead, inserts instances of the shaders stored in the library .blend project. We can adjust their settings noremally, but we won't be able to modify the nodes inside their node groups. There are ways to edit both the library and the working project at once, by using two instances of Blender, each opening each file, and reverting the working project every time we save a change in the library one.
+* **Link instead of Append**: as explained, Append adds a fully modifiable copy of the shaders. Link, instead, inserts instances of the shaders stored in the library .blend project. We can adjust their settings normally, but we won't be able to modify the nodes inside their nodegroups. There are ways to edit both the library and the working project at once, by using two instances of Blender, each opening each file, and saving-and-reverting the working project every time we save a change in the library one.
 
 	This option is on by default except when editing a library file, in which case it wouldn't make sense to use linking.
 
