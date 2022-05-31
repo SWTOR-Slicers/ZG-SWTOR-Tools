@@ -135,7 +135,7 @@ The only rule for the [**Convert to Custom SWTOR Shaders**](#convert-to-custom-s
 
 All the auxiliary custom shaders inside their nodegroups have been renamed by adding a "SW Aux - " prefix (e.g.: "SW Aux - ManipulateHSL"). Such renaming helps us avoid conflicts with the original .gr2 Add-on's own shaders, as we might want to modify the auxiliary shaders, too (some are already modified). Strictly speaking, in the case of these auxiliary shaders, they only need to have different names to the originals. it's in the main ones' case where we need to keep the names stated above.
 
-These shader library Blender projects don't need to be kept empty of objects and texturemaps. Actually, the most convenient thing to do would be to populate them with objects representative of the shaders' usage, so that we can try stuff on them. Say, some ship interiors for the Uber shader; some animals for the Creature one; Player Characters of diverse species for SkinB, HairC and Eye, some armor sets for the Garment shader… We haven't pre-populated the downloadable sample project in this repository because of both copyright-related reasons and file sizes.
+These shader library Blender projects don't need to be kept empty of objects and texturemaps. Actually, the most convenient thing to do would be to populate them with objects representative of the shaders' usage, so that we can try stuff on them. Say, some ship interiors for the Uber shader; some animals for the Creature one; Player Characters of diverse species for SkinB, HairC and Eye, some armor sets for the Garment shader… I haven't pre-populated the downloadable sample project in this repository because of both copyright-related reasons and file sizes.
 
 #### Custom Shader Extras:
 Just as a first example of adding custom stuff to the shaders, the ones included in the .blend file come with a few extras already, not just in their inputs and settings but in their outputs, too. They are rather tentative and far from perfect, mostly a suggestion of what can be done.
@@ -143,9 +143,17 @@ Just as a first example of adding custom stuff to the shaders, the ones included
 ![](/images/zg_050.png)
 
 Extra Inputs:
-* **Specular and Roughness strength**: they try to simulate the Principled BSDF shader's settings of the same name.
+* **Specular and Roughness strength**: All shaders have them. They try to simulate the Principled BSDF shader's settings of the same name, but don't work in exactly the same way.
+
+  The .gr2 Add-on's modern shaders, instead of using Blender's Glossy shader or the Principled BSDF one (save in one specific case) to produce glossiness, replicate the way SWTOR calculates it and adds it to the diffuse color before feeding it to a diffuse shader (which is one of the reasons baking textures with them requires presents some problems).
+  
+  As I don't fully understand how it works yet and whether producing a PBR specular/roughness-like through it is doable or not while keeping it identical with default values, what I've done is something that *looks like* such functionality by using the roughness strength input to both feed Blender's Glossy BSDF shader's roughness input and crossfade its results with the original SWTOR shading system.
+  
+  So, instead of the standard roughness range between 0 and 1, here 1 means SWTOR's "natural" results. Most of these extras assume that 1 means default SWTOR-like.
+  
+  As for the specular strength input, it just multiplies the SWTOR-type specular by it, 1 being the game's original look.
 * **Emission Strength**: for turning control panels, capital ship windows, gear's glowy bits and others decidedly incandescent! 
-* **Normal Strength**: raised above 1.0, it emphasizes objects's surface relief, if in a somewhat wonky way. It doesn't work terribly great on solid surface objects, but in characters it provides a very striking "**League of Legends: Arcane**" look (which in the series was achieved through hand-painted textures), so, we suspect it's going to be a favorite.
+* **Normal Strength**: raised above 1.0, it emphasizes objects's surface relief, if in a somewhat wonky way. It doesn't work terribly great on solid surface objects, but in characters it provides a very striking "**League of Legends: Arcane**" look (which in the series was achieved through hand-painted textures), so, I suspect it's going to be a favorite.
 * **Transparency**: this is a global material transparency factor, unrelated to its opacity map. Its main mission is to allow us to invisibilize a part of an object, such as the feet of a Player Character that has been turned into a single mesh and happens to be poking through its boots.
 * **Complexion Gamma**: to contrast a character's complexion texturemap without the need to switch its Color Space to sRGB or interpose some color correction node.
 * **Scar Gamma, Color and Normal Strength**, to adjust scars and age maps just the way we want them.
@@ -167,7 +175,7 @@ These channels are mostly there for experimenting with adding our own node trees
 #### About the beta state:
 The Add-on, as it is now, needs work in things like failing gracefully to errors, providing support for older Blender and .gr2 add-on versions, refining the existing extra features (for example, per dye area-Spec/Rough/Emissive/Normal strength settings), and most probably rearranging the shaders' node trees into something a bit more wieldable.
 
-That said, we should point out that these shaders, as such, are meant to be further customized and evolved by any of us based on our particular interests. For example, the current implementation of glossiness is meant to replicate SWTOR's own, but someone might prefer to discard that and do their own Blender Specular node or Principled BSDF node-based one, or substitute SWTOR's Flush Tone-based pseudo-subsurface scattering effect with Blender's own, add adjustable noise-based skin pores, etc.
+That said, I should point out that these shaders, as such, are meant to be further customized and evolved by any of us based on our particular interests. For example, the current implementation of glossiness is meant to replicate SWTOR's own, but someone might prefer to discard that and do their own Blender Specular node or Principled BSDF node-based one, or substitute SWTOR's Flush Tone-based pseudo-subsurface scattering effect with Blender's own, add adjustable noise-based skin pores, etc.
 
 The downloadable shader library file is just an example of a starting point. The sky is the limit.
 
@@ -221,7 +229,7 @@ Merges "duplicate" vertices (applies a "Merge By Distance" with a tolerance of 0
 * When selecting multiple objects, the tool acts on each of them separately so as not to merge vertices of different objects by accident.
 * To correct any possible normals problems derived from the operation, it performs a face area normals' averaging operation, too.
 * Also, it sets each object's Auto Smooth to On (it's typically on by default, but, just in case…).
-If we intend to subdivide objects such as weapons or some bits of armor that happen to be very simplistic, we suggest to test that subdividing immediately after merging doubles to check that there won't be problems that require additional massaging. That, or keeping non-merged duplicates of the objects, just in case we have to backtrack. 
+If we intend to subdivide objects such as weapons or some bits of armor that happen to be very simplistic, I suggest to test that subdividing immediately after merging doubles to check that there won't be problems that require additional massaging. That, or keeping non-merged duplicates of the objects, just in case we have to backtrack. 
 
 ### Modifiers Tools.
 ![](/images/zg_ui_070.png)
