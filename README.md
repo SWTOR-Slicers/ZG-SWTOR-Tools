@@ -169,14 +169,24 @@ Extra Inputs, in most shaders:
 A few additional, shader-specific inputs:
 
 In the **SkinB Shader**:
-* **Complexion Gamma**: to contrast a character's complexion texturemap without the need for the old trick of switching its Color Space to sRGB or interposing some color correction node.
-* **Scar Gamma, Color and Normal Strength**, to adjust scars and age maps in intensity, color, and appearance of bumpiness.
-* **Skin Pores Density and Strength**: its a Voronoi noise-based bump effect that simulates skin pores with a certain amount of success. It uses some other textures' channels to attenuate its effect in regions of the face where it's obvious it doesn't work too well, like the lips, and it's very much a work in progress: it looks weird in joined, double vertices-merged, subdivided bodies unless one raises the density. Given that, it might receive new parameters in the future (XYZ scaling factors or the like).
+* **Complexion Strength**: it controls the contrast of a character's complexion texturemap without the need for the old trick of switching its Color Space to sRGB or interposing some color correction node. Internally, it uses a Photoshop's Levels-like Gamma value.
+* **FacePaint Strength**: it's a mixing value for a character's make-up, tattoo, pattern and others in the FacePaint texturemap. Not only allows for fading those but it can be raised above 1 and give their alpha channels more density and, so, more opacity, especially in cases like tattoos where the alphas aren't fully opaque but a little transparent and noisy to suggest skin detail underneath.
+* **Multiplied Tattoos Color, Mask, and Strength**: these are a simpler way to make tattoos that works very well with Blender's 3D texture painting system. Instead of using images with alpha channels to stamp make-up or tattoo images over the base skin texture, it applies them in the style of Photoshop's Multiply layer transfer mode. At its simplest, we choose a color (say, black), load a greyscale image as the mask, and adjust its opacity to taste. As it's not an opaque layer but a multiplied one, it ought to reinforce all the skin texture detail underneath. And, being the mask a simple greyscale image instead of the alpha of a RGBA one, it's easier to use by the 3D painting system in Blender. White or grey in the mask means ink, just as SWTOR's FacePaint alpha channels do, but that could be changed if you feel it's counterintuitive.
+
+  It can be made more complex by using a multicolor texture in the color input. The thing is, its colors ought to mix in a manner more tattoo ink-like than using the FacePaint system.
+  
+  This Multiplied tattoo layer sits under the FacePaint one, so, one can use both at once.
+* **Scar Strength, Color and Normal Strength**, to adjust scars and age maps in intensity (Gamma), color, and appearance of bumpiness through Normal map strength.
+* **Skin Pores Density, Strength, and auxiliary Holdout Mask**: it's a Voronoi noise-based bump effect that simulates skin pores with a certain amount of success. It takes advantage of other already existing texture channels to attenuate its effect in regions of the face where it's obvious it doesn't work too well, like the lips, and it's mostly an illusion of skin pores that holds up if one squints a lot 😅.
+
+  A problem with its Density input is that such density is dependent on the object's base size (independent of object scaling): for example, a head object will need a far lower density figure than a joined single mesh full body. Experimentation is advised.
+  
+  As the diverse channels of information in SWTOR's textures can only do so much in a generalized way, there is a Skin Pores Holdout Mask that allows for manually (or through custom channel mixing trickery) protecting areas of sking from the pores effect. For example: if we use the blue channel of a Devaronian's PaletteMaskMap (`_h`) texturemap and contrast it a little, we can isolate the horns and keep them from showing pores. Black or dark occludes the effect.
 
 In the **Eye Shader**:
-* **Emission Strength: as mentioned, it only shows its effects in species with naturally glowy eyes like the Chiss.
-* **In-Shadow Compensation: as it is easy for the eyes of a character to get lost inside the face's shadows, this allows for adding a bit of emissiveness to compensate.
-* **Dark Side Glow Strength and Tint: Sith Glowy Eyes!!! As it is done right now, it uses as a base the character's eye texture without the re-color that the character uses, as most eye textures have warm colors that will give the typical Sith glowy amber look when mixed in. Still, there is a tinting color well for finetuning or completely altering the effect: to cancel the tinting, just set the color's saturation to zero (either the S of HSV to zero, or all RGB to equal values).
+* **Emission Strength**: as mentioned, it only shows its effects in species with naturally glowy eyes like the Chiss.
+* **In-Shadow Compensation**: as it is easy for the eyes of a character to get lost inside the face's shadows, this allows for adding a bit of emissiveness to compensate.
+* **Dark Side Glow Strength and Tint**: Sith Glowy Eyes!!! As it is done right now, it uses as a base the character's eye texture without the re-color that the character uses, as most eye textures have warm colors that will give the typical Sith glowy amber look when mixed in. Still, there is a tinting color well for finetuning or completely altering the effect: to cancel the tinting, just set the color's saturation to zero (either the S of HSV to zero, or all RGB to equal values).
 * **Normal Strength** in the Eye Shader doesn't do much. It's there for consistency, and at best it displaces the reflections in the eye a little. Ideally, we would add an anime-like pupil system and specific controls for that. We'll see. 
 
 Extra Outputs:
