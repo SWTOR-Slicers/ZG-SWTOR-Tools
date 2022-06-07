@@ -11,7 +11,7 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
     # Property for the UI buttons to call different actions.
     # See: https://b3d.interplanety.org/en/calling-functions-by-pressing-buttons-in-blender-custom-ui/
     action: bpy.props.EnumProperty(
-        name="Scaling Type",
+        name="Modifiers Actions",
         items=[
             ("add_subd", "Add Subdivision Modifier", "Add Subdivision Modifier"),
             ("add_multires", "Add Multires Modifier", "Add Multires Modifier"),
@@ -20,6 +20,8 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
             ("remove_them", "Remove All Modifiers", "Remove All Modifiers of these types"),
             ("armature_first", "Remove All Modifiers", "Set Armature as first Modifier"),
             ("armature_last", "Remove All Modifiers", "Set Armature as last Modifier\nor next to last Multires"),
+            ("preserve_volume_on", "Armature's Preserve Volume On", "Set Armature to preserve volume"),
+            ("preserve_volume_off", "Armature's Preserve Volume Off", "Set Armature to not preserve volume"),
             ],
         options={'HIDDEN'}
         )
@@ -97,6 +99,19 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
                     except:
                         pass  # in case of failure because of Multires/SubD priority
 
+    @staticmethod
+    def preserve_volume_on(obj):
+        bpy.context.window.cursor_set("WAIT")
+        if "Armature" in obj.modifiers:
+            obj.modifiers["Armature"].use_deform_preserve_volume = True
+
+    @staticmethod
+    def preserve_volume_off(obj):
+        bpy.context.window.cursor_set("WAIT")
+        if "Armature" in obj.modifiers:
+            obj.modifiers["Armature"].use_deform_preserve_volume = False
+
+
     
     def execute(self, context):
         selected_objects = [obj for obj in bpy.context.selected_editable_objects
@@ -119,6 +134,11 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
                     self.armature_first(obj)
                 elif self.action == "armature_last":
                     self.armature_last(obj)
+                elif self.action == "preserve_volume_on":
+                    self.preserve_volume_on(obj)
+                elif self.action == "preserve_volume_off":
+                    self.preserve_volume_off(obj)
+
 
 
             bpy.context.window.cursor_set("DEFAULT")

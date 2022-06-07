@@ -26,12 +26,12 @@ This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: 
 
 ## Installation:
 
-The installation of the Add-on in Blender follows the usual directions:
+The installation of the Add-on in Blender is quite simple:
 
 1. [**Download the Add-on's "zg_swtors_tool.zip" file from this link**](/zg_swtor_tools.zip). Don't unZip it: it's used as such .zip.
-2. [**Download the "custom_swtor_shaders.zip" file from this link**](/custom_swtor_shaders.zip). UnZip this one and keep the resulting Blender file somewhere in handy. **This file is only necessary if we intend to play with the Custom SWTOR Shaders tools, currently in beta**.
-3. In Blender, go to Edit menu > Preferences option > Add-ons tab > Install… button.
-4. Select the Add-on in the file dialog box and click on the Install Add-on button.
+2. [**Download the "custom_swtor_shaders.blend.zip" file from this link**](/custom_swtor_shaders.blend.zip). UnZip this one and keep the resulting Blender file somewhere in handy. **This file is only necessary if we intend to play with the Custom SWTOR Shaders tools, currently in beta**.
+3. In Blender, go to `Edit menu > Preferences option > Add-ons tab > Install… button`.
+4. Select the Add-on in the file dialog box and click on the `Install Add-on button`.
 5. The Add-on will appear in the Add-ons list with its checkbox un-ticked. Tick it to enable the Add-on.
 6. Twirl the arrow preceding the check-box to reveal some information and, most importantly, **the Add-on's Preference settings**. Filling those is crucial for some of the tools to work correctly. They are:
 
@@ -82,7 +82,7 @@ As some sets of objects, such as spaceship interiors, can easily have a hundred 
 **Requirements:**
 
 * **Blender 3.x** (Blender 2.8x-9.x support coming soon).
-* * **Selecting a custom SWTOR shaders-holding .blend file in this Add-on's preferences settings.**
+* **Selecting a custom SWTOR shaders-holding .blend file in this Add-on's preferences settings.**
 * **An enabled latest version of the SWTOR .gr2 Add-on, only needed at the very moment this tool is being used (supporting the Legacy one is being considered).**
 * **A selection of objects.**
 
@@ -103,9 +103,9 @@ What are the advantages to this?
 So, how does this work on a practical level? The available tools are:
 
 #### Add Custom SWTOR Shaders:
-This tool is only needed if we want to add the shaders to a Blender project that has no previously textured SWTOR objects we could just convert. It simply adds them to the currently open Blender project: they'll become available through add > Group submenu (the ones at the add > SWTOR submenu, too, are the usual modern shaders instead). This tool is disabled if we happen to be editing the .blend file we selected as a library in the Add-on's preference settings, to avoid accidental duplications or loopbacks. Its options are:
+This tool is only needed if we want to add the shaders to a Blender project that has no previously textured SWTOR objects we could just convert. It simply adds them to the currently open Blender project: they'll become available through add > Group submenu (the ones in the add > SWTOR submenu are the usual modern shaders, instead). This tool is disabled if we happen to be editing the .blend file we selected as a library in the Add-on's preference settings, to avoid accidental duplications or loopbacks. Its options are:
 
-* **Link instead of Append**: as explained, Append adds a fully modifiable copy of the shaders. Link, instead, inserts instances of the shaders stored in the library .blend project. We can adjust their settings noremally, but we won't be able to modify the nodes inside their node groups. There are ways to edit both the library and the working project at once, by using two instances of Blender, each opening each file, and reverting the working project every time we save a change in the library one.
+* **Link instead of Append**: as explained, Append adds a fully modifiable copy of the shaders. Link, instead, inserts instances of the shaders stored in the library .blend project. We can adjust their settings normally, but we won't be able to modify the nodes inside their nodegroups. There are ways to edit both the library and the working project at once, by using two instances of Blender, each opening each file, and saving-and-reverting the working project every time we save a change in the library one.
 
 	This option is on by default except when editing a library file, in which case it wouldn't make sense to use linking.
 
@@ -135,23 +135,49 @@ The only rule for the [**Convert to Custom SWTOR Shaders**](#convert-to-custom-s
 
 All the auxiliary custom shaders inside their nodegroups have been renamed by adding a "SW Aux - " prefix (e.g.: "SW Aux - ManipulateHSL"). Such renaming helps us avoid conflicts with the original .gr2 Add-on's own shaders, as we might want to modify the auxiliary shaders, too (some are already modified). Strictly speaking, in the case of these auxiliary shaders, they only need to have different names to the originals. it's in the main ones' case where we need to keep the names stated above.
 
-These shader library Blender projects don't need to be kept empty of objects and texturemaps. Actually, the most convenient thing to do would be to populate them with objects representative of the shaders' usage, so that we can try stuff on them. Say, some ship interiors for the Uber shader; some animals for the Creature one; Player Characters of diverse species for SkinB, HairC and Eye, some armor sets for the Garment shader… We haven't pre-populated the downloadable sample project in this repository because of both copyright-related reasons and file sizes.
+These shader library Blender projects don't need to be kept empty of objects and texturemaps. Actually, the most convenient thing to do would be to populate them with objects representative of the shaders' usage, so that we can try stuff on them. Say, some ship interiors for the Uber shader; some animals for the Creature one; Player Characters of diverse species for SkinB, HairC and Eye, some armor sets for the Garment shader… I haven't pre-populated the downloadable sample project in this repository because of both copyright-related reasons and file sizes.
 
 #### Custom Shader Extras:
 Just as a first example of adding custom stuff to the shaders, the ones included in the .blend file come with a few extras already, not just in their inputs and settings but in their outputs, too. They are rather tentative and far from perfect, mostly a suggestion of what can be done.
 
 ![](/images/zg_050.png)
 
-Extra Inputs:
-* **Specular and Roughness strength**: they try to simulate the Principled BSDF shader's settings of the same name.
-* **Emission Strength**: for turning control panels, capital ship windows, gear's glowy bits and others decidedly incandescent! 
-* **Normal Strength**: raised above 1.0, it emphasizes objects's surface relief, if in a somewhat wonky way. It doesn't work terribly great on solid surface objects, but in characters it provides a very striking "**League of Legends: Arcane**" look (which in the series was achieved through hand-painted textures), so, we suspect it's going to be a favorite.
-* **Transparency**: this is a global material transparency factor, unrelated to its opacity map. Its main mission is to allow us to invisibilize a part of an object, such as the feet of a Player Character that has been turned into a single mesh and happens to be poking through its boots.
-* **Complexion Gamma**: to contrast a character's complexion texturemap without the need to switch its Color Space to sRGB or interpose some color correction node.
-* **Scar Gamma, Color and Normal Strength**, to adjust scars and age maps just the way we want them.
-* **Direction Map**: it's been added to the SkinB shader in a provisional manner (I'm not sure if it's correctly done).
+Extra Inputs, in most shaders:
+* **Direction Map**: a DirectionMap provides with a kind of colorful anisotropic (directional) gloss that is applied to hairs, the skin and fur of some species (such as Cathar and Nautolan) and creatures, and even in weapons. As it requires feeding them some vector information calculations, the shaders able to use it output such vector data as an auxiliar output to be linked to these texturemap nodes' vector inputs. This Add-on's converter tool does that for us.
 
-Not everything works well: the ones in the Eye Shader hardly show any effect and need rethinking (also, we need Sith Glowy Eyes. Coming soon :D ). DirectionMaps seem to get extremely wonky in some objects when rendering through Cycles, too.
+  It's been tested in hairs and creatures so far. TORCommunity.com's Character Designer doesn't annotate the DirectionMap data in the paths.json file it saves inside the character's .zip file, but when collecting the assets it copies in each material subfolder a .mat file that has the DirectionMap's filepath. By opening it with any text editor we can read that data and locate them. They are stored in `resources\art\lookuptables`.
+
+* **Specular and Roughness strength**: All shaders have them. They try to simulate the Principled BSDF shader's settings of the same name, but don't work in exactly the same way.
+
+  The .gr2 Add-on's modern shaders, instead of using Blender's Glossy shader or the Principled BSDF one (save in one specific case) to produce glossiness, replicate the way SWTOR calculates it and adds it to the diffuse color before feeding it to a diffuse shader (which is one of the reasons baking textures with them requires presents some problems).
+  
+  As I don't fully understand how it works yet and whether producing a PBR specular/roughness-like through it is doable or not while keeping it identical with default values, what I've done is something that *looks like* such functionality by using the roughness strength input to both feed Blender's Glossy BSDF shader's roughness input and crossfade its results with the original SWTOR shading system.
+  
+  So, instead of the standard roughness range between 0 and 1, here 1 means SWTOR's "natural" results. **Most of these extras assume that 1 means default SWTOR-like**.
+  
+  As for the specular strength input, it just multiplies the SWTOR-type specular by it, 1 being the game's original look.
+
+  In the case of the Garment Shader (used for dresses and armor), there are separate specular/roughness inputs for each dyeable area (corresponding to the Palette1 and Palette2 sets of standard inputs) and also for the non-dyeable ones, as sometimes that's an interesting thing to have.
+
+* **Emission Strength**: for turning glowy bits such as control panels, spaceship windows, armor lights and others far brighter than in the game. In the Eye Shader it only affects species with glowy eyes like the Chiss.
+* **Normal Strength**: raised above 1.0, it emphasizes objects's surface relief, if in a somewhat wonky way. It doesn't work terribly great on solid surface objects, but in characters it provides a very striking "**League of Legends: Arcane**" look (which in the series was achieved through hand-painted textures), so, I suspect it's going to be a favorite.
+
+  In the case of the Garment Shader (used for dresses and armor), there are separate Normal Strength inputs for each dyeable area and also for the non-dyeable ones.
+
+* **Transparency**: this is a global material transparency factor, unrelated to any opacity map in the material. Its main mission is to allow us to invisibilize a part of an object, such as the feet of a Player Character that has been turned into a single mesh and happens to be poking through its boots.
+
+A few additional, shader-specific inputs:
+
+In the **SkinB Shader**:
+* **Complexion Gamma**: to contrast a character's complexion texturemap without the need for the old trick of switching its Color Space to sRGB or interposing some color correction node.
+* **Scar Gamma, Color and Normal Strength**, to adjust scars and age maps in intensity, color, and appearance of bumpiness.
+* **Skin Pores Density and Strength**: its a Voronoi noise-based bump effect that simulates skin pores with a certain amount of success. It uses some other textures' channels to attenuate its effect in regions of the face where it's obvious it doesn't work too well, like the lips, and it's very much a work in progress: it looks weird in joined, double vertices-merged, subdivided bodies unless one raises the density. Given that, it might receive new parameters in the future (XYZ scaling factors or the like).
+
+In the **Eye Shader**:
+* **Emission Strength: as mentioned, it only shows its effects in species with naturally glowy eyes like the Chiss.
+* **In-Shadow Compensation: as it is easy for the eyes of a character to get lost inside the face's shadows, this allows for adding a bit of emissiveness to compensate.
+* **Dark Side Glow Strength and Tint: Sith Glowy Eyes!!! As it is done right now, it uses as a base the character's eye texture without the re-color that the character uses, as most eye textures have warm colors that will give the typical Sith glowy amber look when mixed in. Still, there is a tinting color well for finetuning or completely altering the effect: to cancel the tinting, just set the color's saturation to zero (either the S of HSV to zero, or all RGB to equal values).
+* **Normal Strength** in the Eye Shader doesn't do much. It's there for consistency, and at best it displaces the reflections in the eye a little. Ideally, we would add an anime-like pupil system and specific controls for that. We'll see. 
 
 Extra Outputs:
 * **Diffuse Color AUX**: the diffuse color in RGB, with the PaletteMap re-hue already applied!
@@ -162,12 +188,12 @@ Extra Outputs:
 
 These channels are mostly there for experimenting with adding our own node trees for things like, say, trying comic book or anime-like Non Photorealistic Rendering (NPR), or maybe to produce baking information.
 
-* **DirectionMap Vector**: as DirectionMaps (a kind of anisotropic glossmap used in hairs, some species' furs and skins, and other cases such as weapons' metallic surfaces) require pre-calculated data that is internally generated in the automatic modern shaders, this is a bit of a cludgey way to produce that information and link it to the DirectionMaps' vector input. The Converter tool adds those links by itself.
+* **DirectionMap Vector**: as DirectionMaps require pre-calculated data that is internally generated in the automatic modern shaders, this is a bit of a kludgey way to produce that information and link it to the DirectionMaps' vector input. The Converter tool adds those links by itself. Even if such setup looks like a looping circuit, it really isn't. Blender seems to tolerate it well.
 
 #### About the beta state:
 The Add-on, as it is now, needs work in things like failing gracefully to errors, providing support for older Blender and .gr2 add-on versions, refining the existing extra features (for example, per dye area-Spec/Rough/Emissive/Normal strength settings), and most probably rearranging the shaders' node trees into something a bit more wieldable.
 
-That said, we should point out that these shaders, as such, are meant to be further customized and evolved by any of us based on our particular interests. For example, the current implementation of glossiness is meant to replicate SWTOR's own, but someone might prefer to discard that and do their own Blender Specular node or Principled BSDF node-based one, or substitute SWTOR's Flush Tone-based pseudo-subsurface scattering effect with Blender's own, add adjustable noise-based skin pores, etc.
+That said, I should point out that these shaders, as such, are meant to be further customized and evolved by any of us based on our particular interests. For example, the current implementation of glossiness is meant to replicate SWTOR's own, but someone might prefer to discard that and do their own Blender Specular node or Principled BSDF node-based one, or substitute SWTOR's Flush Tone-based pseudo-subsurface scattering effect with Blender's own, add adjustable noise-based skin pores, etc.
 
 The downloadable shader library file is just an example of a starting point. The sky is the limit.
 
@@ -221,7 +247,7 @@ Merges "duplicate" vertices (applies a "Merge By Distance" with a tolerance of 0
 * When selecting multiple objects, the tool acts on each of them separately so as not to merge vertices of different objects by accident.
 * To correct any possible normals problems derived from the operation, it performs a face area normals' averaging operation, too.
 * Also, it sets each object's Auto Smooth to On (it's typically on by default, but, just in case…).
-If we intend to subdivide objects such as weapons or some bits of armor that happen to be very simplistic, we suggest to test that subdividing immediately after merging doubles to check that there won't be problems that require additional massaging. That, or keeping non-merged duplicates of the objects, just in case we have to backtrack. 
+If we intend to subdivide objects such as weapons or some bits of armor that happen to be very simplistic, I suggest to test that subdividing immediately after merging doubles to check that there won't be problems that require additional massaging. That, or keeping non-merged duplicates of the objects, just in case we have to backtrack. 
 
 ### Modifiers Tools.
 ![](/images/zg_ui_070.png)
