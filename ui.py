@@ -98,13 +98,11 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
         # quickscale UI
         tool_section = layout.box()
         row = tool_section.row(align=True)
-        row.operator("zgswtor.quickscale", text="Upscale").action = "UPSCALE"
-        
+        row.operator("zgswtor.quickscale", text="Downscale").action = "DOWNSCALE"
         in_row = row.row()  # for a non-50% contiguous row region
         in_row.scale_x = 0.9
         in_row.prop(context.scene, "zgswtor_quickscale_factor", text="")
-        
-        row.operator("zgswtor.quickscale", text="Downscale").action = "DOWNSCALE"
+        row.operator("zgswtor.quickscale", text="Upscale").action = "UPSCALE"
 
 
         # remove_doubles UI
