@@ -10,11 +10,12 @@ from bpy.app.handlers import persistent
 # UI options properties accordingly
 @persistent
 def handler_new_blendfile(scene):
-    # Check that we aren't opening the custom shaders template file
+    # Check that we aren't editing the custom shaders template file
     # to prevent from appending/linking the shaders to itself
     # and set a prop to control the UI's related widgets
 
-    shaders_lib_filepath = bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path
+    shaders_lib_filepath = bpy.context.preferences.addons[
+        __package__].preferences.swtor_custom_shaders_blendfile_path
 
     open_blend_filepath = bpy.data.filepath
 

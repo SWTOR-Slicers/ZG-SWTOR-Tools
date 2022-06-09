@@ -6,7 +6,7 @@ import importlib
 bl_info = {
     "name": "ZG SWTOR Tools",
     "author": "ZeroGravitas",
-    "version": (1, 0, 9),
+    "version": (1, 0),
     "blender": (2, 83, 0),
     "category": "SWTOR",
     "location": "View 3D > Sidebar > ZG SWTOR",
@@ -58,4 +58,4 @@ def unregister():
                 sys.modules[currentModuleName].unregister()
  
 if __name__ == "__main__":
-    register()
+    register()#

@@ -11,7 +11,7 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
     # Property for the UI buttons to call different actions.
     # See: https://b3d.interplanety.org/en/calling-functions-by-pressing-buttons-in-blender-custom-ui/
     action: bpy.props.EnumProperty(
-        name="Modifiers Actions",
+        name="Scaling Type",
         items=[
             ("add_subd", "Add Subdivision Modifier", "Add Subdivision Modifier"),
             ("add_multires", "Add Multires Modifier", "Add Multires Modifier"),
@@ -111,7 +111,6 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
         if "Armature" in obj.modifiers:
             obj.modifiers["Armature"].use_deform_preserve_volume = False
 
-
     
     def execute(self, context):
         selected_objects = [obj for obj in bpy.context.selected_editable_objects
@@ -138,7 +137,6 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
                     self.preserve_volume_on(obj)
                 elif self.action == "preserve_volume_off":
                     self.preserve_volume_off(obj)
-
 
 
             bpy.context.window.cursor_set("DEFAULT")

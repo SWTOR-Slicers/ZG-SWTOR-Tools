@@ -158,7 +158,7 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                         new_node.node_tree = bpy.data.node_groups[self.atroxa_shaders_to_new[derived]]
 
                         new_node.location = 0, 0
-                        new_node.width = 320
+                        new_node.width = 250
                         new_node.name = new_node.label = self.atroxa_shaders_to_new[derived]
                         nodes_io_y_incrmt = 21
                         nodes_io_y_offset = -len(new_node.outputs) * nodes_io_y_incrmt - 76
