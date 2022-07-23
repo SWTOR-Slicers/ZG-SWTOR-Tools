@@ -210,7 +210,7 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                                     # the Specular Lookup calculated inside the Nodegroup
                                     if new_node_input_name == "DirectionMap":
 
-                                        bottom_y = nodes_io_y_offset - len(new_node.inputs) * nodes_io_y_incrmt - 50
+                                        bottom_y = ( -len(new_node.inputs) - len(new_node.outputs) - 20) * nodes_io_y_incrmt
                                         
                                         rerouter_1 = mat_nodes.new(type="NodeReroute")
                                         rerouter_1.location = 350, txtr_node.location[1]-10

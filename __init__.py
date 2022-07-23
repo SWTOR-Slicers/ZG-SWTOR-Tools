@@ -24,13 +24,16 @@ modulesNames = [
     'preferences',
     'process_uber_mats',
     'remove_doubles',
+    'deduplicate_materials',
     'deduplicate_nodegroups',
     'set_backface_culling',
     'quickscale',
     'set_modifiers',
     'customize_swtor_shaders',
     'add_custom_external_swtor_shaders',
-    'set_dds'
+    'set_dds',
+    'skinsettings_ng_in_shader_editor',
+    'skinsettings_ng_in_3d_viewer',
     ]
   
 modulesFullNames = {}

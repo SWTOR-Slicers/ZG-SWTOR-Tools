@@ -10,14 +10,16 @@ def eliminateNG(node):
     node_groups = bpy.data.node_groups
                 
     # Get the node group name as 3-tuple (base, separator, extension)
-    (base, sep, ext) = node.node_tree.name.rpartition('.')
+    if node.node_tree:  # In case some "rogue" data-less nodegroup has no assigned node_tree
+        (base, sep, ext) = node.node_tree.name.rpartition('.')
 
-    # Replace the numeric duplicate
-    if ext.isnumeric():
-        if base in node_groups:
-            print("- Replace nodegroup '%s' with '%s'" % (node.node_tree.name, base))
-            node.node_tree.use_fake_user = False
-            node.node_tree = node_groups.get(base)
+        # Replace the numeric duplicate
+        if ext.isnumeric():
+            if base in node_groups:
+                print("- Replace nodegroup '%s' with '%s'" % (node.node_tree.name, base))
+                node.node_tree.use_fake_user = False
+                node.node_tree = node_groups.get(base)
+
 
 
 class ZGSWTOR_OT_deduplicate_nodegroups(bpy.types.Operator):

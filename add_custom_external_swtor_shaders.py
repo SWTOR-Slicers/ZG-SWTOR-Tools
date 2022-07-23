@@ -68,7 +68,8 @@ class ZGSWTOR_OT_add_custom_external_swtor_shaders(bpy.types.Operator):
             "SWTOR - Garment Shader",
             "SWTOR - HairC Shader",
             "SWTOR - SkinB Shader",
-            "SWTOR - Uber Shader"
+            "SWTOR - Uber Shader",
+            "SW Template - Character's Skin Settings"
         ]
         
         if app.version >= (3, 0, 0):

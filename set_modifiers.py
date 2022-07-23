@@ -7,6 +7,14 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
     bl_options = {'REGISTER', "UNDO"}
     bl_description = "Adds / removes Subdivision, MultiRes, Displace and Solidify Modifiers,\nwith sensible settings for SWTOR asset work.\n\n• Requires a selection of objects.\n• Preserves Armature Modifiers from removal and allows for their repositioning"
 
+    # Check that there is a selection of objects (greys-out the UI button otherwise) 
+    @classmethod
+    def poll(cls,context):
+        if bpy.context.selected_objects:
+            return True
+        else:
+            return False
+
 
     # Property for the UI buttons to call different actions.
     # See: https://b3d.interplanety.org/en/calling-functions-by-pressing-buttons-in-blender-custom-ui/
@@ -25,14 +33,6 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
             ],
         options={'HIDDEN'}
         )
-
-    # Check that there is a selection of objects (greys-out the UI button otherwise) 
-    @classmethod
-    def poll(cls,context):
-        if bpy.context.selected_objects:
-            return True
-        else:
-            return False
 
 
     # METHODS
