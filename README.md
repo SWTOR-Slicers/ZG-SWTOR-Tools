@@ -128,7 +128,7 @@ It goes through all the materials in a selection of objects, detects the presenc
 * **Link instead of Append**: it works exactly like in the previous tool.
 * **Preserve Original Shaders**: it doesn't delete the original modern shaders, simply pushing them aside inside the material, unlinked. If anything were to go wrong sometime further on in our experimentations, we can always unlink the customizable ones and relink the originals. This option is on by default.
 
-	![](/images/zg_040.png)
+![](images/zg_swtor_tools_050.png)
 
 We can regenerate the customizable shader in a material by deleting it and its texturemaps and Converting the material again, as long as the original shader still exists in it. That's why preserving them is on by default.
 
@@ -151,12 +151,14 @@ These shader library Blender projects don't need to be kept empty of objects and
 #### Custom Shader Extras:
 Just as a first example of adding custom stuff to the shaders, the ones included in the .blend file come with a few extras already, not just in their inputs and settings but in their outputs, too. They are rather tentative and far from perfect, mostly a suggestion of what can be done.
 
-![](images/zg_swtor_tools_050.png)
+![](images/zg_swtor_tools_060.png)
 
 Extra Inputs, in most shaders:
 * **Direction Map**: a DirectionMap provides with a kind of colorful anisotropic (directional) gloss that is applied to hairs, the skin and fur of some species (such as Cathar and Nautolan) and creatures, and even in weapons. As it requires feeding them some vector information calculations, the shaders able to use it output such vector data as an auxiliar output to be linked to these texturemap nodes' vector inputs. This Add-on's converter tool does that for us.
 
   It's been tested in hairs and creatures so far. TORCommunity.com's Character Designer doesn't annotate the DirectionMap data in the paths.json file it saves inside the character's .zip file, but when collecting the assets it copies in each material subfolder a .mat file that has the DirectionMap's filepath. By opening it with any text editor we can read that data and locate them. They are stored in `resources\art\lookuptables`.
+
+  (I should point out that this way of doing things, this pseudo-circular linking, is a little dubious, Blender-wise. In fact, Blender is complaining by thickening the returning link and painting it orange. It's not a true circular relationship, though: the mapping calculations as such don't feed the shading ones, and it simply *does work*. Still, I might end up having to bring the calculations outside, which would make the material's node arrangement rather messier)
 
 * **Specular and Roughness strength**: All shaders have them. They try to simulate the Principled BSDF shader's settings of the same name, but don't work in exactly the same way.
 
