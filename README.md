@@ -1,8 +1,8 @@
 # ZeroGravitas' SWTOR Tools.
 
 Changelog 2022-07-25:
-New Character's Skin Settings "control panel" Nodegroup.
-New Deduplicate Materials tool and orphan data purger.
+* New Character's Skin Settings "control panel" Nodegroup.
+* New Deduplicate Materials tool and orphan data purger.
 
 This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: The Old Republic**'s game assets, including an Uber Materials Processor for static game models. It will grow in features as new ideas come up. Quality of code-wise, "this is not a place of honor": It Just (Hardly) Works™.
 
