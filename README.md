@@ -170,7 +170,7 @@ Extra Inputs, in most shaders:
   
   As for the specular strength input, it just multiplies the SWTOR-type specular by it, 1 being the game's original look.
 
-  In the case of the Garment Shader (used for dresses and armor), there are separate specular/roughness inputs for each dyeable area (corresponding to the Palette1 and Palette2 sets of standard inputs) and also for the non-dyeable ones, as sometimes that's an interesting thing to have.
+  **In the case of the Garment Shader (used for dresses and armor), there are separate specular/roughness inputs for each dyeable area (corresponding to the Palette1 and Palette2 sets of standard inputs) and also for the non-dyeable ones**, as sometimes that's an interesting thing to have.
 
 * **Emission Strength**: for turning glowy bits such as control panels, spaceship windows, armor lights and others far brighter than in the game. In the Eye Shader it only affects species with glowy eyes like the Chiss.
 * **Normal Strength**: raised above 1.0, it emphasizes objects's surface relief, if in a somewhat wonky way. It doesn't work terribly great on solid surface objects, but in characters it provides a very striking "**League of Legends: Arcane**" look (which in the series was achieved through hand-painted textures), so, I suspect it's going to be a favorite.
