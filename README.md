@@ -14,7 +14,7 @@ This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: 
       - [About the beta state:](#about-the-beta-state)
     - [Character's Skin Settings "control panel" Nodegroup.](#characters-skin-settings-control-panel-nodegroup)
       - [In the 3D Viewer:](#in-the-3d-viewer)
-      - [Shader Editor options:](#shader-editor-options)
+      - [In the Shader Editor:](#in-the-shader-editor)
     - [Deduplicate Scene's Materials and Nodegroups.](#deduplicate-scenes-materials-and-nodegroups)
     - [Set Backface Culling On/Off.](#set-backface-culling-onoff)
   - [SWTOR Objects Tools:](#swtor-objects-tools)
@@ -261,7 +261,7 @@ Something to note is that, once created, we can add our own fields to the bottom
 
   What's important about this detail is that one can do those custom additions to the Skin Settings Nodegroup to the customizable shaders library Blender project, so that all applications afterwards add such additions.
 
-#### Shader Editor options:
+#### In the Shader Editor:
 
   ![](images/zg_swtor_tools_110.png)
 
