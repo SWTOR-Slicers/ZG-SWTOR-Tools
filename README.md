@@ -371,15 +371,19 @@ It sets all images in the blender project whose names end with the .dds extensio
 
 Already available in the Properties Editor > Render Properties > Simplify section, this tool lets us temporarily switch a few common and somewhat costly options, such as Subdivision Modifiers' levels, number of particles, etc., to lower values, at the scene level. For example, we can disable subdivision while animating a character, which will make its meshes react to our posing far faster.
 
+<br>
+
 ### Pose Position / Rest Position.
-![](/images/zg_ui_090.png)
+![](images/zg_swtor_tools_220.png)
 
 **Requirements: a selection of objects including an armature.**
 
 It shows the Pose Position and Rest Position buttons already available at the Properties Editor > Object Properties > Skeleton section when a skeleton is selected, letting us quickly alternate between those two states. It only acts on the Active armature (the Active Object that happens to be an armature at the moment) instead of all selected armatures. Having it act on all of them is in the works.
 
+<br>
+
 ### Camera to View.
-![](/images/zg_ui_090.png)
+![](images/zg_swtor_tools_230.png)
 
 **Requirements: none.**
 
