@@ -130,6 +130,8 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                         matxml_root = matxml_tree.getroot()
 
                         matxml_derived = matxml_root.find("Derived").text
+                        if matxml_derived == "AnimatedUV":
+                            matxml_derived = "Uber"
 
                         if  matxml_derived == "Uber" or matxml_derived == "EmissiveOnly":
 

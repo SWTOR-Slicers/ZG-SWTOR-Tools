@@ -12,8 +12,7 @@ class addonPreferences(bpy.types.AddonPreferences):
         name = "SWTOR Resources",
         description = 'Path to the "resources" folder produced by a SWTOR assets extraction',
         subtype = "DIR_PATH",
-        default = "/Volumes/RECURSOS/3D SWTOR/extracted_swtor/resources/",
-#        default = "Choose or type the folder's path",
+        default = "Choose or type the folder's path",
         maxlen = 1024
     )
     # Custom SWTOR shaders blendfile folderpath
@@ -21,7 +20,7 @@ class addonPreferences(bpy.types.AddonPreferences):
         name = "Custom Shaders .blend",
         description = "Path to a Blend file holding custom replacement\nSWTOR shaders for the current modern ones.",
         subtype = "FILE_PATH",
-        default = "/Volumes/RECURSOS/3D SWTOR/SWTOR SHADERS/New SWTOR Custom Shaders.blend",
+        default = "Choose or type the file's path",
         maxlen = 1024
     )
 

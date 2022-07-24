@@ -14,7 +14,7 @@ class ZGSWTOR_OT_remove_doubles(bpy.types.Operator):
     # (greys-out the UI button otherwise) 
     @classmethod
     def poll(cls,context):
-        if bpy.context.selected_objects and bpy.context.object.mode == "OBJECT":
+        if bpy.context.selected_objects and bpy.context.mode == "OBJECT":
             return True
         else:
             return False
@@ -22,7 +22,7 @@ class ZGSWTOR_OT_remove_doubles(bpy.types.Operator):
 
     def execute(self, context):
 
-        bpy.context.window.cursor_set("WAIT")
+        bpy.context.window.cursor_set("WAIT")  # Show wait cursor icon
 
         if bpy.context.object:
 
@@ -65,7 +65,8 @@ class ZGSWTOR_OT_remove_doubles(bpy.types.Operator):
                     bpy.data.objects[obj.name].data.use_auto_smooth = True
 
 
-        bpy.context.window.cursor_set("DEFAULT")
+        bpy.context.window.cursor_set("DEFAULT")  # Show normal cursor icon
+        
         return {"FINISHED"}
 
 

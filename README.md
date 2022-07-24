@@ -1,27 +1,35 @@
 # ZeroGravitas' SWTOR Tools.
 
+Changelog 2022-07-25:
+New Character's Skin Settings "control panel" Nodegroup.
+New Deduplicate Materials tool and orphan data purger.
+
 This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: The Old Republic**'s game assets, including an Uber Materials Processor for static game models. It will grow in features as new ideas come up. Quality of code-wise, "this is not a place of honor": It Just (Hardly) Works™.
 
-* [Installation.](#installation)
-* [Materials Tools:](#swtor-materials-tools)
-  * [Process Uber Materials.](#process-uber-materials)
-  * [**NEW!** Custom SWTOR Shaders (beta):](#custom-swtor-shaders)
-	  * [Add Custom SWTOR Shaders.](#add-custom-swtor-shaders)
-	  * [Convert to Custom SWTOR Shaders.](#convert-to-custom-swtor-shaders)
-	  * [About the included Custom Shaders.](#about-the-included-custom-shaders)
-	  * [Custom Shaders' Extras.](#custom-shader-extras)
-	  * [About the current Beta state.](#about-the-beta-state)
-  * [Deduplicate Scene's Nodegroups.](#deduplicate-scenes-nodegroups)
-  * [Set Backface Culling On/Off.](#set-backface-culling-onoff)
-* [Objects Tools:](#swtor-objects-tools)
-  * [Quickscaler.](#quickscaler)
-  * [Merge Double Vertices.](#merge-double-vertices)
-  * [Modifiers Tools.](#modifiers-tools)
-* [Misc. Tools:](#swtor-misc-tools)
-  * [Set all .dds to Raw/Packed.](#set-all-dds-to-rawpacked)
-  * [Simplify Scene.](#simplify)
-  * [Switch Skeleton between Pose and Rest Position.](#pose-position--rest-position)
-  * [Camera to View.](#camera-to-view)
+- [ZeroGravitas' SWTOR Tools.](#zerogravitas-swtor-tools)
+  - [Installation:](#installation)
+  - [SWTOR Materials Tools:](#swtor-materials-tools)
+    - [Process Uber Materials.](#process-uber-materials)
+    - [Customizable SWTOR Shaders.](#customizable-swtor-shaders)
+      - [Add Custom SWTOR Shaders:](#add-custom-swtor-shaders)
+      - [Convert to Custom SWTOR Shaders:](#convert-to-custom-swtor-shaders)
+      - [About the included custom shaders:](#about-the-included-custom-shaders)
+      - [Custom Shader Extras:](#custom-shader-extras)
+      - [About the beta state:](#about-the-beta-state)
+    - [Character's Skin Settings "control panel" Nodegroup.](#characters-skin-settings-control-panel-nodegroup)
+      - [In the 3D Viewer:](#in-the-3d-viewer)
+      - [In the Shader Editor:](#in-the-shader-editor)
+    - [Deduplicate Scene's Materials and Nodegroups.](#deduplicate-scenes-materials-and-nodegroups)
+    - [Set Backface Culling On/Off.](#set-backface-culling-onoff)
+  - [SWTOR Objects Tools:](#swtor-objects-tools)
+    - [Quickscaler.](#quickscaler)
+    - [Merge Double Vertices.](#merge-double-vertices)
+    - [Modifiers Tools.](#modifiers-tools)
+  - [SWTOR Misc. Tools:](#swtor-misc-tools)
+    - [Set all .dds to Raw/Packed.](#set-all-dds-to-rawpacked)
+    - [Simplify.](#simplify)
+    - [Pose Position / Rest Position.](#pose-position--rest-position)
+    - [Camera to View.](#camera-to-view)
 
 
 ## Installation:
@@ -35,7 +43,7 @@ The installation of the Add-on in Blender is quite simple:
 5. The Add-on will appear in the Add-ons list with its checkbox un-ticked. Tick it to enable the Add-on.
 6. Twirl the arrow preceding the check-box to reveal some information and, most importantly, **the Add-on's Preference settings**. Filling those is crucial for some of the tools to work correctly. They are:
 
-	![](/images/zg_010.png)
+	![](images/zg_swtor_tools_010.png)
 	* **Path of a "resources" folder**: some of the Add-on's features depend on looking for information and game assets inside a SWTOR assets extraction (typically produced by apps such as SWTOR Slicers or EasyMYP). In the case of a SWTOR Slicers extraction, the "resources" folder is inside the folder set as that app's Output Folder.
 	
 		Click on the folder icon to produce a file browser dialog window where to locate the "resources" folder, or type or copy its path inside the folderpath field.
@@ -44,16 +52,21 @@ The installation of the Add-on in Blender is quite simple:
 
 		Click on the file icon to produce a file browser dialog window where to select such a Blender project file, like the one linked in the second step of the installation instructions, or type or copy its path inside the filepath field.
         
-The Add-on's tools will appear in the 3D Viewport's Sidebar ('n' key), in the "ZG SWTOR" tab.
+The Add-on's tools will appear in the 3D Viewport's Sidebar ('n' key), in the "ZG SWTOR" tab (plus a few specific tools in the Shader Editor's Sedebar, too).
 
-![](/images/zg_020.png)
+![](images/zg_swtor_tools_020.png)
+
 
 The current tools are:
 
+<br>
+
 ## SWTOR Materials Tools:
 
+<br>
+
 ### Process Uber Materials.
-![](/images/zg_ui_010.png)
+![](images/zg_swtor_tools_030.png)
 
 **Requirements:**
 * **Selecting a "resources" folder in this Add-on's preferences settings.**
@@ -74,8 +87,10 @@ As some sets of objects, such as spaceship interiors, can easily have a hundred 
 
 **If a selected object's material is shared with objects that haven't been selected** (and that's very typical in architectural objects like spaceships or buildings) **they'll show those processed materials, too, as if they would have been included in the selection.** This is their expected behavior. If needed, the way to avoid this would be to isolate the material we don't want to be processed by changing its name to one that doesn't exist in SWTOR's shaders folder.
 
-### Custom SWTOR Shaders.
-![](/images/zg_ui_020.png)
+<br>
+
+### Customizable SWTOR Shaders.
+![](images/zg_swtor_tools_040.png)
 
 **THIS FEATURE IS IN A BETA STAGE. It shouldn't break anything but itself at its worst, though.**
 
@@ -117,7 +132,7 @@ It goes through all the materials in a selection of objects, detects the presenc
 * **Link instead of Append**: it works exactly like in the previous tool.
 * **Preserve Original Shaders**: it doesn't delete the original modern shaders, simply pushing them aside inside the material, unlinked. If anything were to go wrong sometime further on in our experimentations, we can always unlink the customizable ones and relink the originals. This option is on by default.
 
-	![](/images/zg_040.png)
+![](images/zg_swtor_tools_050.png)
 
 We can regenerate the customizable shader in a material by deleting it and its texturemaps and Converting the material again, as long as the original shader still exists in it. That's why preserving them is on by default.
 
@@ -140,12 +155,14 @@ These shader library Blender projects don't need to be kept empty of objects and
 #### Custom Shader Extras:
 Just as a first example of adding custom stuff to the shaders, the ones included in the .blend file come with a few extras already, not just in their inputs and settings but in their outputs, too. They are rather tentative and far from perfect, mostly a suggestion of what can be done.
 
-![](/images/zg_050.png)
+![](images/zg_swtor_tools_060.png)
 
 Extra Inputs, in most shaders:
 * **Direction Map**: a DirectionMap provides with a kind of colorful anisotropic (directional) gloss that is applied to hairs, the skin and fur of some species (such as Cathar and Nautolan) and creatures, and even in weapons. As it requires feeding them some vector information calculations, the shaders able to use it output such vector data as an auxiliar output to be linked to these texturemap nodes' vector inputs. This Add-on's converter tool does that for us.
 
   It's been tested in hairs and creatures so far. TORCommunity.com's Character Designer doesn't annotate the DirectionMap data in the paths.json file it saves inside the character's .zip file, but when collecting the assets it copies in each material subfolder a .mat file that has the DirectionMap's filepath. By opening it with any text editor we can read that data and locate them. They are stored in `resources\art\lookuptables`.
+
+  (I should point out that this way of doing things, this pseudo-circular linking, is a little dubious, Blender-wise. In fact, Blender is complaining by thickening the returning link and painting it orange. It's not a true circular relationship, though: the mapping calculations as such don't feed the shading ones, and it simply *does work*. Still, I might end up having to bring the calculations outside, which would make the material's node arrangement rather messier)
 
 * **Specular and Roughness strength**: All shaders have them. They try to simulate the Principled BSDF shader's settings of the same name, but don't work in exactly the same way.
 
@@ -157,7 +174,7 @@ Extra Inputs, in most shaders:
   
   As for the specular strength input, it just multiplies the SWTOR-type specular by it, 1 being the game's original look.
 
-  In the case of the Garment Shader (used for dresses and armor), there are separate specular/roughness inputs for each dyeable area (corresponding to the Palette1 and Palette2 sets of standard inputs) and also for the non-dyeable ones, as sometimes that's an interesting thing to have.
+  **In the case of the Garment Shader (used for dresses and armor), there are separate specular/roughness inputs for each dyeable area (corresponding to the Palette1 and Palette2 sets of standard inputs) and also for the non-dyeable ones**, as sometimes that's an interesting thing to have.
 
 * **Emission Strength**: for turning glowy bits such as control panels, spaceship windows, armor lights and others far brighter than in the game. In the Eye Shader it only affects species with glowy eyes like the Chiss.
 * **Normal Strength**: raised above 1.0, it emphasizes objects's surface relief, if in a somewhat wonky way. It doesn't work terribly great on solid surface objects, but in characters it provides a very striking "**League of Legends: Arcane**" look (which in the series was achieved through hand-painted textures), so, I suspect it's going to be a favorite.
@@ -207,18 +224,79 @@ That said, I should point out that these shaders, as such, are meant to be furth
 
 The downloadable shader library file is just an example of a starting point. The sky is the limit.
 
+<br>
 
+### Character's Skin Settings "control panel" Nodegroup.
 
-### Deduplicate Scene's Nodegroups.
-![](/images/zg_ui_030.png)
+**Requirements:**
+
+* **Blender 3.x.**
+* **Skin materials using the Customizable SWTOR Shaders.**
+* **A selection of objects some of which use such materials.**
+
+This tool applies to a series of SkinB Shader-using materials a Nodegroup holding common values to such materials, so that a change in such Nodegroup affects them all at once and saves time. It needs to use the Customizable SWTOR Shaders, as the normal modern SWTOR Shaders' user interface doesn't accept inputs from other nodes or nodegroups.
+
+Managing a Player Character or a NPC's skin materials is rather cumbersome, as we can have to handle up to five at once. Any character-wide change we might want to make involves copy-pasting values like recoloring palettes, specular colors, extras such as skin pore densities between those materials, etc.
+
+We can take advantage of Blender's Nodegroups by storing all those values in one such Nodegroup per character and have it pass them to the customizable SWTOR SkinB shaders involved.
+
+This tool has two versions: a fully automated one in the 3D Viewer, and another that allows for applying its steps manually. The way they work is as follows:
+
+#### In the 3D Viewer:
+
+  We type a name for the Nodegroup we want to generate (typically the character's name) in the **PC-NPC name** field, and select the objects of a character (all of them or just some specific ones).
+
+  ![](images/zg_swtor_tools_080.jpg)
+
+  Upon clicking the **Apply New Skin Settings Group** button, the Add-on will:
+  1. Create a Skin Settings Nodegroup labelled folloing a "NAME's Skin Settings" scheme. It is important not to ever delete the "Skin Settings" part of the name, as that will allow for further automation in the future.
+  2. If it finds among the selected objects any material containing the word "head", it'll copy all the non-texturemap values in the material's SkinB Shader to the Nodegroup. If it doesn't it will copy any other skin material.
+  3. Will add an instance of the Nodegroup to every skin material and link its outputs to the SkinB Shader's inputs.
+ 
+     (If the **Override Twi'lek GlossMaps** checkbox is ticked, it'll unlink the GlossMap texturemap nodes and link instead common Nodegroup values to those. This is meant to be used for Twi'lek characters, as BioWare did something to their glossiness maps that produces noticeable diferences in shininess between their heads and the rest of their bodies. It's clearly visible ingame.
+
+  ![](images/zg_swtor_tools_090.jpg)
+
+  To modify the character's skin settings, we just need to enter the Skin Settings Nodegroup present in all the involved Skin materials (or by using some Add-on that lets us jump directly into any Nodegroup in the Blender file, such as [**Greg Zaal's excellent Matalogue Add-on**](https://github.com/gregzaal/Matalogue)) and begin tweaking values, watching how all the skin parts react at once.
+
+  ![](images/zg_swtor_tools_100.png)
+
+Something to note is that, once created, we can add our own fields to the bottom of the Nodegroup. For example, we might add hair recolor palette values and manually add the Nodegroup to the hair materials and link such values to the relevant HairC Shader inputs. We could add more nodes inside to build more complex data, such as noise generators to produce FacePaint (tattoo, make-up, etc.) patterns, etc.
+
+**This Nodegroup is stored as a template in the custom_swtor_shaders.blend file**, named "SW Template - Character's Skin Settings". This tool makes local duplicates of it, so that they stay stable, unique to the working Blender project. That said, they are just normal Blender Nodegroups that we can add to non-skin materials for using some data from it anyway, or append or link to other projects (which wouldn't even be necessary when importing a character from other project into a new one, as Blender brings with it all the necessary Material information).
+
+  What's important about this detail is that one can do those custom additions to the Skin Settings Nodegroup to the customizable shaders library Blender project, so that all applications afterwards add such additions.
+
+#### In the Shader Editor:
+
+  ![](images/zg_swtor_tools_110.png)
+
+  Most of the same functionality is available in the Shader Editor, too, if separated in pieces. We can:
+
+* Add (create) a new named Skin Settings Nodegroup.
+* Copy a selected SkinB Shader's information to a present Skin Settings Nodegroup (requires selecting the Nodegroup, as we might have several present for, say, comparing a few different combinations of settings).
+* Connect a selected Skin Settings Nodegroup to the SkinB Shader, all links in one go. Includes the Twi'lek specific variation checkbox.
+* Disconnect those links (just the equivalent to using Blender's Blade tool).
+  
+  With those, we can have some extra flexibility in all this.
+
+Ideally, we would have some kind of menu for selecting and applying already existing Skin Settings Nodegroups in a more elegant manner… but I'm still learning how to 😅. Anyway, plans for the future include doing something similar for the Garment and HairC Shaders, and maybe simpler Dye Settings Nodegroups. We'll see.
+
+<br>
+
+### Deduplicate Scene's Materials and Nodegroups.
+![](images/zg_swtor_tools_140.png)
 
 **Requirements: none.**
 
-Consolidates all duplicates of a node in the scene ("node.001", "node.002", etc.) so that they become instances of the original instead of independent ones. The copies are marked as "zero users" so that, after saving the project, the next time it is opened they will be discarded (that's how Blender deals with such things).
+Consolidates all duplicates of a node or a material in the scene ("node.001", "node.002", "material.001", etc.) so that they all become instances of a single original instead of independent ones. The copies are marked as "zero users" so that, after saving the project, the next time it is opened they will be discarded. They can be eliminated more immediately by purging all orphan data in the Blender project file, although one must be sure of not having any other zero users data of any kind that might be unintendedly deleted alongside. This purger button is the same as the one at the Outliner's Orphan Data view, but it works in recursive mode (it cycles through the operation until there is no orphan data left. It seems Blender will set that mode as default in newer releases).
+
 * It acts on all the nodes of a scene, so, it doesn't require a selection of objects.
 
+<br>
+
 ### Set Backface Culling On/Off.
-![](/images/zg_ui_040.png)
+![](images/zg_swtor_tools_150.png)
 
 **Requirements: use Eevee in the 3D viewport for the effect to be visible.**
 
@@ -228,14 +306,14 @@ It sets all the materials in the selected objects' Backface Culling setting to o
 
 The usefulness of this tool becomes apparent when having to deal with interior scenes such as spaceship rooms, where we have to place models (characters, furniture, props.) while having the walls and ceilings occluding our view. There are cumbersome solutions to that, such as hiding polygons, playing with the camera clipping settings, or using a booleaning object to "eat" walls or ceilings away. This is simpler and faster. Also, it doesn't affect the rendering when placing the camera inside, as in there the one-sided objects are facing the camera in the intended manner.
 
-![](/images/zg_030.jpg)
+![](images/zg_swtor_tools_160.jpg)
 
 When assembling multi-object locations, it's typical that a same material is shared between several objects. That can lead to unselected objects showing the effects of this tool as if they would have been included in the selection. This is an expected behavior. The only way to avoid this would be to isolate the material we don't want to be affected by changing its name.
 
 ## SWTOR Objects Tools:
 
 ### Quickscaler.
-![](/images/zg_ui_050.png)
+![](images/zg_swtor_tools_170.png)
 
 **Requirements: a selection of objects.**
 
@@ -247,8 +325,10 @@ Any number between 1 and 100 can be manually entered. Recommended factors are:
 * 10, for simplicity. It results in rather superheroically-sized characters.
 * Around 7-8 for more realistic human heights.
 
+<br>
+
 ### Merge Double Vertices.
-![](/images/zg_ui_060.png)
+![](images/zg_swtor_tools_180.png)
 
 **Requirements: a selection of objects.**
 
@@ -259,21 +339,27 @@ Merges "duplicate" vertices (applies a "Merge By Distance" with a tolerance of 0
 * Also, it sets each object's Auto Smooth to On (it's typically on by default, but, just in case…).
 If we intend to subdivide objects such as weapons or some bits of armor that happen to be very simplistic, I suggest to test that subdividing immediately after merging doubles to check that there won't be problems that require additional massaging. That, or keeping non-merged duplicates of the objects, just in case we have to backtrack. 
 
+<br>
+
 ### Modifiers Tools.
-![](/images/zg_ui_070.png)
+![](images/zg_swtor_tools_190.png)
 
 **Requirements: a selection of objects.**
 
-They add to all selected objects Modifiers like Subdivision or Multires (for hiding SWTOR's models' low poly nature) and Displace and Solidify (to facilitate gear-over-full body workflows), with sensible settings as an easy starting point. There is a Modifiers removal button that only affects those Modifier types, preserving any other, such as the Armature modifier that results from parenting a skeleton. Also, there are buttons for moving such Armature modifiers to the top or the bottom of the Modifier Stack, for both usefulness and experimentation.
+They add to all selected objects Modifiers like Subdivision or Multires (for hiding SWTOR's models' low poly nature) and Displace and Solidify (to facilitate gear-over-full body workflows), with sensible settings as an easy starting point. There is a Modifiers removal button that only affects those Modifier types, preserving any other, such as the Armature modifier that results from parenting a skeleton. Also, there are buttons for moving such Armature modifiers to the top or the bottom of the Modifier Stack, and for ticking their "Preserve Volume" checkboxes, for both usefulness and experimentation.
 
 * Requires a selection of one or several game objects.
 * The Armature Modifier re-ordering buttons don't work by selecting Armature objects yet: only by selecting objects that have received Armature Modifiers. The former functionality will be considered for an update.
 
+<br>
+
 ## SWTOR Misc. Tools:
-Minor tools. Most of those these are simply a few already existing Blender tools that are a little too buried inside their panels and would be nice to have more at hand.
+Minor tools. Some of those these are simply a few already existing Blender tools that are a little too buried inside their panels and would be nice to have more at hand.
+
+<br>
 
 ### Set all .dds to Raw/Packed.
-![](/images/zg_ui_080.png)
+![](images/zg_swtor_tools_200.png)
 
 **Requirements: none.**
 
@@ -282,22 +368,28 @@ It sets all images in the blender project whose names end with the .dds extensio
 
 (It's typical to set some texturemap images, such as complexion maps, to sRGB because that makes them appear a little bit darker, something that this tool would revert. Such trick should be no longer necessary by using the new customizable shaders' extra Complexion Gamma settings).
 
+<br>
+
 ### Simplify.
-![](/images/zg_ui_090.png)
+![](images/zg_swtor_tools_210.png)
 
 **Requirements: none.**
 
 Already available in the Properties Editor > Render Properties > Simplify section, this tool lets us temporarily switch a few common and somewhat costly options, such as Subdivision Modifiers' levels, number of particles, etc., to lower values, at the scene level. For example, we can disable subdivision while animating a character, which will make its meshes react to our posing far faster.
 
+<br>
+
 ### Pose Position / Rest Position.
-![](/images/zg_ui_090.png)
+![](images/zg_swtor_tools_220.png)
 
 **Requirements: a selection of objects including an armature.**
 
 It shows the Pose Position and Rest Position buttons already available at the Properties Editor > Object Properties > Skeleton section when a skeleton is selected, letting us quickly alternate between those two states. It only acts on the Active armature (the Active Object that happens to be an armature at the moment) instead of all selected armatures. Having it act on all of them is in the works.
 
+<br>
+
 ### Camera to View.
-![](/images/zg_ui_090.png)
+![](images/zg_swtor_tools_230.png)
 
 **Requirements: none.**
 

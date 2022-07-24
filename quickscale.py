@@ -30,37 +30,6 @@ class ZGSWTOR_OT_quickscale(bpy.types.Operator):
         options={'HIDDEN'}
         )
 
-    quickscale_factor : bpy.props.FloatProperty(
-        name = "Quickscaling Factor",
-        description = 'Scaling Factor. Recommended values are:\n\n- 10 for simplicity (characters look superhero-like tall, over 2 m.).\n\n- Around 8 for accuracy (characters show more realistic heights)',
-        min = 1.0,
-        max = 100.0,
-        soft_min = 7.0,
-        soft_max = 10.0,
-        step = 25,
-        precision = 2,
-        default = 10,
-        options={'HIDDEN'}
-        )
-
-
-    # METHODS
-
-    # Methods doing the actual scaling
-    @staticmethod
-    def upscale(objs, factor):
-        for obj in objs:
-            obj.scale *= factor
-            obj.location *= factor
-
-    @staticmethod
-    def downscale(objs, factor):
-        for obj in objs:
-            obj.scale /= factor
-            obj.location /= factor
-
-
-    
     
     def execute(self, context):
 
@@ -70,15 +39,19 @@ class ZGSWTOR_OT_quickscale(bpy.types.Operator):
 
         bpy.context.window.cursor_set("WAIT")
 
-        self.quickscale_factor = bpy.context.scene.zgswtor_quickscale_factor
+        scale = bpy.context.scene.zgswtor_quickscale_factor
 
         selected_objects = [obj for obj in bpy.context.selected_objects if not obj.parent]
 
         if selected_objects:
             if self.action == "UPSCALE":
-                self.upscale(selected_objects, self.quickscale_factor)
+                for obj in selected_objects:
+                    obj.scale *= scale
+                    obj.location *= scale
             elif self.action == "DOWNSCALE":
-                self.downscale(selected_objects, self.quickscale_factor)
+                for obj in selected_objects:
+                    obj.scale /= scale
+                    obj.location /= scale
 
         bpy.context.window.cursor_set("DEFAULT")
         return {"FINISHED"}
