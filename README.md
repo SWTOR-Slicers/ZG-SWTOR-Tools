@@ -249,7 +249,7 @@ This tool has two versions: a fully automated one in the 3D Viewer, and another 
   ![](images/zg_swtor_tools_080.jpg)
 
   Upon clicking the **Apply New Skin Settings Group** button, the Add-on will:
-  1. Create a Skin Settings Nodegroup labelled folloing a "NAME's Skin Settings" scheme. It is important not to ever delete the "Skin Settings" part of the name, as that will allow for further automation in the future.
+  1. Create a Skin Settings Nodegroup labelled following a "NAME's Skin Settings" scheme. It is important not to ever delete the "Skin Settings" part of the name, as that will allow for further automation in the future.
   2. If it finds among the selected objects any material containing the word "head", it'll copy all the non-texturemap values in the material's SkinB Shader to the Nodegroup. If it doesn't it will copy any other skin material.
   3. Will add an instance of the Nodegroup to every skin material and link its outputs to the SkinB Shader's inputs.
  
