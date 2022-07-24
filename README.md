@@ -2,26 +2,27 @@
 
 This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: The Old Republic**'s game assets, including an Uber Materials Processor for static game models. It will grow in features as new ideas come up. Quality of code-wise, "this is not a place of honor": It Just (Hardly) Works™.
 
-* [Installation.](#installation)
-* [Materials Tools:](#swtor-materials-tools)
-  * [Process Uber Materials.](#process-uber-materials)
-  * [**NEW!** Custom SWTOR Shaders (beta):](#custom-swtor-shaders)
-	  * [Add Custom SWTOR Shaders.](#add-custom-swtor-shaders)
-	  * [Convert to Custom SWTOR Shaders.](#convert-to-custom-swtor-shaders)
-	  * [About the included Custom Shaders.](#about-the-included-custom-shaders)
-	  * [Custom Shaders' Extras.](#custom-shader-extras)
-	  * [About the current Beta state.](#about-the-beta-state)
-  * [Deduplicate Scene's Nodegroups.](#deduplicate-scenes-nodegroups)
-  * [Set Backface Culling On/Off.](#set-backface-culling-onoff)
-* [Objects Tools:](#swtor-objects-tools)
-  * [Quickscaler.](#quickscaler)
-  * [Merge Double Vertices.](#merge-double-vertices)
-  * [Modifiers Tools.](#modifiers-tools)
-* [Misc. Tools:](#swtor-misc-tools)
-  * [Set all .dds to Raw/Packed.](#set-all-dds-to-rawpacked)
-  * [Simplify Scene.](#simplify)
-  * [Switch Skeleton between Pose and Rest Position.](#pose-position--rest-position)
-  * [Camera to View.](#camera-to-view)
+- [ZeroGravitas' SWTOR Tools.](#zerogravitas-swtor-tools)
+  - [Installation:](#installation)
+  - [SWTOR Materials Tools:](#swtor-materials-tools)
+    - [Process Uber Materials.](#process-uber-materials)
+    - [Custom SWTOR Shaders.](#custom-swtor-shaders)
+      - [Add Custom SWTOR Shaders:](#add-custom-swtor-shaders)
+      - [Convert to Custom SWTOR Shaders:](#convert-to-custom-swtor-shaders)
+      - [About the included custom shaders:](#about-the-included-custom-shaders)
+      - [Custom Shader Extras:](#custom-shader-extras)
+      - [About the beta state:](#about-the-beta-state)
+    - [Deduplicate Scene's Nodegroups.](#deduplicate-scenes-nodegroups)
+    - [Set Backface Culling On/Off.](#set-backface-culling-onoff)
+  - [SWTOR Objects Tools:](#swtor-objects-tools)
+    - [Quickscaler.](#quickscaler)
+    - [Merge Double Vertices.](#merge-double-vertices)
+    - [Modifiers Tools.](#modifiers-tools)
+  - [SWTOR Misc. Tools:](#swtor-misc-tools)
+    - [Set all .dds to Raw/Packed.](#set-all-dds-to-rawpacked)
+    - [Simplify.](#simplify)
+    - [Pose Position / Rest Position.](#pose-position--rest-position)
+    - [Camera to View.](#camera-to-view)
 
 
 ## Installation:
@@ -35,7 +36,7 @@ The installation of the Add-on in Blender is quite simple:
 5. The Add-on will appear in the Add-ons list with its checkbox un-ticked. Tick it to enable the Add-on.
 6. Twirl the arrow preceding the check-box to reveal some information and, most importantly, **the Add-on's Preference settings**. Filling those is crucial for some of the tools to work correctly. They are:
 
-	![](/images/zg_010.png)
+	![](images/zg_swtor_tools_010.png)
 	* **Path of a "resources" folder**: some of the Add-on's features depend on looking for information and game assets inside a SWTOR assets extraction (typically produced by apps such as SWTOR Slicers or EasyMYP). In the case of a SWTOR Slicers extraction, the "resources" folder is inside the folder set as that app's Output Folder.
 	
 		Click on the folder icon to produce a file browser dialog window where to locate the "resources" folder, or type or copy its path inside the folderpath field.
@@ -44,16 +45,17 @@ The installation of the Add-on in Blender is quite simple:
 
 		Click on the file icon to produce a file browser dialog window where to select such a Blender project file, like the one linked in the second step of the installation instructions, or type or copy its path inside the filepath field.
         
-The Add-on's tools will appear in the 3D Viewport's Sidebar ('n' key), in the "ZG SWTOR" tab.
+The Add-on's tools will appear in the 3D Viewport's Sidebar ('n' key), in the "ZG SWTOR" tab (plus a few specific tools in the Shader Editor's Sedebar, too).
 
-![](/images/zg_020.png)
+![](images/zg_swtor_tools_020.png)
+
 
 The current tools are:
 
 ## SWTOR Materials Tools:
 
 ### Process Uber Materials.
-![](/images/zg_ui_010.png)
+![](images/zg_swtor_tools_030.png)
 
 **Requirements:**
 * **Selecting a "resources" folder in this Add-on's preferences settings.**
@@ -75,7 +77,7 @@ As some sets of objects, such as spaceship interiors, can easily have a hundred 
 **If a selected object's material is shared with objects that haven't been selected** (and that's very typical in architectural objects like spaceships or buildings) **they'll show those processed materials, too, as if they would have been included in the selection.** This is their expected behavior. If needed, the way to avoid this would be to isolate the material we don't want to be processed by changing its name to one that doesn't exist in SWTOR's shaders folder.
 
 ### Custom SWTOR Shaders.
-![](/images/zg_ui_020.png)
+![](images/zg_swtor_tools_040.png)
 
 **THIS FEATURE IS IN A BETA STAGE. It shouldn't break anything but itself at its worst, though.**
 
@@ -140,7 +142,7 @@ These shader library Blender projects don't need to be kept empty of objects and
 #### Custom Shader Extras:
 Just as a first example of adding custom stuff to the shaders, the ones included in the .blend file come with a few extras already, not just in their inputs and settings but in their outputs, too. They are rather tentative and far from perfect, mostly a suggestion of what can be done.
 
-![](/images/zg_050.png)
+![](images/zg_swtor_tools_050.png)
 
 Extra Inputs, in most shaders:
 * **Direction Map**: a DirectionMap provides with a kind of colorful anisotropic (directional) gloss that is applied to hairs, the skin and fur of some species (such as Cathar and Nautolan) and creatures, and even in weapons. As it requires feeding them some vector information calculations, the shaders able to use it output such vector data as an auxiliar output to be linked to these texturemap nodes' vector inputs. This Add-on's converter tool does that for us.
@@ -210,7 +212,7 @@ The downloadable shader library file is just an example of a starting point. The
 
 
 ### Deduplicate Scene's Nodegroups.
-![](/images/zg_ui_030.png)
+![](images/zg_swtor_tools_140.png)
 
 **Requirements: none.**
 
@@ -218,7 +220,7 @@ Consolidates all duplicates of a node in the scene ("node.001", "node.002", etc.
 * It acts on all the nodes of a scene, so, it doesn't require a selection of objects.
 
 ### Set Backface Culling On/Off.
-![](/images/zg_ui_040.png)
+![](images/zg_swtor_tools_150.png)
 
 **Requirements: use Eevee in the 3D viewport for the effect to be visible.**
 
@@ -228,14 +230,14 @@ It sets all the materials in the selected objects' Backface Culling setting to o
 
 The usefulness of this tool becomes apparent when having to deal with interior scenes such as spaceship rooms, where we have to place models (characters, furniture, props.) while having the walls and ceilings occluding our view. There are cumbersome solutions to that, such as hiding polygons, playing with the camera clipping settings, or using a booleaning object to "eat" walls or ceilings away. This is simpler and faster. Also, it doesn't affect the rendering when placing the camera inside, as in there the one-sided objects are facing the camera in the intended manner.
 
-![](/images/zg_030.jpg)
+![](images/zg_swtor_tools_160.jpg)
 
 When assembling multi-object locations, it's typical that a same material is shared between several objects. That can lead to unselected objects showing the effects of this tool as if they would have been included in the selection. This is an expected behavior. The only way to avoid this would be to isolate the material we don't want to be affected by changing its name.
 
 ## SWTOR Objects Tools:
 
 ### Quickscaler.
-![](/images/zg_ui_050.png)
+![](images/zg_swtor_tools_170.png)
 
 **Requirements: a selection of objects.**
 
@@ -248,7 +250,7 @@ Any number between 1 and 100 can be manually entered. Recommended factors are:
 * Around 7-8 for more realistic human heights.
 
 ### Merge Double Vertices.
-![](/images/zg_ui_060.png)
+![](images/zg_swtor_tools_180.png)
 
 **Requirements: a selection of objects.**
 
@@ -260,7 +262,7 @@ Merges "duplicate" vertices (applies a "Merge By Distance" with a tolerance of 0
 If we intend to subdivide objects such as weapons or some bits of armor that happen to be very simplistic, I suggest to test that subdividing immediately after merging doubles to check that there won't be problems that require additional massaging. That, or keeping non-merged duplicates of the objects, just in case we have to backtrack. 
 
 ### Modifiers Tools.
-![](/images/zg_ui_070.png)
+![](images/zg_swtor_tools_190.png)
 
 **Requirements: a selection of objects.**
 
@@ -273,7 +275,7 @@ They add to all selected objects Modifiers like Subdivision or Multires (for hid
 Minor tools. Most of those these are simply a few already existing Blender tools that are a little too buried inside their panels and would be nice to have more at hand.
 
 ### Set all .dds to Raw/Packed.
-![](/images/zg_ui_080.png)
+![](images/zg_swtor_tools_200.png)
 
 **Requirements: none.**
 
@@ -283,7 +285,7 @@ It sets all images in the blender project whose names end with the .dds extensio
 (It's typical to set some texturemap images, such as complexion maps, to sRGB because that makes them appear a little bit darker, something that this tool would revert. Such trick should be no longer necessary by using the new customizable shaders' extra Complexion Gamma settings).
 
 ### Simplify.
-![](/images/zg_ui_090.png)
+![](images/zg_swtor_tools_210.png)
 
 **Requirements: none.**
 
