@@ -1,5 +1,9 @@
 # ZeroGravitas' SWTOR Tools.
 
+Changelog 2022-07-25:
+New Character's Skin Settings "control panel" Nodegroup.
+New Deduplicate Materials tool and orphan data purger.
+
 This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: The Old Republic**'s game assets, including an Uber Materials Processor for static game models. It will grow in features as new ideas come up. Quality of code-wise, "this is not a place of honor": It Just (Hardly) Works™.
 
 - [ZeroGravitas' SWTOR Tools.](#zerogravitas-swtor-tools)
@@ -285,7 +289,7 @@ Ideally, we would have some kind of menu for selecting and applying already exis
 
 **Requirements: none.**
 
-Consolidates all duplicates of a node or a material in the scene ("node.001", "node.002", "material.001", etc.) so that they all become instances of a single original instead of independent ones. The copies are marked as "zero users" so that, after saving the project, the next time it is opened they will be discarded. They can be eliminated more immediately by purging all orphan data in the Blender project file, although one must be sure of not having any other zero users data of any kind that might be unintendedly deleted alongside.
+Consolidates all duplicates of a node or a material in the scene ("node.001", "node.002", "material.001", etc.) so that they all become instances of a single original instead of independent ones. The copies are marked as "zero users" so that, after saving the project, the next time it is opened they will be discarded. They can be eliminated more immediately by purging all orphan data in the Blender project file, although one must be sure of not having any other zero users data of any kind that might be unintendedly deleted alongside. This purger button is the same as the one at the Outliner's Orphan Data view, but it works in recursive mode (it cycles through the operation until there is no orphan data left. It seems Blender will set that mode as default in newer releases).
 
 * It acts on all the nodes of a scene, so, it doesn't require a selection of objects.
 
