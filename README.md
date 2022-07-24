@@ -348,7 +348,7 @@ They add to all selected objects Modifiers like Subdivision or Multires (for hid
 <br>
 
 ## SWTOR Misc. Tools:
-Minor tools. Most of those these are simply a few already existing Blender tools that are a little too buried inside their panels and would be nice to have more at hand.
+Minor tools. Some of those these are simply a few already existing Blender tools that are a little too buried inside their panels and would be nice to have more at hand.
 
 <br>
 
