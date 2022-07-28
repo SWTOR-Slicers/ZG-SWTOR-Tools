@@ -1,8 +1,8 @@
 # ZeroGravitas' SWTOR Tools.
 
-Changelog 2022-07-25:
-New Character's Skin Settings "control panel" Nodegroup.
-New Deduplicate Materials tool and orphan data purger.
+Changelog v1.1:
+* New Character's Skin Settings "control panel" Nodegroup.
+* New Deduplicate Materials tool and orphan data purger.
 
 This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: The Old Republic**'s game assets, including an Uber Materials Processor for static game models. It will grow in features as new ideas come up. Quality of code-wise, "this is not a place of honor": It Just (Hardly) Works™.
 
@@ -24,6 +24,7 @@ This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: 
   - [SWTOR Objects Tools:](#swtor-objects-tools)
     - [Quickscaler.](#quickscaler)
     - [Merge Double Vertices.](#merge-double-vertices)
+    - [Merge Selected Double Vertices.](#merge-selected-double-vertices)
     - [Modifiers Tools.](#modifiers-tools)
   - [SWTOR Misc. Tools:](#swtor-misc-tools)
     - [Set all .dds to Raw/Packed.](#set-all-dds-to-rawpacked)
@@ -37,7 +38,7 @@ This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: 
 The installation of the Add-on in Blender is quite simple:
 
 1. [**Download the Add-on's "zg_swtors_tool.zip" file from this link**](/zg_swtor_tools.zip). Don't unZip it: it's used as such .zip.
-2. [**Download the "custom_swtor_shaders.blend.zip" file from this link**](/custom_swtor_shaders.blend.zip). UnZip this one and keep the resulting Blender file somewhere in handy. **This file is only necessary if we intend to play with the Custom SWTOR Shaders tools, currently in beta**.
+2. [**Download the "custom_swtor_shaders.blend.zip" file from this link**](/custom_swtor_shaders.blend.zip). UnZip this one and keep the resulting Blender file somewhere in handy. **This file is only necessary if we intend to use the Customizable SWTOR Shaders and their related tools**.
 3. In Blender, go to `Edit menu > Preferences option > Add-ons tab > Install… button`.
 4. Select the Add-on in the file dialog box and click on the `Install Add-on button`.
 5. The Add-on will appear in the Add-ons list with its checkbox un-ticked. Tick it to enable the Add-on.
@@ -249,7 +250,7 @@ This tool has two versions: a fully automated one in the 3D Viewer, and another 
   ![](images/zg_swtor_tools_080.jpg)
 
   Upon clicking the **Apply New Skin Settings Group** button, the Add-on will:
-  1. Create a Skin Settings Nodegroup labelled folloing a "NAME's Skin Settings" scheme. It is important not to ever delete the "Skin Settings" part of the name, as that will allow for further automation in the future.
+  1. Create a Skin Settings Nodegroup labelled following a "NAME's Skin Settings" scheme. It is important not to ever delete the "Skin Settings" part of the name, as that will allow for further automation in the future.
   2. If it finds among the selected objects any material containing the word "head", it'll copy all the non-texturemap values in the material's SkinB Shader to the Nodegroup. If it doesn't it will copy any other skin material.
   3. Will add an instance of the Nodegroup to every skin material and link its outputs to the SkinB Shader's inputs.
  
@@ -332,12 +333,27 @@ Any number between 1 and 100 can be manually entered. Recommended factors are:
 
 **Requirements: a selection of objects.**
 
-Merges "duplicate" vertices (applies a "Merge By Distance" with a tolerance of 0.000001 m.), which usually solves many issues when fusing body parts or applying Subdivision or Multiresolution Modifiers to any SWTOR object.
+Merges "duplicate" vertices (applies a "Merge By Distance" with a tolerance of 0.000001 m.), which usually solves many issues when fusing body parts or applying Subdivision or Multiresolution Modifiers to any SWTOR object, such as the appearance of seams in joined limbs or distorted holes when subdivided.
 * Requires a selection of one or several game objects.
 * When selecting multiple objects, the tool acts on each of them separately so as not to merge vertices of different objects by accident.
 * To correct any possible normals problems derived from the operation, it performs a face area normals' averaging operation, too.
 * Also, it sets each object's Auto Smooth to On (it's typically on by default, but, just in case…).
 If we intend to subdivide objects such as weapons or some bits of armor that happen to be very simplistic, I suggest to test that subdividing immediately after merging doubles to check that there won't be problems that require additional massaging. That, or keeping non-merged duplicates of the objects, just in case we have to backtrack. 
+
+<br>
+
+### Merge Selected Double Vertices.
+![](images/zg_swtor_tools_182.png)
+
+**Requirements:**
+* **A single object in Edit Mode.**
+* **A selection of vertices (or edges or faces).**
+* 
+The problem with merging duplicate vertices is that the tolerance that would guarantee no seams between joined limbs is lax enough to accidentally produce fused lips or teeth. So, the above mentioned Merge Double Vertices tool uses a 0.00001 tolerance that guarantees avoiding such accidents, but sometimes it fails to solve the appearance of seams, specially in the base of the neck where head objects join torso ones.
+
+![](images/zg_swtor_tools_184.png)
+
+What this tool allows us is to coarsely select the involved vertices (or edges and faces: it'll convert the selection to vertices anyway), no need to be overly precise, and apply a "Merge By Distance" with a tolerance high enough to solve the issue. The only requisite is to avoid the densest areas of the object such as the face, mouth, eyes, etc.
 
 <br>
 

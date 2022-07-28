@@ -6,12 +6,12 @@ import importlib
 bl_info = {
     "name": "ZG SWTOR Tools",
     "author": "ZeroGravitas",
-    "version": (1, 0),
+    "version": (1, 1),
     "blender": (2, 83, 0),
     "category": "SWTOR",
     "location": "View 3D > Sidebar > ZG SWTOR",
     "description": "Diverse SWTOR asset-handling tools",
-    "doc_url": "https://github.com/ZeroGravitasIndeed/zg_swtor_tools",
+    "doc_url": "https://github.com/SWTOR-Slicers/zg_swtor_tools",
     "tracker_url": "",
 }
 
@@ -24,6 +24,7 @@ modulesNames = [
     'preferences',
     'process_uber_mats',
     'remove_doubles',
+    'remove_doubles_edit_mode',
     'deduplicate_materials',
     'deduplicate_nodegroups',
     'set_backface_culling',

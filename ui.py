@@ -63,7 +63,8 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         tool_section.operator("zgswtor.deduplicate_materials", text="Deduplicate All Materials")
         tool_section.operator("zgswtor.deduplicate_nodegroups", text="Deduplicate All Nodegroups")
         # Already existing Purge operator
-        tool_section.operator("outliner.orphans_purge", text="Purge All Orphan Data").do_recursive=True
+        tool_section.operator("outliner.orphans_purge", text="Purge All Orphan Data Recursively").do_recursive=True
+
 
 
         # set_backface_culling UI
@@ -102,7 +103,11 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
 
         # remove_doubles UI
         tool_section = layout.box()
-        tool_section.operator("zgswtor.remove_doubles", text="Merge Double Vertices")
+        col=tool_section.column(align=True)
+        col.operator("zgswtor.remove_doubles", text="Merge Double Vertices")
+        # remove_doubles_edit_mode UI
+        col.operator("zgswtor.remove_doubles_edit_mode", text="Merge Selected Double Vertices")
+
 
 
         # set_modifiers UI

@@ -31,42 +31,58 @@ class ZGSWTOR_OT_remove_doubles(bpy.types.Operator):
             if selected_objects:
                 temp_mesh = bmesh.new()
 
+                vert_count_report = 0  
+
                 for obj in selected_objects:
 
                     print("------------------")
                     print(obj.name)
+
                     # We are doing the remove doubles through bmesh
-                    # because it is twice faster than through ops.
+                    # because it's twice faster than through ops.
                     temp_mesh.from_mesh(obj.data)
-                    bmesh.ops.remove_doubles(temp_mesh, verts = temp_mesh.verts, dist = 1e-06)
+                    obj_initial_vert_count = len(temp_mesh.verts)  # For reporting
+                    bmesh.ops.remove_doubles(temp_mesh, verts= temp_mesh.verts, dist= 1e-06)
                     temp_mesh.to_mesh(obj.data)
                     obj.data.update()
+                    obj_final_vert_count = len(temp_mesh.verts)  # For reporting
                     temp_mesh.clear()
+
+                    obj_merged_vertices = obj_initial_vert_count - obj_final_vert_count
+                    print("Merged vertices = " + str(obj_merged_vertices))
+                    vert_count_report += obj_merged_vertices
 
                     # The following ops aren't supported by bmesh, so,
                     # we have to do them through bpy.ops, turning each
-                    # object in the loop into an Active one
+                    # object in the loop into an Active one.
 
                     # current way to force an object to be Active:
                     # it's based on the current View Layer. See:
                     # https://docs.blender.org/manual/en/latest/scene_layout/view_layers/introduction.html#outliner
                     # for possible undesired implications.
-                    bpy.context.view_layer.objects.active = obj
 
-                    result = bpy.ops.object.mode_set(mode = "EDIT")
-                    print("Set to Edit Mode " + str(result))
-                    result = bpy.ops.mesh.select_all(action="SELECT")
-                    print(result)
-                    # bpy.ops.mesh.remove_doubles(threshold = 1e-06) # too slow, done in bmesh
-                    result = bpy.ops.mesh.average_normals(average_type='FACE_AREA')
-                    print("Average face area's normals " + str(result))
-                    result = bpy.ops.object.mode_set(mode = "OBJECT")
-                    print("Set to Object Mode " + str(result))
+                    # Use Autosmooth just in case
                     bpy.data.objects[obj.name].data.use_auto_smooth = True
 
+                    # Just in case, we do only the Normals averaging if some vertex
+                    # was merged (I don't know if this calculation can accumulate
+                    # imprecisions if executed too often, so…)
+                    if obj_merged_vertices > 0:
+                        bpy.context.view_layer.objects.active = obj
+
+                        bpy.ops.object.mode_set(mode = "EDIT")
+                        bpy.ops.mesh.select_all(action="SELECT")
+
+                        # Normals averaging for correct looks. Merits some discussion.
+                        result = bpy.ops.mesh.average_normals(average_type='FACE_AREA')
+                        print("Average face area's normals " + str(result))
+                        result = bpy.ops.object.mode_set(mode = "OBJECT")
+                        print("Set to Object Mode " + str(result))
+                        self.report({'INFO'}, str(vert_count_report) + " Vertices merged. All affected objects were Auto-Smoothed and their Normals averaged by face area.")
+                    else:
+                        self.report({'INFO'}, "0 Vertices merged")
 
         bpy.context.window.cursor_set("DEFAULT")  # Show normal cursor icon
-        
         return {"FINISHED"}
 
 
