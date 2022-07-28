@@ -24,6 +24,7 @@ This Blender Add-on provides with a miscellanea of tools to use on **Star Wars: 
   - [SWTOR Objects Tools:](#swtor-objects-tools)
     - [Quickscaler.](#quickscaler)
     - [Merge Double Vertices.](#merge-double-vertices)
+    - [Merge Selected Double Vertices.](#merge-selected-double-vertices)
     - [Modifiers Tools.](#modifiers-tools)
   - [SWTOR Misc. Tools:](#swtor-misc-tools)
     - [Set all .dds to Raw/Packed.](#set-all-dds-to-rawpacked)
@@ -332,12 +333,27 @@ Any number between 1 and 100 can be manually entered. Recommended factors are:
 
 **Requirements: a selection of objects.**
 
-Merges "duplicate" vertices (applies a "Merge By Distance" with a tolerance of 0.000001 m.), which usually solves many issues when fusing body parts or applying Subdivision or Multiresolution Modifiers to any SWTOR object.
+Merges "duplicate" vertices (applies a "Merge By Distance" with a tolerance of 0.000001 m.), which usually solves many issues when fusing body parts or applying Subdivision or Multiresolution Modifiers to any SWTOR object, such as the appearance of seams in joined limbs or distorted holes when subdivided.
 * Requires a selection of one or several game objects.
 * When selecting multiple objects, the tool acts on each of them separately so as not to merge vertices of different objects by accident.
 * To correct any possible normals problems derived from the operation, it performs a face area normals' averaging operation, too.
 * Also, it sets each object's Auto Smooth to On (it's typically on by default, but, just in case…).
 If we intend to subdivide objects such as weapons or some bits of armor that happen to be very simplistic, I suggest to test that subdividing immediately after merging doubles to check that there won't be problems that require additional massaging. That, or keeping non-merged duplicates of the objects, just in case we have to backtrack. 
+
+<br>
+
+### Merge Selected Double Vertices.
+![](images/zg_swtor_tools_182.png)
+
+**Requirements:**
+* **A single object in Edit Mode.**
+* **A selection of vertices (or edges or faces).**
+
+The problem with merging duplicate vertices is that the tolerance that would guarantee no seams between joined limbs is lax enough to accidentally produce fused lips or teeth. So, the above mentioned Merge Double Vertices tool uses a 0.00001 tolerance that guarantees avoiding such accidents, but sometimes it fails to solve the appearance of seams, specially in the base of the neck where head objects join torso ones.
+
+![](images/zg_swtor_tools_184.png)
+
+What this tool allows us is to coarsely select the involved vertices (or edges and faces: it'll convert the selection to vertices anyway), no need to be overly precise, and apply a "Merge By Distance" with a tolerance high enough to solve the issue. The only requisite is to avoid the densest areas of the object such as the face, mouth, eyes, etc.
 
 <br>
 
