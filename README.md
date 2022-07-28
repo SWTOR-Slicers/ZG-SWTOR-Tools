@@ -348,7 +348,7 @@ If we intend to subdivide objects such as weapons or some bits of armor that hap
 **Requirements:**
 * **A single object in Edit Mode.**
 * **A selection of vertices (or edges or faces).**
-* 
+
 The problem with merging duplicate vertices is that the tolerance that would guarantee no seams between joined limbs is lax enough to accidentally produce fused lips or teeth. So, the above mentioned Merge Double Vertices tool uses a 0.00001 tolerance that guarantees avoiding such accidents, but sometimes it fails to solve the appearance of seams, specially in the base of the neck where head objects join torso ones.
 
 ![](images/zg_swtor_tools_184.png)
