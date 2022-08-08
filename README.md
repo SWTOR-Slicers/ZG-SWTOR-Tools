@@ -1,5 +1,5 @@
 # ZeroGravitas' SWTOR Tools.
-<video src="https://raw.githubusercontent.com/ZeroGravitasIndeed/zg_swtor_tools_dev/90dee1ca20e8af5fde9de388170b1030592b5898/Bad%20day.mp4" width=100%/></video>
+
 Changelog v1.1:
 * New Character's Skin Settings "control panel" Nodegroup.
 * New Deduplicate Materials tool and orphan data purger.
