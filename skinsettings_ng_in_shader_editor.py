@@ -1,9 +1,5 @@
 import bpy
 
-import os
-from pathlib import Path
-from bpy.app.handlers import persistent
-
 
 class ZGSWTOR_OT_skinsettings_ng_in_shader_editor(bpy.types.Operator):
     bl_idname = "zgswtor.skinsettings_ng_in_shader_editor"

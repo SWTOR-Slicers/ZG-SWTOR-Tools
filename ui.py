@@ -31,7 +31,9 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
                 pass
             if (modern_gr2_addon or legacy_gr2_addon) == False:
                 pass
+        
 
+        # CUSTOM SWTOR SHADERS SECTION
         # add_custom_external_swtor_shaders UI
         # combined with
         # customize_swtor_shaders UI
@@ -194,7 +196,7 @@ class ZGSWTOR_PT_shader_tools(bpy.types.Panel):
         row = tool_section.row()
         in_row = row.row(align=False)  # for setting a non-50% contiguous row region
         in_row.scale_x = 0.90  # Percentage of a full half row
-        in_row.label(text="PC-NPC name")
+        in_row.label(text="PC-NPC Name")
         row.prop(context.scene, "use_skinsettings_name", text="")
 
         # tool_section.operator("zgswtor.skinsettings_ng_in_shader_editor", text="Add existing Skin Settings Group").action="ADD_EXISTING_SKINSETTINGS"
@@ -217,8 +219,16 @@ class ZGSWTOR_PT_shader_tools(bpy.types.Panel):
         tool_section.prop(context.scene,"use_skinsettings_twilek", text="Override Twi'lek GlossMap")
         tool_section.operator("zgswtor.skinsettings_ng_in_shader_editor", text="Disconnect Skin Group from SkinB Shader").action="DISCONNECT_SKINSETTINGS"
 
+        tool_section = layout.box()
+        row = tool_section.row(align=True)
+        row.operator("zgswtor.shaders_io_linker", text="Link Matching Inputs/Outputs")
 
-
+        tool_section = layout.box()
+        col = tool_section.column(align=True)
+        col.label(text="Copy Matching Inputs/Outputs' Values:")
+        col.operator("zgswtor.shaders_io_copier", text="From Nodegroup To Active Nodegroup").action = "ng_to_ng"
+        col.operator("zgswtor.shaders_io_copier", text="From Nodegroup To Settings Group").action = "ng_to_st"
+        col.operator("zgswtor.shaders_io_copier", text="From Settings Group To Nodegroup").action = "st_to_ng"
 
 
 

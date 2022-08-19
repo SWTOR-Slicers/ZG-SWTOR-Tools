@@ -35,6 +35,8 @@ modulesNames = [
     'set_dds',
     'skinsettings_ng_in_shader_editor',
     'skinsettings_ng_in_3d_viewer',
+    'shaders_io_linker',
+    'shaders_io_copier',
     ]
   
 modulesFullNames = {}
