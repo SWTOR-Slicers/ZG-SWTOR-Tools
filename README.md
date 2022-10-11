@@ -138,7 +138,7 @@ It goes through all the materials in a selection of objects, detects the presenc
 We can regenerate the customizable shader in a material by deleting it and its texturemaps and Converting the material again, as long as the original shader still exists in it. That's why preserving them is on by default.
 
 #### About the included custom shaders:
-Alongside this Add-on's .zip file, there comes a sample .blend file holding just the customizable shaders. It can be renamed and stored wherever however and wherever we want, although we should decide a stable location for it and its derivatives, as moving it somewhere else after being applied in linked mode would lead to having to tell each Blender project using it where it was been moved to.
+Alongside this Add-on's .zip file, there comes a sample .blend file holding just the customizable shaders. It can be renamed and stored however and wherever we want, although we should decide a stable location for it and its derivatives, as moving it somewhere else after being applied in linked mode would lead to having to tell each Blender project using it where it was been moved to.
 
 The only rule for the [**Convert to Custom SWTOR Shaders**](#convert-to-custom-swtor-shaders) tool not to fail is to keep the names of the shaders intact. These are:
 
