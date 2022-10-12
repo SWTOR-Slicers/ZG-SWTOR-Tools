@@ -97,10 +97,47 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
         tool_section = layout.box()
         row = tool_section.row(align=True)
         row.operator("zgswtor.quickscale", text="Downscale").action = "DOWNSCALE"
-        in_row = row.row()  # for a non-50% contiguous row region
-        in_row.scale_x = 0.9
+        in_row = row.row()
+        in_row.scale_x = 0.9  # for a non-50% contiguous row region
         in_row.prop(context.scene, "zgswtor_quickscale_factor", text="")
         row.operator("zgswtor.quickscale", text="Upscale").action = "UPSCALE"
+
+        # Apply Transforms
+        row = tool_section.row(align=True)
+        row.label(text="Apply Transforms")
+        in_row = row.row(align=True)
+        in_row.scale_x = 0.60
+        # Passing multiple properties to an operator.
+        # See: https://b3d.interplanety.org/en/executing-operators-with-parameters/
+
+        applPosButton = in_row.operator("object.transform_apply", text="Loc.")
+        applPosButton.location = True
+        applPosButton.rotation = False
+        applPosButton.scale = False
+        applPosButton.properties = False
+
+        applRotButton = in_row.operator("object.transform_apply", text="Rot.",)
+        applRotButton.location = False
+        applRotButton.rotation = True
+        applRotButton.scale = False
+        applRotButton.properties = False
+
+        applSclButton = in_row.operator("object.transform_apply", text="Scale")
+        applSclButton.location = False
+        applSclButton.rotation = False
+        applSclButton.scale = True
+        applSclButton.properties = False
+
+        # Non-editable Transform data to check the effects of Apply Transforms 
+        row = tool_section.row(align=False)
+        row.scale_y = .70
+        row.enabled = False
+        col = row.column(align=True)
+        col.prop(context.object, "location", text="Location")
+        col = row.column(align=True)
+        col.prop(context.object, "rotation_euler", text="Rotation")
+        col = row.column(align=True)
+        col.prop(context.object, "scale", text="Scale")
 
 
         # remove_doubles UI
@@ -114,19 +151,24 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
 
         # set_modifiers UI
         tool_section = layout.box()
-        grid = tool_section.grid_flow(columns=2, align=True)
+        grid = tool_section.grid_flow(row_major=True, columns=2, align=True)
         grid.operator("zgswtor.set_modifiers", text="Add SubD").action = "add_subd"
-        grid.operator("zgswtor.set_modifiers", text="Add Displace").action = "add_displace"
         grid.operator("zgswtor.set_modifiers", text="Add Multires").action = "add_multires"
+        grid.operator("zgswtor.set_modifiers", text="Add Displace").action = "add_displace"
         grid.operator("zgswtor.set_modifiers", text="Add Solidify").action = "add_solidify"
+        grid.operator("zgswtor.set_modifiers", text="Add Shrinkwrap").action = "add_shrinkwrap"
+        # grid.template_ID(context.view_layer.objects, "active", filter='AVAILABLE')
+        # grid.prop(context.scene, "shrinkwrap_target")
         row = tool_section.row()
         row.operator("zgswtor.set_modifiers", text="Remove These Modifiers").action = "remove_them"
+
         row = tool_section.row()
         row.label(text="Move Armature to")
         in_row = row.row(align=True)  # for setting a non-50% contiguous row region
         in_row.scale_x = 0.55
         in_row.operator("zgswtor.set_modifiers", text="First").action = "armature_first"
         in_row.operator("zgswtor.set_modifiers", text="Last").action = "armature_last"
+
         row = tool_section.row()
         row.label(text="Use Preserve Volume")
         in_row = row.row(align=True)  # for setting a non-50% contiguous row region
@@ -149,8 +191,15 @@ class ZGSWTOR_PT_misc_tools(bpy.types.Panel):
 
         #### Block of simple custom operators:
         tool_section = layout.box()
-        row = tool_section.row(align=True)
-        row.operator("zgswtor.set_dds", text="Set all .dds to Raw/Packed")
+        col=tool_section.column(align=False)
+        col.operator("zgswtor.set_dds", text="Set all .dds images to Raw/Packed")
+        col.operator("zgswtor.selected_vertices_to_sculpt_mask", text="Set Mask From Selected Vertices")
+
+
+        # row = tool_section.row(align=True)
+        # row.operator("zgswtor.turn_animation_180", text="Turn Animation 180°")
+
+
 
         #### Block of simple already existing Blender operators:
         tool_section = layout.box()
@@ -174,7 +223,11 @@ class ZGSWTOR_PT_misc_tools(bpy.types.Panel):
 
         # Lock camera to view
         row = tool_section.row(align=True)
-        row.prop(context.space_data, "lock_camera", text="Camera to View")            
+        row.prop(context.space_data, "lock_camera", text="Camera to View")
+
+
+
+
 
 
 

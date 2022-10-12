@@ -11,7 +11,8 @@ class ZGSWTOR_OT_set_dds(bpy.types.Operator):
     def execute(self, context):
         bpy.context.window.cursor_set("WAIT")
 
-        selected_texturemaps = [img for img in bpy.data.images if img.name[-4:] == ".dds"]
+        selected_texturemaps = [img for img in bpy.data.images if ".dds" in img.name]
+        
         if selected_texturemaps:
             
             for img in selected_texturemaps:
@@ -24,7 +25,7 @@ class ZGSWTOR_OT_set_dds(bpy.types.Operator):
 
         else:
             bpy.context.window.cursor_set("DEFAULT")
-            self.report({"WARNING"}, "No texturemaps with names ending in '.dds' found.")
+            self.report({"WARNING"}, "No texturemaps with names containing '.dds' found.")
             return {"CANCELLED"}
 
 

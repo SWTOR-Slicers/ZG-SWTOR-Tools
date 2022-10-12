@@ -1,4 +1,3 @@
-from tabnanny import check
 import bpy
 
 class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
@@ -25,6 +24,7 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
             ("add_multires", "Add Multires Modifier", "Add Multires Modifier"),
             ("add_displace", "Add Displace Modifier", "Add Displace Modifier"),
             ("add_solidify", "Add Solidify Modifier", "Add Solidify Modifier"),
+            ("add_shrinkwrap", "Add Shrinkwrap Modifier", "Add Shrinkwrap Modifier"),
             ("remove_them", "Remove All Modifiers", "Remove All Modifiers of these types"),
             ("armature_first", "Remove All Modifiers", "Set Armature as first Modifier"),
             ("armature_last", "Remove All Modifiers", "Set Armature as last Modifier\nor next to last Multires"),
@@ -55,14 +55,23 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
         bpy.context.window.cursor_set("WAIT")
         if not "Displace" in obj.modifiers:
             mod = obj.modifiers.new(name= "Displace", type="DISPLACE")
-            mod.strength = 0.0002
+            mod.strength = 0.0004
 
     @staticmethod
     def add_solidify(obj):
         bpy.context.window.cursor_set("WAIT")
         if not "Solidify" in obj.modifiers:
             mod = obj.modifiers.new(name= "Solidify", type="SOLIDIFY")
-            mod.thickness = 0.0002
+            mod.thickness = 0.0004
+
+    @staticmethod
+    def add_shrinkwrap(obj):
+        bpy.context.window.cursor_set("WAIT")
+        if not "Shrinkwrap" in obj.modifiers:
+            mod = obj.modifiers.new(name= "Shrinkwrap", type="SHRINKWRAP")
+            mod.wrap_method = "TARGET_PROJECT"
+            mod.wrap_mode = "OUTSIDE"
+            mod.offset = 0.0004
 
     @staticmethod
     def remove_them(obj):
@@ -71,7 +80,8 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
             "Subdivision",
             "Multires",
             "Displace",
-            "Solidify"
+            "Solidify",
+            "Shrinkwrap",
         ]
         if obj.modifiers:
             for mod in obj.modifiers:
@@ -127,6 +137,8 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
                     self.add_displace(obj)
                 elif self.action == "add_solidify":
                     self.add_solidify(obj)
+                elif self.action == "add_shrinkwrap":
+                    self.add_shrinkwrap(obj)
                 elif self.action == "remove_them":
                     self.remove_them(obj)
                 elif self.action == "armature_first":
@@ -154,10 +166,12 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
 # Registrations
 
 def register():
+    bpy.types.Scene.shrinkwrap_target = bpy.props.PointerProperty(type=bpy.types.Object)
     bpy.utils.register_class(ZGSWTOR_OT_set_modifiers)
 
 def unregister():
     bpy.utils.unregister_class(ZGSWTOR_OT_set_modifiers)
+    del bpy.types.Scene.shrinkwrap_target
 
 if __name__ == "__main__":
     register()

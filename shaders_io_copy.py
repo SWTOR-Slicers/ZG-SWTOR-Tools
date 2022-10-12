@@ -16,6 +16,8 @@ class ZGSWTOR_OT_shaders_io_copy(bpy.types.Operator):
             return False
 
 
+    
+
     # Property for the UI buttons to call different actions.
     # See: https://b3d.interplanety.org/en/calling-functions-by-pressing-buttons-in-blender-custom-ui/
     action: bpy.props.EnumProperty(
@@ -32,6 +34,7 @@ class ZGSWTOR_OT_shaders_io_copy(bpy.types.Operator):
 
 
     def execute(self, context):
+        
         bpy.context.window.cursor_set("WAIT")
 
         mat_node_tree = bpy.data.materials[context.material.name].node_tree
