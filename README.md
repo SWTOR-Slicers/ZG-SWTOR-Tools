@@ -74,7 +74,7 @@ The current tools are:
 * **An enabled SWTOR .gr2 Add-on, be it the Legacy Add-on or the current modern one.**
 * **A selection of objects.**
 
-This tool processes all the Uber-type materials detected in a selection of objects (that is, it reads their material names, looks for related .mat files in an extracted assets folder, and parses them), locating their texturemaps and linking them to a SWTOR Uber shader (modern or legacy, whichever is active). It processes any EmissiveOnly-type (glass) materials, too. It's particularly fast, as it (only) works with an asset extraction's "resources" folder.
+This tool processes all the Uber-type materials detected in a selection of objects (that is, it reads their materials' names, looks for related .mat files in an extracted assets folder, and parses them), locating their texturemaps and linking them to a SWTOR Uber shader (modern or legacy, whichever is active). It processes any EmissiveOnly-type (glass) materials, too. It's particularly fast, as it (only) works with an asset extraction's "resources" folder.
 
 (You can see the way it works internaly by reading **[this guide](https://github.com/SWTOR-Slicers/WikiPedia/wiki/Assigning-materials-and-textures-to-environmental-and-architectural-elements,-furniture,-props,-ships,-vehicles-and-weapons)**)
 
