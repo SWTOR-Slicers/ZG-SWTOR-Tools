@@ -63,7 +63,8 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         tool_section.operator("zgswtor.deduplicate_materials", text="Deduplicate All Materials")
         tool_section.operator("zgswtor.deduplicate_nodegroups", text="Deduplicate All Nodegroups")
         # Already existing Purge operator
-        tool_section.operator("outliner.orphans_purge", text="Purge All Orphan Data").do_recursive=True
+        tool_section.operator("outliner.orphans_purge", text="Purge All Orphan Data Recursively").do_recursive=True
+
 
 
         # set_backface_culling UI
@@ -102,7 +103,11 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
 
         # remove_doubles UI
         tool_section = layout.box()
-        tool_section.operator("zgswtor.remove_doubles", text="Merge Double Vertices")
+        col=tool_section.column(align=True)
+        col.operator("zgswtor.remove_doubles", text="Merge Double Vertices")
+        # remove_doubles_edit_mode UI
+        col.operator("zgswtor.remove_doubles_edit_mode", text="Merge Selected Double Vertices")
+
 
 
         # set_modifiers UI
@@ -177,7 +182,7 @@ class ZGSWTOR_PT_shader_tools(bpy.types.Panel):
     bl_space_type = "NODE_EDITOR"
     bl_region_type = "UI"
     bl_category = "ZG SWTOR"
-    bl_label = "SWTOR Tools"
+    bl_label = "SWTOR Materials Tools"
 
     def draw(self, context):
         layout = self.layout
@@ -192,21 +197,6 @@ class ZGSWTOR_PT_shader_tools(bpy.types.Panel):
         in_row.label(text="PC-NPC name")
         row.prop(context.scene, "use_skinsettings_name", text="")
 
-        # tool_section.operator("zgswtor.skinsettings_ng_in_shader_editor", text="Add existing Skin Settings Group").action="ADD_EXISTING_SKINSETTINGS"
-        # build skinsettings nodegroups list
-        skinsettings_nodegroups = []
-        # for ng in bpy.data.node_groups:
-        #     if "Skin Settings" in ng.name and not "Template" in ng.name:
-        #         skinsettings_nodegroups.append(ng)
-        # Show list
-        # col = tool_section.column()
-        # for ng in skinsettings_nodegroups:
-        #     op = col.operator('matalogue.goto_group', text=ng.name, emboss=True, icon='NODETREE')
-        #     op.tree_type = "ShaderNodeTree"
-        #     op.tree = ng.name
-
-
-
         tool_section.operator("zgswtor.skinsettings_ng_in_shader_editor", text="Copy SkinB Data to Skin Settings Group").action="COPY_TO_SKINSETTINGS"
         tool_section.operator("zgswtor.skinsettings_ng_in_shader_editor", text="Connect Skin Group to SkinB Shader").action="CONNECT_SKINSETTINGS"
         tool_section.prop(context.scene,"use_skinsettings_twilek", text="Override Twi'lek GlossMap")
@@ -214,6 +204,20 @@ class ZGSWTOR_PT_shader_tools(bpy.types.Panel):
 
 
 
+# Misc. Tools sub-panel
+class ZGSWTOR_PT_misc_shader_tools(bpy.types.Panel):
+    bl_space_type = "NODE_EDITOR"
+    bl_region_type = "UI"
+    bl_category = "ZG SWTOR"
+    bl_label = "SWTOR Misc. Tools"
+
+    def draw(self, context):
+        layout = self.layout
+
+        #### Block of simple custom operators:
+        tool_section = layout.box()
+        row = tool_section.row(align=True)
+        row.operator("zgswtor.set_dds", text="Set all .dds to Raw/Packed")
 
 
 
@@ -223,7 +227,8 @@ classes = [
     ZGSWTOR_PT_materials_tools,
     ZGSWTOR_PT_objects_tools,
     ZGSWTOR_PT_misc_tools,
-    ZGSWTOR_PT_shader_tools
+    ZGSWTOR_PT_shader_tools,
+    ZGSWTOR_PT_misc_shader_tools
 ]
 
 def register():
