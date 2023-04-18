@@ -129,15 +129,15 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
         applSclButton.properties = False
 
         # Non-editable Transform data to check the effects of Apply Transforms 
-        row = tool_section.row(align=False)
-        row.scale_y = .70
-        row.enabled = False
-        col = row.column(align=True)
-        col.prop(context.object, "location", text="Location")
-        col = row.column(align=True)
-        col.prop(context.object, "rotation_euler", text="Rotation")
-        col = row.column(align=True)
-        col.prop(context.object, "scale", text="Scale")
+        # row = tool_section.row(align=False)
+        # row.scale_y = .70
+        # row.enabled = False
+        # col = row.column(align=True)
+        # col.prop(context.object, "location", text="Location")
+        # col = row.column(align=True)
+        # col.prop(context.object, "rotation_euler", text="Rotation")
+        # col = row.column(align=True)
+        # col.prop(context.object, "scale", text="Scale")
 
 
         # remove_doubles UI
@@ -157,8 +157,8 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
         grid.operator("zgswtor.set_modifiers", text="Add Displace").action = "add_displace"
         grid.operator("zgswtor.set_modifiers", text="Add Solidify").action = "add_solidify"
         grid.operator("zgswtor.set_modifiers", text="Add Shrinkwrap").action = "add_shrinkwrap"
-        # grid.template_ID(context.view_layer.objects, "active", filter='AVAILABLE')
-        # grid.prop(context.scene, "shrinkwrap_target")
+        grid.prop(context.scene, "shrinkwrap_target", text="Target")
+
         row = tool_section.row()
         row.operator("zgswtor.set_modifiers", text="Remove These Modifiers").action = "remove_them"
 
@@ -193,7 +193,7 @@ class ZGSWTOR_PT_misc_tools(bpy.types.Panel):
         tool_section = layout.box()
         col=tool_section.column(align=False)
         col.operator("zgswtor.set_dds", text="Set all .dds images to Raw/Packed")
-        col.operator("zgswtor.selected_vertices_to_sculpt_mask", text="Set Mask From Selected Vertices")
+        col.operator("zgswtor.selected_vertices_to_sculpt_mask", text="Mask Selected Verts from Sculpting")
 
 
         # row = tool_section.row(align=True)

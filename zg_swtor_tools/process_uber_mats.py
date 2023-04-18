@@ -46,6 +46,11 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
 
 
 
+    # Register some properties in the Material class for helping
+    # diagnose issues
+    bpy.types.Material.swtor_derived = bpy.props.StringProperty()
+
+
     # ------------------------------------------------------------------
     def execute(self, context):
 
@@ -60,6 +65,10 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
         selected_objects = bpy.context.selected_objects
         if not selected_objects:
             return {"CANCELLED"}
+
+        # Create nodegroup InanimatedUV for provisional Holo material
+        create_InanimatedUV_nodegroup()
+
 
         # --------------------------------------------------------------
         # Get the extracted SWTOR assets' "resources" folder from the add-on's preferences. 
@@ -95,18 +104,23 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
         already_processed_mats = []
         collider_objects = []
         
+        items_to_process = len(selected_objects)
+        items_processed = 0
+
         for ob in selected_objects:
             if ob.type == "MESH":
 
-                print("-------------------------------")
-                print("Object:", ob.name)
+                items_processed += 1
+
+                print("-------------------------------------------")
+                print(f"{items_processed*100/items_to_process:6.2f} %    Object: {ob.name}")
 
                 is_collision_object = False
 
                 for mat_slot in ob.material_slots:
 
                     mat = mat_slot.material
-                    print("      Material: ", mat.name)
+                    print("          Material: ", mat.name)
 
                     if mat.name == "util_collision_hidden":
                         is_collision_object = True
@@ -130,10 +144,16 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                         matxml_root = matxml_tree.getroot()
 
                         matxml_derived = matxml_root.find("Derived").text
-                        if matxml_derived == "AnimatedUV":
-                            matxml_derived = "Uber"
 
-                        if  matxml_derived == "Uber" or matxml_derived == "EmissiveOnly":
+                        mat.swtor_derived = matxml_derived
+
+                        if matxml_derived == "Glass":
+                            matxml_derived = "Uber"
+                            transparent_uber = True
+                        else:
+                            transparent_uber = False
+
+                        if  matxml_derived in ["Uber", "EmissiveOnly", "AnimatedUV", "Glass"]:
 
                             mat_nodes = mat.node_tree.nodes
 
@@ -141,7 +161,8 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                             if (
                                 self.use_overwrite_bool == True
                                 or (matxml_derived == "Uber" and not ("Uber Shader" in mat_nodes or "SWTOR" in mat_nodes))
-                                or (matxml_derived == "EmissiveOnly" and not "_d DiffuseMap" in mat_nodes)
+                                or ((matxml_derived == "EmissiveOnly" or matxml_derived == "Glass") and not "_d DiffuseMap" in mat_nodes)
+                                or (matxml_derived == "AnimatedUV" and not "_d DiffuseMap" in mat_nodes)
                             ):
                                 for node in mat_nodes:
                                     mat_nodes.remove(node)
@@ -409,6 +430,46 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                                     
                                     links.new(principled.inputs[19],_d.outputs[0])  # Emission
 
+                            elif matxml_derived == "AnimatedUV":
+
+                                # Set some basic material attributes for
+                                # this style of Holo-like material
+                                mat.blend_method = 'BLEND'
+                                mat.shadow_method = 'NONE'
+                                mat.use_backface_culling = False
+                                mat.use_screen_refraction = False
+                                mat.show_transparent_back = True
+
+                                # Add provisional InanimatedUV :P Shader
+                                if not "InanimatedUV" in mat_nodes:
+                                    inanimated_uv = mat.node_tree.nodes.new(type="ShaderNodeGroup")
+                                    inanimated_uv.node_tree = bpy.data.node_groups["InanimatedUV"]
+
+                                    inanimated_uv.label = "InanimatedUV"
+                                    inanimated_uv.name  = "InanimatedUV"
+                                else:
+                                    inanimated_uv = mat_nodes["InanimatedUV"]
+                                
+                                # Add Diffuse node
+                                if not "_d DiffuseMap" in mat_nodes:
+                                    _d = mat_nodes.new(type='ShaderNodeTexImage')
+                                    _d.name = _d.label = "_d DiffuseMap"
+                                else:
+                                    _d = mat_nodes["_d DiffuseMap"]
+                                _d.image = diffusemap_image
+
+                                inanimated_uv.location = (-300, 0)
+                                output_node.location = (0, 0)
+                                _d.location = (-800, -200)
+                                _d.width = _d.width_hidden = 300
+
+                                # Linking nodes and setting some Principled shader values
+                                links = mat.node_tree.links
+                                links.new(output_node.inputs[0], inanimated_uv.outputs[0])
+                                links.new(inanimated_uv.inputs[0],_d.outputs[0])  # Diffuse
+                                inanimated_uv.inputs[1].default_value = 1.5         # Emissiveness
+                                
+                            
                         already_processed_mats.append(mat.name)
 
 
@@ -420,10 +481,11 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
             else:
                 colliders_collection = bpy.data.collections["Collider Objects"]
 
-            for collider in collider_objects:
-                if not collider.name in colliders_collection.objects:
-                    colliders_collection.objects.link(collider)
+            if collider_objects:
+                link_objects_to_collection (collider_objects, colliders_collection, move = True)
 
+
+        print("\n\nDone!")
 
         bpy.context.window.cursor_set("DEFAULT")
         return {"FINISHED"}
@@ -454,3 +516,270 @@ def unregister():
 
 if __name__ == "__main__":
     register()
+
+
+
+
+def create_InanimatedUV_nodegroup():
+    import bpy
+
+    inanimatedUV_node_tree = bpy.data.node_groups.get('InanimatedUV')
+    if not inanimatedUV_node_tree:
+        inanimatedUV_node_tree = bpy.data.node_groups.new('InanimatedUV', 'ShaderNodeTree')
+        for node in inanimatedUV_node_tree.nodes:
+            inanimatedUV_node_tree.nodes.remove(node)
+
+        # INPUTS
+        input = inanimatedUV_node_tree.inputs.new('NodeSocketColor', '_d DIffuseMap - Color')
+        if hasattr(input, 'attribute_domain'):
+            input.attribute_domain = 'POINT'
+        if hasattr(input, 'default_value'):
+            input.default_value = (1.0, 1.0, 1.0, 1.0)
+        if hasattr(input, 'hide_value'):
+            input.hide_value = False
+        if hasattr(input, 'name'):
+            input.name = '_d DIffuseColor'
+        input = inanimatedUV_node_tree.inputs.new('NodeSocketFloat', 'Emissive Strength')
+        if hasattr(input, 'attribute_domain'):
+            input.attribute_domain = 'POINT'
+        if hasattr(input, 'default_value'):
+            input.default_value = 4.0
+        if hasattr(input, 'hide_value'):
+            input.hide_value = False
+        if hasattr(input, 'max_value'):
+            input.max_value = 1000000.0
+        if hasattr(input, 'min_value'):
+            input.min_value = 1.0
+        if hasattr(input, 'name'):
+            input.name = 'Emissive Strength'
+
+        # OUTPUTS
+        output = inanimatedUV_node_tree.outputs.new('NodeSocketShader', 'Shader')
+        if hasattr(output, 'attribute_domain'):
+            output.attribute_domain = 'POINT'
+        if hasattr(output, 'hide_value'):
+            output.hide_value = False
+        if hasattr(output, 'name'):
+            output.name = 'Shader'
+
+        # NODES
+        transparent_bsdf_1 = inanimatedUV_node_tree.nodes.new('ShaderNodeBsdfTransparent')
+        if hasattr(transparent_bsdf_1, 'color'):
+            transparent_bsdf_1.color = (0.6079999804496765, 0.6079999804496765, 0.6079999804496765)
+        if hasattr(transparent_bsdf_1, 'hide'):
+            transparent_bsdf_1.hide = False
+        if hasattr(transparent_bsdf_1, 'location'):
+            transparent_bsdf_1.location = (-107.830322265625, -66.45764923095703)
+        if hasattr(transparent_bsdf_1, 'mute'):
+            transparent_bsdf_1.mute = False
+        if hasattr(transparent_bsdf_1, 'name'):
+            transparent_bsdf_1.name = 'Transparent BSDF'
+        if hasattr(transparent_bsdf_1, 'use_custom_color'):
+            transparent_bsdf_1.use_custom_color = False
+        if hasattr(transparent_bsdf_1, 'width'):
+            transparent_bsdf_1.width = 140.0
+        input_ = next((input_ for input_ in transparent_bsdf_1.inputs if input_.identifier=='Color'), None)
+        if input_:
+            if hasattr(input_, 'default_value'):
+                input_.default_value = (1.0, 1.0, 1.0, 1.0)
+            if hasattr(input_, 'display_shape'):
+                input_.display_shape = 'CIRCLE'
+            if hasattr(input_, 'enabled'):
+                input_.enabled = True
+            if hasattr(input_, 'hide'):
+                input_.hide = False
+            if hasattr(input_, 'hide_value'):
+                input_.hide_value = False
+            if hasattr(input_, 'name'):
+                input_.name = 'Color'
+            if hasattr(input_, 'show_expanded'):
+                input_.show_expanded = False
+        input_ = next((input_ for input_ in transparent_bsdf_1.inputs if input_.identifier=='Weight'), None)
+        if input_:
+            if hasattr(input_, 'default_value'):
+                input_.default_value = 0.0
+            if hasattr(input_, 'display_shape'):
+                input_.display_shape = 'CIRCLE'
+            if hasattr(input_, 'enabled'):
+                input_.enabled = False
+            if hasattr(input_, 'hide'):
+                input_.hide = False
+            if hasattr(input_, 'hide_value'):
+                input_.hide_value = False
+            if hasattr(input_, 'name'):
+                input_.name = 'Weight'
+            if hasattr(input_, 'show_expanded'):
+                input_.show_expanded = False
+
+        add_shader_1 = inanimatedUV_node_tree.nodes.new('ShaderNodeAddShader')
+        if hasattr(add_shader_1, 'color'):
+            add_shader_1.color = (0.6079999804496765, 0.6079999804496765, 0.6079999804496765)
+        if hasattr(add_shader_1, 'hide'):
+            add_shader_1.hide = False
+        if hasattr(add_shader_1, 'location'):
+            add_shader_1.location = (107.830322265625, 8.104637145996094)
+        if hasattr(add_shader_1, 'mute'):
+            add_shader_1.mute = False
+        if hasattr(add_shader_1, 'name'):
+            add_shader_1.name = 'Add Shader'
+        if hasattr(add_shader_1, 'use_custom_color'):
+            add_shader_1.use_custom_color = False
+        if hasattr(add_shader_1, 'width'):
+            add_shader_1.width = 140.0
+
+        group_output_1 = inanimatedUV_node_tree.nodes.new('NodeGroupOutput')
+        if hasattr(group_output_1, 'color'):
+            group_output_1.color = (0.6079999804496765, 0.6079999804496765, 0.6079999804496765)
+        if hasattr(group_output_1, 'hide'):
+            group_output_1.hide = False
+        if hasattr(group_output_1, 'is_active_output'):
+            group_output_1.is_active_output = True
+        if hasattr(group_output_1, 'location'):
+            group_output_1.location = (297.830322265625, -0.0)
+        if hasattr(group_output_1, 'mute'):
+            group_output_1.mute = False
+        if hasattr(group_output_1, 'name'):
+            group_output_1.name = 'Group Output'
+        if hasattr(group_output_1, 'use_custom_color'):
+            group_output_1.use_custom_color = False
+        if hasattr(group_output_1, 'width'):
+            group_output_1.width = 140.0
+
+        emission_1 = inanimatedUV_node_tree.nodes.new('ShaderNodeEmission')
+        if hasattr(emission_1, 'color'):
+            emission_1.color = (0.6079999804496765, 0.6079999804496765, 0.6079999804496765)
+        if hasattr(emission_1, 'hide'):
+            emission_1.hide = False
+        if hasattr(emission_1, 'location'):
+            emission_1.location = (-107.83030700683594, 66.45764923095703)
+        if hasattr(emission_1, 'mute'):
+            emission_1.mute = False
+        if hasattr(emission_1, 'name'):
+            emission_1.name = 'Emission'
+        if hasattr(emission_1, 'use_custom_color'):
+            emission_1.use_custom_color = False
+        if hasattr(emission_1, 'width'):
+            emission_1.width = 140.0
+        input_ = next((input_ for input_ in emission_1.inputs if input_.identifier=='Color'), None)
+        if input_:
+            if hasattr(input_, 'default_value'):
+                input_.default_value = (1.0, 1.0, 1.0, 1.0)
+            if hasattr(input_, 'display_shape'):
+                input_.display_shape = 'CIRCLE'
+            if hasattr(input_, 'enabled'):
+                input_.enabled = True
+            if hasattr(input_, 'hide'):
+                input_.hide = False
+            if hasattr(input_, 'hide_value'):
+                input_.hide_value = False
+            if hasattr(input_, 'name'):
+                input_.name = 'Color'
+            if hasattr(input_, 'show_expanded'):
+                input_.show_expanded = False
+        input_ = next((input_ for input_ in emission_1.inputs if input_.identifier=='Strength'), None)
+        if input_:
+            if hasattr(input_, 'default_value'):
+                input_.default_value = 4.0
+            if hasattr(input_, 'display_shape'):
+                input_.display_shape = 'CIRCLE'
+            if hasattr(input_, 'enabled'):
+                input_.enabled = True
+            if hasattr(input_, 'hide'):
+                input_.hide = False
+            if hasattr(input_, 'hide_value'):
+                input_.hide_value = False
+            if hasattr(input_, 'name'):
+                input_.name = 'Strength'
+            if hasattr(input_, 'show_expanded'):
+                input_.show_expanded = False
+        input_ = next((input_ for input_ in emission_1.inputs if input_.identifier=='Weight'), None)
+        if input_:
+            if hasattr(input_, 'default_value'):
+                input_.default_value = 0.0
+            if hasattr(input_, 'display_shape'):
+                input_.display_shape = 'CIRCLE'
+            if hasattr(input_, 'enabled'):
+                input_.enabled = False
+            if hasattr(input_, 'hide'):
+                input_.hide = False
+            if hasattr(input_, 'hide_value'):
+                input_.hide_value = False
+            if hasattr(input_, 'name'):
+                input_.name = 'Weight'
+            if hasattr(input_, 'show_expanded'):
+                input_.show_expanded = False
+
+        group_input_1 = inanimatedUV_node_tree.nodes.new('NodeGroupInput')
+        if hasattr(group_input_1, 'color'):
+            group_input_1.color = (0.6079999804496765, 0.6079999804496765, 0.6079999804496765)
+        if hasattr(group_input_1, 'hide'):
+            group_input_1.hide = False
+        if hasattr(group_input_1, 'location'):
+            group_input_1.location = (-307.830322265625, -0.0)
+        if hasattr(group_input_1, 'mute'):
+            group_input_1.mute = False
+        if hasattr(group_input_1, 'name'):
+            group_input_1.name = 'Group Input'
+        if hasattr(group_input_1, 'use_custom_color'):
+            group_input_1.use_custom_color = False
+        if hasattr(group_input_1, 'width'):
+            group_input_1.width = 140.0
+        if hasattr(group_input_1.outputs[0], 'default_value'):
+            group_input_1.outputs[0].default_value = (1.0, 1.0, 1.0, 1.0)
+        if hasattr(group_input_1.outputs[0], 'display_shape'):
+            group_input_1.outputs[0].display_shape = 'CIRCLE'
+        if hasattr(group_input_1.outputs[0], 'enabled'):
+            group_input_1.outputs[0].enabled = True
+        if hasattr(group_input_1.outputs[0], 'hide'):
+            group_input_1.outputs[0].hide = False
+        if hasattr(group_input_1.outputs[0], 'hide_value'):
+            group_input_1.outputs[0].hide_value = False
+        if hasattr(group_input_1.outputs[0], 'name'):
+            group_input_1.outputs[0].name = '_d DIffuseColor'
+        if hasattr(group_input_1.outputs[0], 'show_expanded'):
+            group_input_1.outputs[0].show_expanded = False
+        if hasattr(group_input_1.outputs[1], 'default_value'):
+            group_input_1.outputs[1].default_value = 4.0
+        if hasattr(group_input_1.outputs[1], 'display_shape'):
+            group_input_1.outputs[1].display_shape = 'CIRCLE'
+        if hasattr(group_input_1.outputs[1], 'enabled'):
+            group_input_1.outputs[1].enabled = True
+        if hasattr(group_input_1.outputs[1], 'hide'):
+            group_input_1.outputs[1].hide = False
+        if hasattr(group_input_1.outputs[1], 'hide_value'):
+            group_input_1.outputs[1].hide_value = False
+        if hasattr(group_input_1.outputs[1], 'name'):
+            group_input_1.outputs[1].name = 'Emissive Strength'
+        if hasattr(group_input_1.outputs[1], 'show_expanded'):
+            group_input_1.outputs[1].show_expanded = False
+
+        # LINKS
+        inanimatedUV_node_tree.links.new(group_input_1.outputs[0], emission_1.inputs[0])
+        inanimatedUV_node_tree.links.new(add_shader_1.outputs[0], group_output_1.inputs[0])
+        inanimatedUV_node_tree.links.new(emission_1.outputs[0], add_shader_1.inputs[0])
+        inanimatedUV_node_tree.links.new(transparent_bsdf_1.outputs[0], add_shader_1.inputs[1])
+        inanimatedUV_node_tree.links.new(group_input_1.outputs[1], emission_1.inputs[1])
+
+    return
+
+def link_objects_to_collection (objects, collection, move = False):
+    """
+    Links objects to a Collection. If move == True,
+    it unlinks the objects from their current Collections first.
+    Accepts a single object or a list of objects. 
+    """
+
+    # Make sure objects works as a list for the loop.
+    if not isinstance(objects, list):
+        objects = [objects]
+
+    for object in objects:
+        # First, unlink from any collections it is in.
+        if object.users_collection and move == True:
+            for current_collections in object.users_collection:
+                current_collections.objects.unlink(object)
+
+        # Then link to collection.
+        collection.objects.link(object)
+
+    return
