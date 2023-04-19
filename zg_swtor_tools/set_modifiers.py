@@ -18,7 +18,7 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
     # Property for the UI buttons to call different actions.
     # See: https://b3d.interplanety.org/en/calling-functions-by-pressing-buttons-in-blender-custom-ui/
     action: bpy.props.EnumProperty(
-        name="Scaling Type",
+        name="Set Modifier Action",
         items=[
             ("add_subd", "Add Subdivision Modifier", "Add Subdivision Modifier"),
             ("add_multires", "Add Multires Modifier", "Add Multires Modifier"),

@@ -22,11 +22,24 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         legacy_gr2_addon = True
         
         if resources_folder_exists == True and (modern_gr2_addon or legacy_gr2_addon): 
-            tool_section.operator("zgswtor.process_uber_mats", text="Process Uber Materials")
-            tool_section.prop(context.scene, "use_overwrite_bool", text="Overwrite Uber Materials")
-            tool_section.prop(context.scene, "use_collect_colliders_bool", text="Collect Collider Objects")
+            tool_section.label(text="Process Static Objects' Materials")
+
+            # row = tool_section.row(align=True)
+            split = tool_section.split(factor= 0.65, align=True)
+            col1,col2 = (split.column(align=True),split.column(align=True))
+    
+            process_mats_sel = col1.operator("zgswtor.process_uber_mats", text="In Selected Objects")
+            col1.enabled = len(bpy.context.selected_objects) != 0
+            process_mats_sel.use_selection_only = True
+
+            process_mats_all = col2.operator("zgswtor.process_uber_mats", text="All Objects")
+            col2.enabled = len(bpy.data.objects) != 0
+            process_mats_all.use_selection_only = False
+
+            process_mats_sel = tool_section.prop(context.scene, "use_overwrite_bool", text="Overwrite Materials")
+            process_mats_all = tool_section.prop(context.scene, "use_collect_colliders_bool", text="Collect Collider Objects")
         else:
-            tool_section.label(text="PROCESS UBER MATERIALS")
+            tool_section.label(text="Process Static Objects' Materials")
             if resources_folder_exists == False:
                 pass
             if (modern_gr2_addon or legacy_gr2_addon) == False:
@@ -163,7 +176,7 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
         row.operator("zgswtor.set_modifiers", text="Remove These Modifiers").action = "remove_them"
 
         row = tool_section.row()
-        row.label(text="Move Armature to")
+        row.label(text="Set Armature as")
         in_row = row.row(align=True)  # for setting a non-50% contiguous row region
         in_row.scale_x = 0.55
         in_row.operator("zgswtor.set_modifiers", text="First").action = "armature_first"

@@ -20,10 +20,20 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
     
     @classmethod
     def poll(cls,context):
-        if bpy.context.selected_objects:
+        if bpy.data.objects:
             return True
         else:
             return False
+
+
+    # Property for the UI buttons to call different actions.
+    # See: https://b3d.interplanety.org/en/calling-functions-by-pressing-buttons-in-blender-custom-ui/
+    use_selection_only: bpy.props.BoolProperty(
+        name="Selection-only",
+        description='Applies the material processing to the current selection of objects only',
+        default = False,
+        options={'HIDDEN'}
+        )
 
     # ------------------------------------------------------------------
     # Define some checkbox-type properties
@@ -61,8 +71,11 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
         
         self.use_overwrite_bool = bpy.context.scene.use_overwrite_bool
 
+        if self.use_selection_only == True:
+            selected_objects = bpy.context.selected_objects
+        else:
+            selected_objects = bpy.data.objects
 
-        selected_objects = bpy.context.selected_objects
         if not selected_objects:
             return {"CANCELLED"}
 
@@ -498,6 +511,10 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
 # Registrations
 
 def register():
+    bpy.types.Scene.use_selection_only = bpy.props.BoolProperty(
+        description='Applies the material processing to the current selection of objects only',
+        default = False
+    )
     bpy.types.Scene.use_overwrite_bool = bpy.props.BoolProperty(
         description="Rewrites already existing Uber and EmissiveOnly materials.\nThis allows for converting Legacy Uber materials\nto modern ones and viceversa.",
         default=False
@@ -509,6 +526,7 @@ def register():
     bpy.utils.register_class(ZGSWTOR_OT_process_uber_mats)
 
 def unregister():
+    del bpy.types.Scene.use_selection_only
     del bpy.types.Scene.use_overwrite_bool
     del bpy.types.Scene.use_collect_colliders_bool
     
