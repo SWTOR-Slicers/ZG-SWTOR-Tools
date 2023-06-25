@@ -7,7 +7,7 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
     bl_label = "ZG Customize SWTOR Shaders"
     bl_idname = "zgswtor.customize_swtor_shaders"
-    bl_description = 'Converts Darth Atroxa\'s smart modern SWTOR shaders to "dumb",\ntextures outside-type ones for easier customization.\n\n• Requires the modern .gr2 add-on to be enabled during the conversion'
+    bl_description = 'Converts Darth Atroxa\'s smart modern SWTOR shaders to "dumb",\ntextures outside-type ones for easier customization.\n\n• Requires the modern .gr2 add-on to be enabled during the conversion\n• Requires setting a path to an appropriate .blend file holding\n   customizable SWTOR shaders in this Addon\'s Preferences'
     bl_options = {'REGISTER', 'UNDO'}
 
     # ------------------------------------------------------------------

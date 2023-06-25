@@ -6,7 +6,7 @@ import importlib
 bl_info = {
     "name": "ZG SWTOR Tools",
     "author": "ZeroGravitas",
-    "version": (1, 2, 0),
+    "version": (1, 3, 0),
     "blender": (2, 83, 0),
     "category": "SWTOR",
     "location": "View 3D > Sidebar > ZG SWTOR",
@@ -39,6 +39,8 @@ modulesNames = [
     'shaders_io_copier',
     'selected_vertices_to_sculpt_mask',
     # 'turn_animation_180',
+    'locate_character_assets',
+    'character_assembler',
     ]
   
 modulesFullNames = {}

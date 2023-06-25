@@ -33,7 +33,7 @@ bpy.app.handlers.load_post.append(handler_new_blendfile)
 class ZGSWTOR_OT_add_custom_external_swtor_shaders(bpy.types.Operator):
     bl_idname = "zgswtor.add_custom_external_swtor_shaders"
     bl_label = "ZG Add Custom SWTOR Shaders"
-    bl_description = "Appends or links custom SWTOR shaders from\nan external .blend templates file."
+    bl_description = "Appends or links custom SWTOR shaders from\nan external Blender templates file.\n\n• Requires setting a path to an appropriate .blend file holding\n   customizable SWTOR shaders in this Addon\'s Preferences"
     bl_options = {'REGISTER', 'UNDO'}
 
     # linking vs appending flag property

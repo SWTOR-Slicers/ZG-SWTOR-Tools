@@ -1,7 +1,107 @@
 import bpy
+import addon_utils
+from pathlib import Path
 
 
 # 3D VIEWPORT PANEL ---------------------------------------------
+
+# Addon Status sub-panel
+class ZGSWTOR_PT_status(bpy.types.Panel):
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "ZG SWTOR"
+    bl_label = "ZG SWTOR Tools Status"
+
+    def draw(self, context):
+
+        # Checks:
+        
+        # Extracted SWTOR assets' "resources" folder. 
+        swtor_resources_folderpath = bpy.context.preferences.addons[__package__].preferences.swtor_resources_folderpath
+        resources_folder_exists = ( Path(swtor_resources_folderpath) / "art/shaders/materials").exists()
+        # .gr2 Importer Addon
+        gr2_addon_exists = addon_utils.check("io_scene_gr2")[1]
+        legacy_gr2_addon_exists = addon_utils.check("io_scene_gr2_legacy")[1]
+        # Custom shaders .blend file
+        custom_shaders_blend_file_exists =  Path(bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path).is_file()
+
+
+        layout = self.layout
+        layout.scale_y = 0.7
+
+        # Show whether the 'resources' folder is set correctly in Preferences.
+        zgswtor_addon_status = layout.column(align=True)
+        # zgswtor_addon_status.scale_y = 0.7
+        
+        if resources_folder_exists == True:
+            zgswtor_addon_status.label(text="• 'resources' Folder: SET")
+        else:
+            zgswtor_addon_status.label(text="• 'resources' Folder: NOT SET")
+
+        if custom_shaders_blend_file_exists == True:
+            zgswtor_addon_status.label(text="• Custom Shaders: SET")
+        else:
+            zgswtor_addon_status.label(text="• Custom Shaders: NOT SET")
+
+        if gr2_addon_exists == True:
+            zgswtor_addon_status.label(text="• .gr2 Addon: MODERN VERSION SET")
+        else:
+            if legacy_gr2_addon_exists == True:
+                zgswtor_addon_status.label(text="• .gr2 Addon: LEGACY VERSION SET")
+            else:
+                zgswtor_addon_status.label(text="• .gr2 Addon: UNAVAILABLE")
+
+        
+        if (
+            resources_folder_exists == False
+            or custom_shaders_blend_file_exists == False
+            or gr2_addon_exists == False
+            ):
+            zgswtor_addon_status.label(text=" ")
+            zgswtor_addon_status.label(text="Tools in red require setting Addon")
+            zgswtor_addon_status.label(text="preferences (check their tooltips).")
+
+# Files Tools sub-panel
+class ZGSWTOR_PT_files_tools(bpy.types.Panel):
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "ZG SWTOR"
+    bl_label = "SWTOR Files Tools"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+
+        gral_y_scaling_factor = 0.9
+
+        # CHECKS:
+        # Extracted SWTOR assets' "resources" folder. 
+        swtor_resources_folderpath = bpy.context.preferences.addons[__package__].preferences.swtor_resources_folderpath
+        resources_folder_exists = ( Path(swtor_resources_folderpath) / "art/shaders/materials").exists()
+        # .gr2 Importer Addon
+        gr2_addon_exists = addon_utils.check("io_scene_gr2")[1]
+        # Custom shaders .blend file
+        custom_shaders_blend_file_exists =  Path(bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path).is_file()
+
+
+        layout = self.layout
+        layout.scale_y = gral_y_scaling_factor
+
+
+        # character_assembler UI
+        tool_section = layout.box().column(align=True)
+        tool_section.enabled = resources_folder_exists
+        tool_section.alert = tool_section.enabled is False
+        tool_section.label(text="PC / NPC Importer")
+        tool_section.operator("zgswtor.character_assembler", text="Select 'paths.json' File")
+        tool_section.prop(context.scene, "swca_gather_only_bool", text="Gather Assets only")
+        tool_section.prop(context.scene, "swca_dont_overwrite_bool", text="Don't Overwrite Assets")
+        tool_section.prop(context.scene, "swca_collect_bool", text="Collect By In-Game Names")
+        tool_section.prop(context.scene, "swca_import_armor_only", text="Import Armor Gear Only")
+        tool_section.prop(context.scene, "swca_import_skeleton_bool", text="Import Rigging Skeleton")
+        tool_section.prop(context.scene, "swca_bind_to_skeleton_bool", text="Bind Objects To Skeleton",)
+
+        
+
 
 # Materials Tools sub-panel
 class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
@@ -11,46 +111,54 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
     bl_label = "SWTOR Materials Tools"
 
     def draw(self, context):
+
+        gral_y_scaling_factor = 0.9
+
+        # CHECKS:
+        # Extracted SWTOR assets' "resources" folder. 
+        swtor_resources_folderpath = bpy.context.preferences.addons[__package__].preferences.swtor_resources_folderpath
+        resources_folder_exists = ( Path(swtor_resources_folderpath) / "art/shaders/materials").exists()
+        # .gr2 Importer Addon
+        gr2_addon_exists = addon_utils.check("io_scene_gr2")[1]
+        # Custom shaders .blend file
+        custom_shaders_blend_file_exists =  Path(bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path).is_file()
+
+
         layout = self.layout
+        layout.scale_y = gral_y_scaling_factor
 
 
         # process_uber_mats UI
         tool_section = layout.box().column(align=True)
-        
-        resources_folder_exists = True
-        modern_gr2_addon = True
-        legacy_gr2_addon = True
-        
-        if resources_folder_exists == True and (modern_gr2_addon or legacy_gr2_addon): 
-            tool_section.label(text="Process Static Objects' Materials")
+        tool_section.enabled = resources_folder_exists and gr2_addon_exists
+        tool_section.alert = tool_section.enabled is False
 
-            # row = tool_section.row(align=True)
-            split = tool_section.split(factor= 0.65, align=True)
-            col1,col2 = (split.column(align=True),split.column(align=True))
-    
-            process_mats_sel = col1.operator("zgswtor.process_uber_mats", text="In Selected Objects")
-            col1.enabled = len(bpy.context.selected_objects) != 0
-            process_mats_sel.use_selection_only = True
+                
+        tool_section.label(text="Process Static Object Materials in")
 
-            process_mats_all = col2.operator("zgswtor.process_uber_mats", text="All Objects")
-            col2.enabled = len(bpy.data.objects) != 0
-            process_mats_all.use_selection_only = False
+        split = tool_section.split(factor= 0.60, align=True)
+        col_left, col_right = split.column(align=True), split.column(align=True)
 
-            process_mats_sel = tool_section.prop(context.scene, "use_overwrite_bool", text="Overwrite Materials")
-            process_mats_all = tool_section.prop(context.scene, "use_collect_colliders_bool", text="Collect Collider Objects")
-        else:
-            tool_section.label(text="Process Static Objects' Materials")
-            if resources_folder_exists == False:
-                pass
-            if (modern_gr2_addon or legacy_gr2_addon) == False:
-                pass
+        process_mats_sel = col_left.operator("zgswtor.process_uber_mats", text="Selected Objects")
+        col_left.enabled = len(bpy.context.selected_objects) != 0
+        process_mats_sel.use_selection_only = True
+
+        process_mats_all = col_right.operator("zgswtor.process_uber_mats", text="All Objects")
+        col_right.enabled = len(bpy.data.objects) != 0
+        process_mats_all.use_selection_only = False
+
+        process_mats_sel = tool_section.prop(context.scene, "use_overwrite_bool", text="Overwrite Materials")
+        process_mats_all = tool_section.prop(context.scene, "use_collect_colliders_bool", text="Collect Collider Objects")
         
+
 
         # CUSTOM SWTOR SHADERS SECTION
         # add_custom_external_swtor_shaders UI
         # combined with
         # customize_swtor_shaders UI
         tool_section = layout.box().column(align=True)
+        tool_section.enabled = custom_shaders_blend_file_exists
+        tool_section.alert = tool_section.enabled is False
         dimmable_row1 = tool_section.row(align=True)
         dimmable_row1.enabled = context.scene.enable_adding_custom_shaders
         dimmable_row1.operator("zgswtor.add_custom_external_swtor_shaders", text="Add Custom SWTOR Shaders")
@@ -104,7 +212,12 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
     bl_label = "SWTOR Objects Tools"
 
     def draw(self, context):
+        
+        gral_y_scaling_factor = 0.8
+
         layout = self.layout
+        layout.scale_y = gral_y_scaling_factor
+
 
         # quickscale UI
         tool_section = layout.box()
@@ -161,7 +274,6 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
         col.operator("zgswtor.remove_doubles_edit_mode", text="Merge Selected Double Vertices")
 
 
-
         # set_modifiers UI
         tool_section = layout.box()
         grid = tool_section.grid_flow(row_major=True, columns=2, align=True)
@@ -169,8 +281,17 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
         grid.operator("zgswtor.set_modifiers", text="Add Multires").action = "add_multires"
         grid.operator("zgswtor.set_modifiers", text="Add Displace").action = "add_displace"
         grid.operator("zgswtor.set_modifiers", text="Add Solidify").action = "add_solidify"
+        grid.operator("zgswtor.set_modifiers", text="Add Smooth Corrective").action = "add_smooth_corrective"
         grid.operator("zgswtor.set_modifiers", text="Add Shrinkwrap").action = "add_shrinkwrap"
-        grid.prop(context.scene, "shrinkwrap_target", text="Target")
+        row = tool_section.row(align=True)
+        split = row.split(factor=0.55, align=True)
+        col_left, col_right = split.column(align=True), split.column(align=True)
+        col_left.label(text="Shrinkwrap Target")
+        col_right.prop(context.scene, "shrinkwrap_target", text="")
+
+
+
+
 
         row = tool_section.row()
         row.operator("zgswtor.set_modifiers", text="Remove These Modifiers").action = "remove_them"
@@ -200,7 +321,10 @@ class ZGSWTOR_PT_misc_tools(bpy.types.Panel):
     bl_label = "SWTOR Misc. Tools"
 
     def draw(self, context):
+
         layout = self.layout
+        layout.scale_y = 0.8
+
 
         #### Block of simple custom operators:
         tool_section = layout.box()
@@ -217,34 +341,39 @@ class ZGSWTOR_PT_misc_tools(bpy.types.Panel):
         #### Block of simple already existing Blender operators:
         tool_section = layout.box()
         
-        # Simplify
+        # Simplify 
         row = tool_section.row(align=True)
+
         row.prop(context.scene.render, "use_simplify", text=" Simplify")
         in_row = row.row()  # for a non-50% contiguous row region
         in_row.scale_x = 1.2
         in_row.prop(context.scene.render, "simplify_subdivision", text="Max SubD")
 
         # Pose Position / Reset Position
+        tool_section = layout.box()
+
         row = tool_section.row(align=True)
-        if context.object:
-            if context.object.type == "ARMATURE":
-                row.prop(context.object.data, "pose_position", expand=True)
-            else:
-                row.label(text="POSE / REST an Active Armature")
-        else:
-            row.label(text="POSE / REST an Active Armature")
-
-        # Lock camera to view
-        row = tool_section.row(align=True)
-        row.prop(context.space_data, "lock_camera", text="Camera to View")
-
-
+        row.label(text="Armatures In Scene:")
+        # Arbitrary selected objects limit to avoid
+        # the whole panel grinding to a halt in cases
+        # of selected whole worlds and such.
+        if context.scene.objects:
+            for obj in context.scene.objects:
+                if obj.type == "ARMATURE":
+                    armature_col = tool_section.column(align=True)
+                    armature_col.label(text=obj.name)
+                    armature_buttons = armature_col.row(align=True)
+                    armature_buttons.prop(obj.data, "pose_position", expand=True)
 
 
 
 
 
+
+
+# ---------------------------------------------------------------
 # SHADER EDITOR PANEL -------------------------------------------
+# ---------------------------------------------------------------
 
 class ZGSWTOR_PT_shader_tools(bpy.types.Panel):
     bl_space_type = "NODE_EDITOR"
@@ -301,6 +430,8 @@ class ZGSWTOR_PT_shader_tools(bpy.types.Panel):
 # Registrations
 
 classes = [
+    ZGSWTOR_PT_status,
+    ZGSWTOR_PT_files_tools,
     ZGSWTOR_PT_materials_tools,
     ZGSWTOR_PT_objects_tools,
     ZGSWTOR_PT_misc_tools,

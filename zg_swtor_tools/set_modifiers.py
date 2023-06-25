@@ -24,6 +24,7 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
             ("add_multires", "Add Multires Modifier", "Add Multires Modifier"),
             ("add_displace", "Add Displace Modifier", "Add Displace Modifier"),
             ("add_solidify", "Add Solidify Modifier", "Add Solidify Modifier"),
+            ("add_smooth_corrective", "Add Smooth Corrective", "Add Smooth Corrective"),
             ("add_shrinkwrap", "Add Shrinkwrap Modifier", "Add Shrinkwrap Modifier"),
             ("remove_them", "Remove All Modifiers", "Remove All Modifiers of these types"),
             ("armature_first", "Remove All Modifiers", "Set Armature as first Modifier"),
@@ -63,6 +64,19 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
         if not "Solidify" in obj.modifiers:
             mod = obj.modifiers.new(name= "Solidify", type="SOLIDIFY")
             mod.thickness = 0.0004
+
+    @staticmethod
+    def add_smooth_corrective(obj):
+        bpy.context.window.cursor_set("WAIT")
+        if not "CorrectiveSmooth" in obj.modifiers:
+            mod = obj.modifiers.new(name= "CorrectiveSmooth", type="CORRECTIVE_SMOOTH")
+            mod.factor = 0.250
+            mod.iterations = 3
+            mod.scale = 1.5
+            mod.smooth_type = "LENGTH_WEIGHTED"
+            mod.use_only_smooth = False
+            mod.use_pin_boundary = False
+            mod.rest_source = "ORCO"
 
     @staticmethod
     def add_shrinkwrap(obj):
@@ -137,6 +151,8 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
                     self.add_displace(obj)
                 elif self.action == "add_solidify":
                     self.add_solidify(obj)
+                elif self.action == "add_smooth_corrective":
+                    self.add_smooth_corrective(obj)
                 elif self.action == "add_shrinkwrap":
                     self.add_shrinkwrap(obj)
                 elif self.action == "remove_them":

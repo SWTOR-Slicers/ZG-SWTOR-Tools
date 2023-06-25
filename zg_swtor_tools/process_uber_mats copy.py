@@ -8,9 +8,7 @@ import xml.etree.ElementTree as ET
 import addon_utils
 
 
-from .shd_EmissiveOnly import create_EmissiveOnly_nodegroup
-
-from .shd_AnimatedUV import create_AnimatedUV_nodegroup
+from .shd_AnimatedUV import create_InanimatedUV_nodegroup
 
 
 class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
@@ -61,7 +59,7 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
 
 
 
-    # Register some custom properties in the Material class for helping
+    # Register some properties in the Material class for helping
     # diagnose issues
     bpy.types.Material.swtor_derived = bpy.props.StringProperty()
 
@@ -84,8 +82,8 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
         if not selected_objects:
             return {"CANCELLED"}
 
-        # Create nodegroup EmissiveOnly for provisional Holo material
-        create_EmissiveOnly_nodegroup()
+        # Create nodegroup InanimatedUV for provisional Holo material
+        create_InanimatedUV_nodegroup()
 
 
         # --------------------------------------------------------------
@@ -113,43 +111,6 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
             self.report({"WARNING"}, "No version of the 'io_scene_gr2' add-on is enabled.")
             return {"CANCELLED"}
 
-
-        # --------------------------------------------------------------
-        # Some provisional shader substitution lists
-        
-        Uber_like = [
-            "UberHueable",
-            "VegetationHighQuality",
-            "Grass",
-            "UberEnvBlend",
-            "Glass",
-            "Ice",
-            "UberScrolling",
-            "Cloud",
-            "Waterfall",
-            "Vegetation",
-            ]
-        
-        diffuse_only_like = [
-            "DiffuseFlat",
-            "DiffuseFlatHueable",
-            # "Vegetation",
-            "Skydome",
-            "NoShadeTexFogged",
-            ]
-        
-        AnimatedUV_like = [
-            "AnimatedUVAlphaBlend",
-            "AnimatedVFX",
-            "AnimatedVFXAlphaBlend",
-            ]
-        
-        discardable = [
-            "OpacityFade",
-            "SimpleParallax"
-            ]
-        
-        
         print()
         print("PROCESSING OF MATERIALS STARTS HERE")
         print()
@@ -174,13 +135,8 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
 
                 for mat_slot in ob.material_slots:
 
-
- # MATERIAL PROCESSING STARTS HERE ------------------------------------------------------------------
- 
- 
                     mat = mat_slot.material
                     print("          Material: ", mat.name)
-
 
                     if mat.name == "util_collision_hidden":
                         is_collision_object = True
@@ -191,7 +147,7 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                         and (r"default" not in mat.name)
                         and mat.users
                         and mat.name not in already_processed_mats
-                        ):
+                    ):
 
                         # By looking for the material in the shaders folder we'll inherently
                         # filter out recolorable materials such as skin, eyes or armor already,
@@ -206,25 +162,24 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                         matxml_derived = matxml_root.find("Derived").text
 
                         mat.swtor_derived = matxml_derived
-                        # print("            Shader: ", matxml_derived)
 
-
-                        if matxml_derived in Uber_like:
+                        if matxml_derived == "Glass":
                             matxml_derived = "Uber"
+                            transparent_uber = True
+                        else:
+                            transparent_uber = False
 
-                        if matxml_derived in AnimatedUV_like:
-                            matxml_derived = "AnimatedUV"
-                            
                         if  matxml_derived in ["Uber", "EmissiveOnly", "AnimatedUV", "Glass"]:
 
                             mat_nodes = mat.node_tree.nodes
 
                             # Delete Principled Shader if needed
-                            if (self.use_overwrite_bool == True
+                            if (
+                                self.use_overwrite_bool == True
                                 or (matxml_derived == "Uber" and not ("Uber Shader" in mat_nodes or "SWTOR" in mat_nodes))
                                 or ((matxml_derived == "EmissiveOnly" or matxml_derived == "Glass") and not "_d DiffuseMap" in mat_nodes)
                                 or (matxml_derived == "AnimatedUV" and not "_d DiffuseMap" in mat_nodes)
-                                ):
+                            ):
                                 for node in mat_nodes:
                                     mat_nodes.remove(node)
                             else:
@@ -247,13 +202,10 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
 
                             # ----------------------------------------------
                             # Gather texture maps
-                            # region vscode
+
                             diffusemap_image = None
                             rotationmap_image = None
                             glossmap_image = None
-                            animatedtexture1map_image = None
-                            animatedtexture2map_image = None
-
 
                             temp_image = None
                             temp_imagepath = None
@@ -280,17 +232,11 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                                         rotationmap_image = temp_image
                                     elif matxml_semantic == "GlossMap":
                                         glossmap_image = temp_image
-                                    elif matxml_semantic == "AnimatedTexture1":
-                                        animatedtexture1map_image = temp_image
-                                    elif matxml_semantic == "AnimatedTexture2":
-                                        animatedtexture2map_image = temp_image
-
 
                                     # Collision Object check at the texturemap level
                                     if  "util_collision_hidden" in matxml_value and is_collision_object == False:
                                         is_collision_object = True
                                         collider_objects.append(ob)
-                            # endregion vscode
 
 
 
@@ -340,48 +286,45 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
 
 
                                 # Add Diffuse node and link it to Uber shader
-                                if diffusemap_image:
-                                    if not "_d DiffuseMap" in mat_nodes:
-                                        _d = mat_nodes.new(type='ShaderNodeTexImage')
-                                        _d.name = _d.label = "_d DiffuseMap"
-                                    else:
-                                        _d = mat_nodes["_d DiffuseMap"]
-                                    _d.location = (-464, 300)
-                                    _d.width = _d.width_hidden = 300
-                                    links.new(uber_nodegroup.inputs[0],_d.outputs[0])
-                                    _d.image = diffusemap_image
+                                if not "_d DiffuseMap" in mat_nodes:
+                                    _d = mat_nodes.new(type='ShaderNodeTexImage')
+                                    _d.name = _d.label = "_d DiffuseMap"
+                                else:
+                                    _d = mat_nodes["_d DiffuseMap"]
+                                _d.location = (-464, 300)
+                                _d.width = _d.width_hidden = 300
+                                links.new(uber_nodegroup.inputs[0],_d.outputs[0])
+                                _d.image = diffusemap_image
 
 
                                 # Add Rotation node and link it to Uber shader
                                 if matxml_derived != "EmissiveOnly":
-                                    if rotationmap_image:
-                                        if not "_n RotationMap" in mat_nodes:
-                                            _n = mat_nodes.new(type='ShaderNodeTexImage')
-                                            _n.name = _n.label = "_n RotationMap"
-                                        else:
-                                            _n = mat_nodes["_n RotationMap"]
-                                        _n.location = (-464, 0)
-                                        _n.width = _n.width_hidden = 300
-                                        links.new(uber_nodegroup.inputs[1],_n.outputs[0])
-                                        links.new(uber_nodegroup.inputs[2],_n.outputs[1])
-                                        _n.image = rotationmap_image
+                                    if not "_n RotationMap" in mat_nodes:
+                                        _n = mat_nodes.new(type='ShaderNodeTexImage')
+                                        _n.name = _n.label = "_n RotationMap"
+                                    else:
+                                        _n = mat_nodes["_n RotationMap"]
+                                    _n.location = (-464, 0)
+                                    _n.width = _n.width_hidden = 300
+                                    links.new(uber_nodegroup.inputs[1],_n.outputs[0])
+                                    links.new(uber_nodegroup.inputs[2],_n.outputs[1])
+                                    _n.image = rotationmap_image
                                 else:
                                     uber_nodegroup.inputs[1] = [0, 0.5, 0, 1]
                                     uber_nodegroup.inputs[2] = 0.5
 
 
                                 # Add Gloss node and link it to Uber shader
-                                if glossmap_image:
-                                    if not "_s GlossMap" in mat_nodes:
-                                        _s = mat_nodes.new(type='ShaderNodeTexImage')
-                                        _s.name = _s.label = "_s GlossMap"
-                                    else:
-                                        _s = mat_nodes["_s GlossMap"]
-                                    _s.location = (-464, -300)
-                                    _s.width = _s.width_hidden = 300
-                                    links.new(uber_nodegroup.inputs[3],_s.outputs[0])
-                                    links.new(uber_nodegroup.inputs[4],_s.outputs[1])
-                                    _s.image = glossmap_image
+                                if not "_s GlossMap" in mat_nodes:
+                                    _s = mat_nodes.new(type='ShaderNodeTexImage')
+                                    _s.name = _s.label = "_s GlossMap"
+                                else:
+                                    _s = mat_nodes["_s GlossMap"]
+                                _s.location = (-464, -300)
+                                _s.width = _s.width_hidden = 300
+                                links.new(uber_nodegroup.inputs[3],_s.outputs[0])
+                                links.new(uber_nodegroup.inputs[4],_s.outputs[1])
+                                _s.image = glossmap_image
 
                             # ----------------------------------------------
                             #   For modern version of the shader
@@ -431,14 +374,9 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                                 links.new(output_node.inputs[0],uber_nodegroup.outputs[0])
 
                                 # Set shader's texturemap nodes
-                                if diffusemap_image:
-                                    uber_nodegroup.diffuseMap = diffusemap_image
-    
-                                if glossmap_image:
-                                    uber_nodegroup.glossMap = glossmap_image
-    
-                                if rotationmap_image:
-                                    uber_nodegroup.rotationMap = rotationmap_image
+                                uber_nodegroup.diffuseMap = diffusemap_image
+                                uber_nodegroup.glossMap = glossmap_image
+                                uber_nodegroup.rotationMap = rotationmap_image
 
                             # ----------------------------------------------
                             # For EmissiveOnly-type material,
@@ -508,109 +446,46 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                                     
                                     links.new(principled.inputs[19],_d.outputs[0])  # Emission
 
-                                
                             elif matxml_derived == "AnimatedUV":
-                                create_AnimatedUV_nodegroup(mat)
-                                
+
                                 # Set some basic material attributes for
                                 # this style of Holo-like material
                                 mat.blend_method = 'BLEND'
                                 mat.shadow_method = 'NONE'
-                                mat.use_backface_culling = False
+                                mat.use_backface_culling = True
                                 mat.use_screen_refraction = False
                                 mat.show_transparent_back = True
 
+                                # Add provisional InanimatedUV :P Shader
+                                if not "InanimatedUV" in mat_nodes:
+                                    inanimated_uv = mat.node_tree.nodes.new(type="ShaderNodeGroup")
+                                    inanimated_uv.node_tree = bpy.data.node_groups["InanimatedUV"]
 
-                                # mat_AlphaMode = matxml_root.find("AlphaMode").text
-                                # mat_AlphaTestValue = matxml_root.find("AlphaTestValue").text
+                                    inanimated_uv.label = "InanimatedUV"
+                                    inanimated_uv.name  = "InanimatedUV"
+                                else:
+                                    inanimated_uv = mat_nodes["InanimatedUV"]
                                 
-                                _d = mat_nodes["_d DiffuseMap"]
+                                # Add Diffuse node
+                                if not "_d DiffuseMap" in mat_nodes:
+                                    _d = mat_nodes.new(type='ShaderNodeTexImage')
+                                    _d.name = _d.label = "_d DiffuseMap"
+                                else:
+                                    _d = mat_nodes["_d DiffuseMap"]
                                 _d.image = diffusemap_image
+
+                                inanimated_uv.location = (-300, 0)
+                                output_node.location = (0, 0)
+                                _d.location = (-800, -200)
+                                _d.width = _d.width_hidden = 300
+
+                                # Linking nodes and setting some Principled shader values
+                                links = mat.node_tree.links
+                                links.new(output_node.inputs[0], inanimated_uv.outputs[0])
+                                links.new(inanimated_uv.inputs[0],_d.outputs[0])  # Diffuse
+                                inanimated_uv.inputs[1].default_value = 1.5         # Emissiveness
                                 
-                                animatedtexture1map = mat_nodes["AnimatedTexture1"]
-                                animatedtexture1map.image = animatedtexture1map_image
-                                
-                                animatedtexture2map = mat_nodes["AnimatedTexture2"]
-                                animatedtexture2map.image = animatedtexture2map_image
-
-                                matxml_inputs = matxml_root.findall("input")
-                                
-                                AnimatedUV_node = mat_nodes["SWTOR - AnimatedUV Shader"]
-                                TransformAllUV_node = mat_nodes["SW Aux - TransformAllUV"]
-
-                                AnimatedUV_node.inputs["Backface Culling Factor"].default_value = 1.0
-
-
-                                for matxml_input in matxml_inputs:
-                                    matxml_semantic = matxml_input.find("semantic").text
-                                    matxml_type = matxml_input.find("type").text
-                                    matxml_value = matxml_input.find("value").text
-
-                                    # AnimatedUV Nodegroup Settings
-                                    if matxml_semantic == "animTexTint0":
-                                        vect_val = matxml_value.split(',')
-                                        AnimatedUV_node.inputs[matxml_semantic].default_value[0] = float(vect_val[0])
-                                        AnimatedUV_node.inputs[matxml_semantic].default_value[1] = float(vect_val[1])
-                                        AnimatedUV_node.inputs[matxml_semantic].default_value[2] = float(vect_val[2])
-                                    
-                                    if matxml_semantic == "animTexTint1":
-                                        AnimatedUV_node.inputs[matxml_semantic].default_value = float(matxml_value)
-                                    
-                                    if matxml_semantic == "animTexTint2":
-                                        vect_val = matxml_value.split(',')
-                                        AnimatedUV_node.inputs[matxml_semantic].default_value[0] = float(vect_val[0])
-                                        AnimatedUV_node.inputs[matxml_semantic].default_value[1] = float(vect_val[1])
-                                        AnimatedUV_node.inputs[matxml_semantic].default_value[2] = float(vect_val[2])
-                                    
-                                    # -----------------------------------------------------------
-                                    # TransformAllUV Nodegroup settings
-                                    if matxml_semantic == "animTexUVScrollSpeed0":
-                                        vect_val = matxml_value.split(',')
-                                        TransformAllUV_node.inputs[matxml_semantic].default_value[0] = float(vect_val[0])
-                                        TransformAllUV_node.inputs[matxml_semantic].default_value[1] = float(vect_val[1])
-                                        # TransformAllUV_node.inputs[matxml_semantic].default_value[2] = float(vect_val[2])
-                                    
-                                    if matxml_semantic == "animTexRotationPivot0":
-                                        vect_val = matxml_value.split(',')
-                                        TransformAllUV_node.inputs[matxml_semantic].default_value[0] = float(vect_val[0])
-                                        TransformAllUV_node.inputs[matxml_semantic].default_value[1] = float(vect_val[1])
-                                        # TransformAllUV_node.inputs[matxml_semantic].default_value[2] = float(vect_val[2])
-                                    
-                                    if matxml_semantic == "animTexRotationSpeed0":
-                                        TransformAllUV_node.inputs[matxml_semantic].default_value = float(matxml_value)
-                                    
-                                    if matxml_semantic == "animTexUVScrollSpeed1":
-                                        vect_val = matxml_value.split(',')
-                                        TransformAllUV_node.inputs[matxml_semantic].default_value[0] = float(vect_val[0])
-                                        TransformAllUV_node.inputs[matxml_semantic].default_value[1] = float(vect_val[1])
-                                        # TransformAllUV_node.inputs[matxml_semantic].default_value[2] = float(vect_val[2])
-                                    
-                                    if matxml_semantic == "animTexRotationPivot1":
-                                        vect_val = matxml_value.split(',')
-                                        TransformAllUV_node.inputs[matxml_semantic].default_value[0] = float(vect_val[0])
-                                        TransformAllUV_node.inputs[matxml_semantic].default_value[1] = float(vect_val[1])
-                                        # TransformAllUV_node.inputs[matxml_semantic].default_value[2] = float(vect_val[2])
-                                    
-                                    if matxml_semantic == "animTexRotationSpeed1":
-                                        TransformAllUV_node.inputs[matxml_semantic].default_value = float(matxml_value)
-                                    
-                                    if matxml_semantic == "animTexUVScrollSpeed2":
-                                        vect_val = matxml_value.split(',')
-                                        TransformAllUV_node.inputs[matxml_semantic].default_value[0] = float(vect_val[0])
-                                        TransformAllUV_node.inputs[matxml_semantic].default_value[1] = float(vect_val[1])
-                                        # TransformAllUV_node.inputs[matxml_semantic].default_value[2] = float(vect_val[2])
-                                    
-                                    if matxml_semantic == "animTexRotationPivot2":
-                                        vect_val = matxml_value.split(',')
-                                        TransformAllUV_node.inputs[matxml_semantic].default_value[0] = float(vect_val[0])
-                                        TransformAllUV_node.inputs[matxml_semantic].default_value[1] = float(vect_val[1])
-                                        # TransformAllUV_node.inputs[matxml_semantic].default_value[2] = float(vect_val[2])
-                                    
-                                    if matxml_semantic == "animTexRotationSpeed2":
-                                        TransformAllUV_node.inputs[matxml_semantic].default_value = float(matxml_value)
-                                    
-
-
+                            
                         already_processed_mats.append(mat.name)
 
 
