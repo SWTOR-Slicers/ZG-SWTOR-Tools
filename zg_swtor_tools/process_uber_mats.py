@@ -227,6 +227,9 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                                 ):
                                 for node in mat_nodes:
                                     mat_nodes.remove(node)
+                                if matxml_derived == "EmissiveOnly":
+                                    mat.use_nodes = False
+                                
                             else:
                                 continue  # Entirely disregard material and go for the next one
 
@@ -464,7 +467,16 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                                     principled = mat.node_tree.nodes.new(type="ShaderNodeBsdfPrincipled")
                                 else:
                                     principled = mat_nodes["Principled BSDF"]
-                                
+
+
+                                # Add Gamma correction Shader
+                                if not "Gamma" in mat_nodes:
+                                    gamma = mat.node_tree.nodes.new(type="ShaderNodeGamma")
+                                else:
+                                    gamma = mat_nodes["Gamma"]
+                                gamma.inputs["Gamma"].default_value = 2.2
+
+
                                 # Add Diffuse node
                                 if not "_d DiffuseMap" in mat_nodes:
                                     _d = mat_nodes.new(type='ShaderNodeTexImage')
@@ -474,15 +486,18 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                                 _d.image = diffusemap_image
 
                                 principled.location = (-300, 0)
+                                gamma.location = (-550, -310)
                                 output_node.location = (0, 0)
-                                _d.location = (-800, -200)
+                                _d.location = (-1000, -200)
                                 _d.width = _d.width_hidden = 300
 
                                 # Linking nodes and setting some Principled shader values
                                 links = mat.node_tree.links
 
+                                #   Output to Principled
                                 links.new(output_node.inputs[0], principled.outputs[0])
                                 
+                                #   Principled to Gamma
                                 # Blender 2.8x
                                 if bpy.app.version < (2, 90, 0):
                                     principled.inputs[5].default_value   = 0.5      # Specular
@@ -490,7 +505,7 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                                     principled.inputs[14].default_value  = 1.050    # IOR
                                     principled.inputs[15].default_value  = 0.950    # Transmission
                                     
-                                    links.new(principled.inputs[17],_d.outputs[0])  # Emission
+                                    links.new(principled.inputs[17],gamma.outputs[0])  # Emission
                                 # Blender 2.9x
                                 elif bpy.app.version < (3, 0, 0):
                                     principled.inputs[5].default_value   = 0.5      # Specular
@@ -498,7 +513,7 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                                     principled.inputs[14].default_value  = 1.050    # IOR
                                     principled.inputs[15].default_value  = 0.950    # Transmission
                                     
-                                    links.new(principled.inputs[17],_d.outputs[0])  # Emission
+                                    links.new(principled.inputs[17],gamma.outputs[0])  # Emission
                                 # Blender 3.x
                                 else:
                                     principled.inputs[7].default_value   = 0.5      # Specular
@@ -506,10 +521,14 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                                     principled.inputs[16].default_value  = 1.050    # IOR
                                     principled.inputs[17].default_value  = 0.950    # Transmission
                                     
-                                    links.new(principled.inputs[19],_d.outputs[0])  # Emission
+                                    links.new(principled.inputs[19],gamma.outputs[0])  # Emission
 
+                                # Gamma to _d
+                                links.new(_d.outputs[0],gamma.inputs[0])  # Emission
+                                
                                 
                             elif matxml_derived == "AnimatedUV":
+                                    
                                 create_AnimatedUV_nodegroup(mat)
                                 
                                 # Set some basic material attributes for
@@ -539,6 +558,7 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                                 TransformAllUV_node = mat_nodes["SW Aux - TransformAllUV"]
 
                                 AnimatedUV_node.inputs["Backface Culling Factor"].default_value = 1.0
+                                AnimatedUV_node.inputs["Emission Strength"].default_value = 2.5
 
 
                                 for matxml_input in matxml_inputs:
