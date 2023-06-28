@@ -47,7 +47,7 @@ def selected_collections(context):
                 return [item for item in context.selected_ids if isinstance(item, bpy.types.Collection)]
             
 
-class SWTOR_OT_AddPrefixOperator(bpy.types.Operator):
+class ZGSWTOR_OT_AddPrefixOperator(bpy.types.Operator):
     """"""
     bl_idname = "swtor.add_prefix_operator"
     bl_description = "Adds a prefix to the names of all selected Objects, their Materials, and the Collections they are linked to.\nThis renaming is necessary to avoid name collisions between successive character imports in a same Blender project.\n\nPlease include your own separators between the prefix and the names: spaces, a hyphen, etc.\n\n• Requires a selection of objects"
@@ -78,7 +78,7 @@ class SWTOR_OT_AddPrefixOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class SWTOR_PT_AddPrefixPanel(bpy.types.Panel):
+class ZGSWTOR_PT_AddPrefixPanel(bpy.types.Panel):
     """Add Prefix Panel"""
     bl_label = "Character Prefixer"
     bl_idname = "SWTOR_PT_add_prefix_panel"
@@ -116,8 +116,8 @@ class SWTOR_PT_AddPrefixPanel(bpy.types.Panel):
 
 
 def register():
-    bpy.utils.register_class(SWTOR_OT_AddPrefixOperator)
-    bpy.utils.register_class(SWTOR_PT_AddPrefixPanel)
+    bpy.utils.register_class(ZGSWTOR_OT_AddPrefixOperator)
+    bpy.utils.register_class(ZGSWTOR_PT_AddPrefixPanel)
     bpy.types.Scene.prefix = bpy.props.StringProperty(
         name="Prefix text",
         description = "Text to prefix the names of all selected Objects, their Materials, and the Collections they are linked to with.\nThis renaming is necessary to avoid name collisions between successive character imports in a same Blender project.\n\nPlease include your own separators between the prefix and the names: spaces, a hyphen, etc.\n\n• Requires a selection of objects",
@@ -126,8 +126,8 @@ def register():
 
 
 def unregister():
-    bpy.utils.unregister_class(SWTOR_OT_AddPrefixOperator)
-    bpy.utils.unregister_class(SWTOR_PT_AddPrefixPanel)
+    bpy.utils.unregister_class(ZGSWTOR_OT_AddPrefixOperator)
+    bpy.utils.unregister_class(ZGSWTOR_PT_AddPrefixPanel)
     del bpy.types.Scene.prefix
 
 

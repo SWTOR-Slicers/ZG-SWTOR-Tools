@@ -93,6 +93,7 @@ class ZGSWTOR_PT_files_tools(bpy.types.Panel):
         tool_section.alert = tool_section.enabled is False
         tool_section.label(text="PC / NPC Importer")
         tool_section.operator("zgswtor.character_assembler", text="Select 'paths.json' File")
+        tool_section.prop(context.scene, "swca_prefix_str", text="Prefix")
         tool_section.prop(context.scene, "swca_gather_only_bool", text="Gather Assets only")
         tool_section.prop(context.scene, "swca_dont_overwrite_bool", text="Don't Overwrite Assets")
         tool_section.prop(context.scene, "swca_collect_bool", text="Collect By In-Game Names")

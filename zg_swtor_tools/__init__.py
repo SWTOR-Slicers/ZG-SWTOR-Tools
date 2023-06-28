@@ -38,8 +38,6 @@ modulesNames = [
     'shaders_io_linker',
     'shaders_io_copier',
     'selected_vertices_to_sculpt_mask',
-    # 'turn_animation_180',
-    'locate_character_assets',
     'character_assembler',
     ]
   

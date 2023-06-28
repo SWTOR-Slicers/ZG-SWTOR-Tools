@@ -182,6 +182,12 @@ class ZGSWTOR_OT_character_assembler(Operator):
 
     # Some properties
     
+    prefix: bpy.props.StringProperty(
+        name="Prefix",
+        description = "Adds a prefix to the names of all imported Objects, their Materials, and the Collections they are linked to.\nThis renaming is necessary to avoid name collisions between successive character imports\nin a same Blender project, and convenient for single character plus armor projects.\n\n• An empty prefix field means no prefixing.\n• Please include your own separators between the prefix and the names: spaces, a hyphen, etc.\nYou can prefix after import using the Prefix Tool in the Misc. Tools Panel instead",
+        default=""
+    )
+
     gather_only: bpy.props.BoolProperty(
         name="Gather Assets Only",
         description="Don't Import The Character, and just copy the required assets\nto the Character's folder",
@@ -242,6 +248,7 @@ class ZGSWTOR_OT_character_assembler(Operator):
 
 
         # Sync properties with their UI matches
+        self.prefix = context.scene.swca_prefix_str
         self.gather_only = context.scene.swca_gather_only_bool
         self.dont_overwrite = context.scene.swca_dont_overwrite_bool
         self.collect = context.scene.swca_collect_bool
@@ -598,7 +605,13 @@ classes = [
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
-        
+
+    bpy.types.Scene.swca_prefix_str = bpy.props.StringProperty(
+        name="Prefix",
+        description = "Adds a prefix to the names of all imported Objects, their Materials, and the Collections they are linked to.\nThis renaming is necessary to avoid name collisions between successive character imports\nin a same Blender project, and convenient for single character plus armor projects.\n• An empty prefix field means no prefixing.\n• Please include your own separators between the prefix and the names: spaces, a hyphen, etc.\nYou can prefix after import using the Prefix Tool in the Misc. Tools Panel instead",
+        default=""
+    )
+
     bpy.types.Scene.swca_gather_only_bool = bpy.props.BoolProperty(
         name="Gather Assets Only",
         description="Don't import the character, just copy the required assets\nto the Character's folder",
