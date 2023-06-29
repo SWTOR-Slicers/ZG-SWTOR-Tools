@@ -135,7 +135,7 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         tool_section.alert = tool_section.enabled is False
 
                 
-        tool_section.label(text="Process Static Object Materials in")
+        tool_section.label(text="Process Named Materials In")
 
         split = tool_section.split(factor= 0.60, align=True)
         col_left, col_right = split.column(align=True), split.column(align=True)

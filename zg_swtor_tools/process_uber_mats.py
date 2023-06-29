@@ -215,13 +215,19 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                         if matxml_derived in AnimatedUV_like:
                             matxml_derived = "AnimatedUV"
                             
-                        if  matxml_derived in ["Uber", "EmissiveOnly", "AnimatedUV", "Glass"]:
+                        if  matxml_derived in ["Uber", "Creature", "HighQualityCharacter", "Eye", "HairC", "SkinB", "Garment", "EmissiveOnly", "AnimatedUV", "Glass"]:
 
                             mat_nodes = mat.node_tree.nodes
 
                             # Delete Principled Shader if needed
                             if (self.use_overwrite_bool == True
                                 or (matxml_derived == "Uber" and not ("Uber Shader" in mat_nodes or "SWTOR" in mat_nodes))
+                                or (matxml_derived == "Creature" and not ("Creature Shader" in mat_nodes or "SWTOR" in mat_nodes))
+                                or (matxml_derived == "HighQualityCharacter" and not ("HighQualityCharacter" in mat_nodes or "SWTOR" in mat_nodes))
+                                or (matxml_derived == "Eye" and not ("Eye Shader" in mat_nodes or "SWTOR" in mat_nodes))
+                                or (matxml_derived == "HairC" and not ("Hair Shader" in mat_nodes or "SWTOR" in mat_nodes))
+                                or (matxml_derived == "SkinB" and not ("Skin Shader" in mat_nodes or "SWTOR" in mat_nodes))
+                                or (matxml_derived == "Garment" and not ("Garment Shader" in mat_nodes or "SWTOR" in mat_nodes))
                                 or ((matxml_derived == "EmissiveOnly" or matxml_derived == "Glass") and not "_d DiffuseMap" in mat_nodes)
                                 or (matxml_derived == "AnimatedUV" and not "_d DiffuseMap" in mat_nodes)
                                 ):
@@ -249,11 +255,26 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
 
 
                             # ----------------------------------------------
-                            # Gather texture maps
-                            # region vscode
+                            # Gather texture maps and some values
+                            flushtone_value = None
+                            fleshbrightness = None
+                            palette1 = None
+                            palette1specular = None
+                            palette1metallicspecular = None
+                            palette2 = None
+                            palette2specular = None
+                            palette2metallicspecular = None
+
+                            
                             diffusemap_image = None
                             rotationmap_image = None
                             glossmap_image = None
+                            palettemap_image = None
+                            palettemaskmap_image = None
+                            directionmap_image = None
+                            agemap_image = None
+                            complexionmap_image = None
+                            facepaintmap_image = None
                             animatedtexture1map_image = None
                             animatedtexture2map_image = None
 
@@ -267,6 +288,79 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                                 matxml_type = matxml_input.find("type").text
                                 matxml_value = matxml_input.find("value").text
 
+
+                                # Parsing some values
+
+                                if matxml_semantic == "palette1":
+                                    vectval = str(matxml_value).split(',')
+                                    palette1_value = [
+                                        float(vectval[0]),
+                                        float(vectval[1]),
+                                        float(vectval[2]),
+                                        float(vectval[3]),
+                                        ]
+
+                                if matxml_semantic == "palette1Specular":
+                                    vectval = str(matxml_value).split(',')
+                                    palette1specular_value = [
+                                        float(vectval[0]),
+                                        float(vectval[1]),
+                                        float(vectval[2]),
+                                        1.0,
+                                        ]
+
+                                if matxml_semantic == "palette1MetallicSpecular":
+                                    vectval = str(matxml_value).split(',')
+                                    palette1metallicspecular_value = [
+                                        float(vectval[0]),
+                                        float(vectval[1]),
+                                        float(vectval[2]),
+                                        1.0,
+                                        ]
+
+
+
+                                if matxml_semantic == "palette2":
+                                    vectval = str(matxml_value).split(',')
+                                    palette2_value = [
+                                        float(vectval[0]),
+                                        float(vectval[1]),
+                                        float(vectval[2]),
+                                        float(vectval[3]),
+                                        ]
+
+                                if matxml_semantic == "palette2Specular":
+                                    vectval = str(matxml_value).split(',')
+                                    palette2specular_value = [
+                                        float(vectval[0]),
+                                        float(vectval[1]),
+                                        float(vectval[2]),
+                                        1.0,
+                                        ]
+
+                                if matxml_semantic == "palette2MetallicSpecular":
+                                    vectval = str(matxml_value).split(',')
+                                    palette2metallicspecular_value = [
+                                        float(vectval[0]),
+                                        float(vectval[1]),
+                                        float(vectval[2]),
+                                        1.0,
+                                        ]
+
+
+
+                                if matxml_semantic == "FlushTone":
+                                    vectval = str(matxml_value).split(',')
+                                    flushtone_value = [
+                                        float(vectval[0]),
+                                        float(vectval[1]),
+                                        float(vectval[2]),
+                                        ]
+                                    
+                                if matxml_semantic == "FleshBrightness":
+                                    fleshbrigtness_value = float(str(matxml_value))
+
+                                
                                 # Parsing and loading texture maps
 
                                 if matxml_type == "texture":
@@ -283,17 +377,27 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
                                         rotationmap_image = temp_image
                                     elif matxml_semantic == "GlossMap":
                                         glossmap_image = temp_image
+                                    elif matxml_semantic == "PaletteMap":
+                                        palettemap_image = temp_image
+                                    elif matxml_semantic == "PaletteMaskMap":
+                                        palettemaskmap_image = temp_image
+                                    elif matxml_semantic == "AgeMap":
+                                        agemap_image = temp_image
+                                    elif matxml_semantic == "ComplexionMap":
+                                        complexionmap_image = temp_image
+                                    elif matxml_semantic == "FacepaintMap":
+                                        facepaintmap_image = temp_image
+                                    elif matxml_semantic == "DirectionMap":
+                                        directionmap_image = temp_image
                                     elif matxml_semantic == "AnimatedTexture1":
                                         animatedtexture1map_image = temp_image
                                     elif matxml_semantic == "AnimatedTexture2":
                                         animatedtexture2map_image = temp_image
 
-
                                     # Collision Object check at the texturemap level
                                     if  "util_collision_hidden" in matxml_value and is_collision_object == False:
                                         is_collision_object = True
                                         collider_objects.append(ob)
-                            # endregion vscode
 
 
 
@@ -442,6 +546,425 @@ class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
     
                                 if rotationmap_image:
                                     uber_nodegroup.rotationMap = rotationmap_image
+
+
+                            elif not gr2_addon_legacy and (matxml_derived == "Creature" or matxml_derived == "HighQualityCharacter"):
+
+
+                                # Add Creature Shader
+                                creature_nodegroup = mat_nodes.new(type="ShaderNodeHeroEngine")
+                                creature_nodegroup.derived = 'CREATURE'
+                                
+                                # Adjust transparency and shadows
+                                mat.alpha_threshold = float(mat_AlphaTestValue)
+                                
+                                if mat_AlphaMode == 'Test':
+                                    mat.blend_method = 'CLIP'
+                                    mat.shadow_method = 'CLIP'
+                                    creature_nodegroup.alpha_mode = 'CLIP'
+                                    try:
+                                        creature_nodegroup.alpha_test_value = float(mat_AlphaTestValue)
+                                    except:
+                                        pass
+                                elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
+                                    mat_AlphaMode == 'Blend'
+                                    mat.blend_method = 'BLEND'
+                                    mat.shadow_method = 'HASHED'
+                                    try:
+                                        creature_nodegroup.alpha_test_value = float(mat_AlphaTestValue)
+                                    except:
+                                        pass
+                                else:
+                                    mat_AlphaMode == 'None'
+                                    mat.blend_method = 'OPAQUE'
+                                    mat.shadow_method = 'NONE'
+
+
+
+                                # Set Backface Culling
+                                creature_nodegroup.show_transparent_back = False
+                                
+                                creature_nodegroup.location = 0, 0
+                                creature_nodegroup.width = 350  # I like to be able to see the names of the textures
+                                creature_nodegroup.width_hidden = 300
+
+                                output_node.location = 400, 0
+
+                                # Link the two nodes
+                                links = mat.node_tree.links
+                                links.new(output_node.inputs[0],creature_nodegroup.outputs[0])
+
+                                # Set shader's texturemap nodes
+                                if diffusemap_image:
+                                    creature_nodegroup.diffuseMap = diffusemap_image
+    
+                                if glossmap_image:
+                                    creature_nodegroup.glossMap = glossmap_image
+    
+                                if rotationmap_image:
+                                    creature_nodegroup.rotationMap = rotationmap_image
+
+                                if palettemaskmap_image:
+                                    creature_nodegroup.paletteMaskMap = palettemaskmap_image
+
+                                if directionmap_image:
+                                    creature_nodegroup.directionMap = directionmap_image
+
+                                # Set some values
+                                
+                                if flushtone_value:
+                                    creature_nodegroup.flushTone = flushtone_value
+                                    
+                                if fleshbrightness:
+                                    creature_nodegroup.fleshBrightness = fleshbrightness
+
+
+                            elif not gr2_addon_legacy and matxml_derived == "Eye":
+
+
+                                # Add Eye Shader
+                                eye_nodegroup = mat_nodes.new(type="ShaderNodeHeroEngine")
+                                eye_nodegroup.derived = 'EYE'
+                                
+                                # Adjust transparency and shadows
+                                mat.alpha_threshold = float(mat_AlphaTestValue)
+                                
+                                if mat_AlphaMode == 'Test':
+                                    mat.blend_method = 'CLIP'
+                                    mat.shadow_method = 'CLIP'
+                                    eye_nodegroup.alpha_mode = 'CLIP'
+                                    try:
+                                        eye_nodegroup.alpha_test_value = float(mat_AlphaTestValue)
+                                    except:
+                                        pass
+                                elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
+                                    mat_AlphaMode == 'Blend'
+                                    mat.blend_method = 'BLEND'
+                                    mat.shadow_method = 'HASHED'
+                                    try:
+                                        eye_nodegroup.alpha_test_value = float(mat_AlphaTestValue)
+                                    except:
+                                        pass
+                                else:
+                                    mat_AlphaMode == 'None'
+                                    mat.blend_method = 'OPAQUE'
+                                    mat.shadow_method = 'NONE'
+
+
+
+                                # Set Backface Culling
+                                eye_nodegroup.show_transparent_back = False
+                                
+                                eye_nodegroup.location = 0, 0
+                                eye_nodegroup.width = 350  # I like to be able to see the names of the textures
+                                eye_nodegroup.width_hidden = 300
+
+                                output_node.location = 400, 0
+
+                                # Link the two nodes
+                                links = mat.node_tree.links
+                                links.new(output_node.inputs[0],eye_nodegroup.outputs[0])
+
+                                # Set shader's texturemap nodes
+                                if diffusemap_image:
+                                    eye_nodegroup.diffuseMap = diffusemap_image
+    
+                                if glossmap_image:
+                                    eye_nodegroup.glossMap = glossmap_image
+    
+                                if rotationmap_image:
+                                    eye_nodegroup.rotationMap = rotationmap_image
+
+                                if palettemaskmap_image:
+                                    eye_nodegroup.paletteMaskMap = palettemaskmap_image
+
+                                if directionmap_image:
+                                    eye_nodegroup.directionMap = directionmap_image
+
+                                # Set some values
+                                
+                                if palette1:
+                                    eye_nodegroup.palette1_hue = palette1[0]
+                                    eye_nodegroup.palette1_saturation = palette1[1]
+                                    eye_nodegroup.palette1_brightness = palette1[2]
+                                    eye_nodegroup.palette1_contrast = palette1[3]
+
+                                if palette1specular:
+                                    eye_nodegroup.palette1_specular = palette1specular
+                                    
+                                if palette1metallicspecular:
+                                    eye_nodegroup.palette1_metallic_specular = palette1metallicspecular
+
+
+                            elif not gr2_addon_legacy and matxml_derived == "HairC":
+
+
+                                # Add HairC Shader
+                                hairc_nodegroup = mat_nodes.new(type="ShaderNodeHeroEngine")
+                                hairc_nodegroup.derived = 'HAIRC'
+                                
+                                # Adjust transparency and shadows
+                                mat.alpha_threshold = float(mat_AlphaTestValue)
+                                
+                                if mat_AlphaMode == 'Test':
+                                    mat.blend_method = 'CLIP'
+                                    mat.shadow_method = 'CLIP'
+                                    hairc_nodegroup.alpha_mode = 'CLIP'
+                                    try:
+                                        hairc_nodegroup.alpha_test_value = float(mat_AlphaTestValue)
+                                    except:
+                                        pass
+                                elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
+                                    mat_AlphaMode == 'Blend'
+                                    mat.blend_method = 'BLEND'
+                                    mat.shadow_method = 'HASHED'
+                                    try:
+                                        hairc_nodegroup.alpha_test_value = float(mat_AlphaTestValue)
+                                    except:
+                                        pass
+                                else:
+                                    mat_AlphaMode == 'None'
+                                    mat.blend_method = 'OPAQUE'
+                                    mat.shadow_method = 'NONE'
+
+
+
+                                # Set Backface Culling
+                                hairc_nodegroup.show_transparent_back = False
+                                
+                                hairc_nodegroup.location = 0, 0
+                                hairc_nodegroup.width = 350  # I like to be able to see the names of the textures
+                                hairc_nodegroup.width_hidden = 300
+
+                                output_node.location = 400, 0
+
+                                # Link the two nodes
+                                links = mat.node_tree.links
+                                links.new(output_node.inputs[0],hairc_nodegroup.outputs[0])
+
+                                # Set shader's texturemap nodes
+                                if diffusemap_image:
+                                    hairc_nodegroup.diffuseMap = diffusemap_image
+    
+                                if glossmap_image:
+                                    hairc_nodegroup.glossMap = glossmap_image
+    
+                                if rotationmap_image:
+                                    hairc_nodegroup.rotationMap = rotationmap_image
+
+                                if palettemap_image:
+                                    hairc_nodegroup.paletteMap = palettemap_image
+
+                                if palettemaskmap_image:
+                                    hairc_nodegroup.paletteMaskMap = palettemaskmap_image
+
+                                if directionmap_image:
+                                    hairc_nodegroup.directionMap = directionmap_image
+
+                                # Set some values
+                                
+                                if palette1:
+                                    hairc_nodegroup.palette1_hue = palette1[0]
+                                    hairc_nodegroup.palette1_saturation = palette1[1]
+                                    hairc_nodegroup.palette1_brightness = palette1[2]
+                                    hairc_nodegroup.palette1_contrast = palette1[3]
+
+                                if palette1specular:
+                                    hairc_nodegroup.palette1_specular = palette1specular
+                                    
+                                if palette1metallicspecular:
+                                    hairc_nodegroup.palette1_metallic_specular = palette1metallicspecular
+
+
+
+                            elif not gr2_addon_legacy and matxml_derived == "Garment":
+
+
+                                # Add Garment Shader
+                                garment_nodegroup = mat_nodes.new(type="ShaderNodeHeroEngine")
+                                garment_nodegroup.derived = 'GARMENT'
+                                
+                                # Adjust transparency and shadows
+                                mat.alpha_threshold = float(mat_AlphaTestValue)
+                                
+                                if mat_AlphaMode == 'Test':
+                                    mat.blend_method = 'CLIP'
+                                    mat.shadow_method = 'CLIP'
+                                    garment_nodegroup.alpha_mode = 'CLIP'
+                                    try:
+                                        garment_nodegroup.alpha_test_value = float(mat_AlphaTestValue)
+                                    except:
+                                        pass
+                                elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
+                                    mat_AlphaMode == 'Blend'
+                                    mat.blend_method = 'BLEND'
+                                    mat.shadow_method = 'HASHED'
+                                    try:
+                                        garment_nodegroup.alpha_test_value = float(mat_AlphaTestValue)
+                                    except:
+                                        pass
+                                else:
+                                    mat_AlphaMode == 'None'
+                                    mat.blend_method = 'OPAQUE'
+                                    mat.shadow_method = 'NONE'
+
+
+
+                                # Set Backface Culling
+                                garment_nodegroup.show_transparent_back = False
+                                
+                                garment_nodegroup.location = 0, 0
+                                garment_nodegroup.width = 350  # I like to be able to see the names of the textures
+                                garment_nodegroup.width_hidden = 300
+
+                                output_node.location = 400, 0
+
+                                # Link the two nodes
+                                links = mat.node_tree.links
+                                links.new(output_node.inputs[0],garment_nodegroup.outputs[0])
+
+                                # Set shader's texturemap nodes
+                                if diffusemap_image:
+                                    garment_nodegroup.diffuseMap = diffusemap_image
+    
+                                if glossmap_image:
+                                    garment_nodegroup.glossMap = glossmap_image
+    
+                                if rotationmap_image:
+                                    garment_nodegroup.rotationMap = rotationmap_image
+
+                                if palettemap_image:
+                                    garment_nodegroup.paletteMap = palettemap_image
+
+                                if palettemaskmap_image:
+                                    garment_nodegroup.paletteMaskMap = palettemaskmap_image
+
+
+                                # Set some values
+                                
+                                if palette1:
+                                    garment_nodegroup.palette1_hue = palette1[0]
+                                    garment_nodegroup.palette1_saturation = palette1[1]
+                                    garment_nodegroup.palette1_brightness = palette1[2]
+                                    garment_nodegroup.palette1_contrast = palette1[3]
+
+                                if palette1specular:
+                                    garment_nodegroup.palette1_specular = palette1specular
+                                    
+                                if palette1metallicspecular:
+                                    garment_nodegroup.palette1_metallic_specular = palette1metallicspecular
+
+
+                                if palette2:
+                                    garment_nodegroup.palette2_hue = palette2[0]
+                                    garment_nodegroup.palette2_saturation = palette2[1]
+                                    garment_nodegroup.palette2_brightness = palette2[2]
+                                    garment_nodegroup.palette2_contrast = palette2[3]
+
+                                if palette2specular:
+                                    garment_nodegroup.palette2_specular = palette2specular
+                                    
+                                if palette2metallicspecular:
+                                    garment_nodegroup.palette2_metallic_specular = palette2metallicspecular
+
+
+
+                            elif not gr2_addon_legacy and matxml_derived == "SkinB":
+
+
+                                # Add SkinB Shader
+                                skinb_nodegroup = mat_nodes.new(type="ShaderNodeHeroEngine")
+                                skinb_nodegroup.derived = 'SKINB'
+                                
+                                # Adjust transparency and shadows
+                                mat.alpha_threshold = float(mat_AlphaTestValue)
+                                
+                                if mat_AlphaMode == 'Test':
+                                    mat.blend_method = 'CLIP'
+                                    mat.shadow_method = 'CLIP'
+                                    skinb_nodegroup.alpha_mode = 'CLIP'
+                                    try:
+                                        skinb_nodegroup.alpha_test_value = float(mat_AlphaTestValue)
+                                    except:
+                                        pass
+                                elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
+                                    mat_AlphaMode == 'Blend'
+                                    mat.blend_method = 'BLEND'
+                                    mat.shadow_method = 'HASHED'
+                                    try:
+                                        skinb_nodegroup.alpha_test_value = float(mat_AlphaTestValue)
+                                    except:
+                                        pass
+                                else:
+                                    mat_AlphaMode == 'None'
+                                    mat.blend_method = 'OPAQUE'
+                                    mat.shadow_method = 'NONE'
+
+
+
+                                # Set Backface Culling
+                                skinb_nodegroup.show_transparent_back = False
+                                
+                                skinb_nodegroup.location = 0, 0
+                                skinb_nodegroup.width = 350  # I like to be able to see the names of the textures
+                                skinb_nodegroup.width_hidden = 300
+
+                                output_node.location = 400, 0
+
+                                # Link the two nodes
+                                links = mat.node_tree.links
+                                links.new(output_node.inputs[0],skinb_nodegroup.outputs[0])
+
+                                # Set shader's texturemap nodes
+                                if diffusemap_image:
+                                    skinb_nodegroup.diffuseMap = diffusemap_image
+    
+                                if glossmap_image:
+                                    skinb_nodegroup.glossMap = glossmap_image
+    
+                                if rotationmap_image:
+                                    skinb_nodegroup.rotationMap = rotationmap_image
+
+                                if palettemap_image:
+                                    skinb_nodegroup.paletteMap = palettemap_image
+
+                                if palettemaskmap_image:
+                                    skinb_nodegroup.paletteMaskMap = palettemaskmap_image
+
+                                if agemap_image:
+                                    skinb_nodegroup.AgeMap = agemap_image
+
+                                if facepaintmap_image:
+                                    skinb_nodegroup.FacepaintMap = facepaintmap_image
+
+                                if complexionmap_image:
+                                    skinb_nodegroup.ComplexionMap = complexionmap_image
+
+                                # Set some values
+                                
+                                if palette1:
+                                    skinb_nodegroup.palette1_hue = palette1[0]
+                                    skinb_nodegroup.palette1_saturation = palette1[1]
+                                    skinb_nodegroup.palette1_brightness = palette1[2]
+                                    skinb_nodegroup.palette1_contrast = palette1[3]
+
+                                if palette1specular:
+                                    skinb_nodegroup.palette1_specular = palette1specular
+                                    
+                                if palette1metallicspecular:
+                                    skinb_nodegroup.palette1_metallic_specular = palette1metallicspecular
+
+
+                                
+                                if flushtone_value:
+                                    skinb_nodegroup.flushTone = flushtone_value
+                                    
+                                if fleshbrightness:
+                                    skinb_nodegroup.fleshBrightness = fleshbrightness
+
+
+
+
 
                             # ----------------------------------------------
                             # For EmissiveOnly-type material,
@@ -664,7 +1187,7 @@ def register():
         default = False
     )
     bpy.types.Scene.use_overwrite_bool = bpy.props.BoolProperty(
-        description="Rewrites already existing Uber and EmissiveOnly materials.\nThis allows for converting Legacy Uber materials\nto modern ones and viceversa.",
+        description="Rewrites already existing creature and EmissiveOnly materials.\nThis allows for converting Legacy Uber materials\nto modern ones and viceversa.",
         default=False
     )
     bpy.types.Scene.use_collect_colliders_bool = bpy.props.BoolProperty(
