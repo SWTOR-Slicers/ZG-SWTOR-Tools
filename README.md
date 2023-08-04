@@ -4,7 +4,7 @@
 
 **(This Add-on relies on the efforts of fellow slicers, such as the [.gr2 Importer Addon](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x), which provides some major functionality in places, and [Slicers GUI Tool](https://github.com/SWTOR-Slicers/Slicers-GUI))**
 
-**Check the [ZG SWTOR Tools Wiki](./wiki)  for installation instructions and each tool's user guide.**
+**Check the [ZG SWTOR Tools Wiki](https://github.com/SWTOR-Slicers/ZG-SWTOR-Tools/wiki)  for installation instructions and each tool's user guide.**
 
 ![Alt text](README_images/zg_swtor_tools_020.png)
 
