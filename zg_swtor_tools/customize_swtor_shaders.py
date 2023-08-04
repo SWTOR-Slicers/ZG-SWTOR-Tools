@@ -7,7 +7,7 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
     bl_label = "ZG Customize SWTOR Shaders"
     bl_idname = "zgswtor.customize_swtor_shaders"
-    bl_description = 'Converts Darth Atroxa\'s smart modern SWTOR shaders to "dumb",\ntextures outside-type ones for easier customization.\n\n• Requires the modern .gr2 add-on to be enabled during the conversion'
+    bl_description = 'Converts Darth Atroxa\'s smart modern SWTOR shaders to "dumb",\ntextures outside-type ones for easier customization.\n\n• Requires the modern .gr2 add-on to be enabled during the conversion\n• Requires setting a path to an appropriate .blend file holding\n   customizable SWTOR shaders in this Addon\'s Preferences'
     bl_options = {'REGISTER', 'UNDO'}
 
     # ------------------------------------------------------------------
@@ -246,7 +246,7 @@ def register():
     
     bpy.types.Scene.preserve_atroxa_bool = bpy.props.BoolProperty(
         name="Preserve original shaders",
-        description='Keep the original SWTOR shader, unconnected',
+        description='Keep the original SWTOR shaders, disconnected from the Output Node,\nso that comparing or reverting to them is possible.\n\n(Also, preserving them allows for future conversion to Legacy versions)',
         default = True,
     )
     

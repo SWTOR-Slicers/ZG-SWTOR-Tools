@@ -7,22 +7,20 @@ class addonPreferences(bpy.types.AddonPreferences):
 
     # Preferences properties --------------------
 
-    default_custom_shaders_blendfile = os.path.join(os.path.dirname(__file__), "Custom SWTOR Shaders.blend")
-
     # resources folderpath
     swtor_resources_folderpath: bpy.props.StringProperty(
         name = "SWTOR Resources",
         description = 'Path to the "resources" folder produced by a SWTOR assets extraction',
         subtype = "DIR_PATH",
-        default = "Choose or type the folder's path",
+        default = "Choose or type the 'resources' folder's path",
         maxlen = 1024
     )
     # Custom SWTOR shaders blendfile folderpath
     swtor_custom_shaders_blendfile_path: bpy.props.StringProperty(
-        name = "Custom Shaders .blend",
-        description = "Path to a Blend file holding custom replacement SWTOR shaders\nfor the current modern ones.\n\n• It defaults to the one stored inside the addon",
+        name = "Custom Shaders",
+        description = "Path to a Blender file holding custom replacement\nSWTOR shaders for the current modern ones.",
         subtype = "FILE_PATH",
-        default = default_custom_shaders_blendfile,
+        default = "Choose or type the .blend file's path",
         maxlen = 1024
     )
 
@@ -44,10 +42,9 @@ class addonPreferences(bpy.types.AddonPreferences):
         pref_box = layout.box()
         col=pref_box.column()
         col.scale_y = 0.7
-        col.label(text="Path to a .blend file holding custom replacement SWTOR shaders")
-        col.label(text="for the current modern ones. By default, it uses the one stored")
-        col.label(text="inside the Addon. A path to a different one can be set here.")
-        pref_box.prop(self, 'swtor_custom_shaders_blendfile_path', expand=True, )
+        col.label(text="Path to a Blender file holding custom replacement")
+        col.label(text="SWTOR shaders for the current modern ones.")
+        pref_box.prop(self, 'swtor_custom_shaders_blendfile_path', expand=True)
 
 
 # Registrations

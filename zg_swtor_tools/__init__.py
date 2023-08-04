@@ -6,7 +6,7 @@ import importlib
 bl_info = {
     "name": "ZG SWTOR Tools",
     "author": "ZeroGravitas",
-    "version": (1, 2),
+    "version": (1, 3, 0),
     "blender": (2, 83, 0),
     "category": "SWTOR",
     "location": "View 3D > Sidebar > ZG SWTOR",
@@ -22,7 +22,7 @@ bl_info = {
 modulesNames = [
     'ui',
     'preferences',
-    'process_uber_mats',
+    'process_named_mats',
     'remove_doubles',
     'remove_doubles_edit_mode',
     'deduplicate_materials',
@@ -38,7 +38,9 @@ modulesNames = [
     'shaders_io_linker',
     'shaders_io_copier',
     'selected_vertices_to_sculpt_mask',
-    # 'turn_animation_180',
+    'character_assembler',
+    'prefixer',
+    'convert_to_legacy_materials'
     ]
   
 modulesFullNames = {}

@@ -39,7 +39,10 @@ class ZGSWTOR_OT_remove_doubles_edit_mode(bpy.types.Operator):
         # We are using a lower threshold than in the object-level merger
         # which is appropriate for neck and limb seams but would be
         # trouble in facial features (fused lips and other horror stories).
-        bpy.ops.mesh.remove_doubles(threshold = 1e-04)
+        # We are also preserving sharp edges, as in the object mode remove
+        # doubles tool, although the use case suggests we wouldn't want
+        # that here, but for now we'll keep consistency and see how it goes.
+        bpy.ops.mesh.remove_doubles(threshold = 1e-04, use_sharp_edge_from_normals=True)
 
         # Calculate the vertex count difference to report how many
         # vertices were merged.
@@ -54,16 +57,17 @@ class ZGSWTOR_OT_remove_doubles_edit_mode(bpy.types.Operator):
         # Use Autosmooth just in case
         bpy.data.objects[obj.name].data.use_auto_smooth = True
 
-        # Just in case, we do only the Normals averaging if some vertex
-        # was merged (I don't know if this calculation can accumulate
-        # imprecisions if executed to often, so…)
         if vert_count_report > 0:
-            # We select the full mesh for the Normals averaging pass. 
-            bpy.ops.mesh.select_all(action="SELECT")
+            # # Just in case, we do only the Normals averaging if some vertex
+            # # was merged (I don't know if this calculation can accumulate
+            # # imprecisions if executed to often, so…)
 
-            # Normals averaging for correct looks. Merits some discussion.
-            bpy.ops.mesh.average_normals(average_type='FACE_AREA')
-            bpy.ops.mesh.select_all(action="DESELECT")
+            # # We select the full mesh for the Normals averaging pass. 
+            # bpy.ops.mesh.select_all(action="SELECT")
+
+            # # Normals averaging for correct looks. Merits some discussion.
+            # bpy.ops.mesh.average_normals(average_type='FACE_AREA')
+            # bpy.ops.mesh.select_all(action="DESELECT")
 
             self.report({'INFO'}, str(vert_count_report) + " Vertices merged. All affected objects were Auto-Smoothed and their Normals averaged by face area.")
         else:
