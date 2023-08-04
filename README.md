@@ -12,7 +12,6 @@
 
 * Status info header.
 * Integrated Character Assembler Tool.
-* Materials Converter to Legacy shaders to help with baking.
 * Revised Merge Double Vertices preserves hard edges.
 * Smooth Corrective modifier.
 * Item Names Prefixer tool.
