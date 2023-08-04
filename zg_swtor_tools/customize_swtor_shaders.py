@@ -246,7 +246,7 @@ def register():
     
     bpy.types.Scene.preserve_atroxa_bool = bpy.props.BoolProperty(
         name="Preserve original shaders",
-        description='Keep the original SWTOR shader, unconnected',
+        description='Keep the original SWTOR shaders, disconnected from the Output Node,\nso that comparing or reverting to them is possible.\n\n(Also, preserving them allows for future conversion to Legacy versions)',
         default = True,
     )
     

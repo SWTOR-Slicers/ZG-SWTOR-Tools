@@ -123,6 +123,8 @@ def link_collections_to_collection(collections, destination_collection, create =
     Accepts both data-blocks and ID strings.
     Accepts a single collection or a list of collections. 
     If create == True, creates destination_collection if it doesn't exists.
+    If move == True, unlink from any collections it is in before placing in destination.
+
     """
 
     if collections:
@@ -150,7 +152,7 @@ def link_collections_to_collection(collections, destination_collection, create =
             # If move == True, unlink from any collections it is in.
             if move == True:
                 # Unlink from all collections in the scene.
-                for scene_collection in list(bpy.context.scene.collection.children):
+                for scene_collection in list(bpy.context.scene.collection.children_recursive):
                     if collection in list(scene_collection.children):
                         scene_collection.children.unlink(collection)
                 # Also unlink from the Scene Collection
@@ -169,25 +171,25 @@ def link_collections_to_collection(collections, destination_collection, create =
         return False
 
 
+
+
+
+
+
+
 # Class
 
 class ZGSWTOR_OT_character_assembler(Operator):
     bl_label = "SWTOR Character Assembler"
     bl_idname = "zgswtor.character_assembler"
-    bl_description = "Processes the 'path.json' file in a Player Character/NPC folder\nexported by TORCommunity.com, filling its subfolders with all\nrelated objects and textures, then importing the Character\n\n• Requires setting the path to a 'resources' folder in this addon's Preferences"
+    bl_description = "Processes the 'path.json' file in a Player Character/NPC folder\nexported by TORCommunity.com, filling its subfolders with all\nrelated objects and textures, then importing the Character\n\n• Requires setting the path to a 'resources' folder in this addon's Preferences.\n• Requires an enabled modern .gr2 Importer Addon (not the Legacy version)"
     bl_options = {'REGISTER', 'UNDO'}
 
     filepath: StringProperty(subtype='FILE_PATH')
 
 
-    # Some properties
+    # Properties
     
-    prefix: bpy.props.StringProperty(
-        name="Prefix",
-        description = "Adds a prefix to the names of all imported Objects, their Materials, and the Collections they are linked to.\nThis renaming is necessary to avoid name collisions between successive character imports\nin a same Blender project, and convenient for single character plus armor projects.\n\n• An empty prefix field means no prefixing.\n• Please include your own separators between the prefix and the names: spaces, a hyphen, etc.\nYou can prefix after import using the Prefix Tool in the Misc. Tools Panel instead",
-        default=""
-    )
-
     gather_only: bpy.props.BoolProperty(
         name="Gather Assets Only",
         description="Don't Import The Character, and just copy the required assets\nto the Character's folder",
@@ -230,12 +232,6 @@ class ZGSWTOR_OT_character_assembler(Operator):
         options={'HIDDEN'}
     )
 
-    prefix_everything: bpy.props.BoolProperty(
-        name="Prefix All Names With:",
-        description="Prefix all objects, their Materials, and the Collections they are in\nwith the text in the following field.",
-        default = True,
-        options={'HIDDEN'}
-    )
 
     def execute(self, context):
         # Terminal's VT100 escape codes (most terminals understand them).
@@ -248,8 +244,8 @@ class ZGSWTOR_OT_character_assembler(Operator):
 
 
         # Sync properties with their UI matches
-        self.prefix = context.scene.swca_prefix_str
         self.gather_only = context.scene.swca_gather_only_bool
+        # self.assemble_only = context.scene.swca_assemble_only_bool
         self.dont_overwrite = context.scene.swca_dont_overwrite_bool
         self.collect = context.scene.swca_collect_bool
         self.import_armor_only = context.scene.swca_import_armor_only
@@ -579,7 +575,6 @@ class ZGSWTOR_OT_character_assembler(Operator):
             else:
                 print("\nThis character has no naked or default underwear body parts\n")
                 
-                
             print()
             print("DONE!")
             
@@ -606,17 +601,12 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.Scene.swca_prefix_str = bpy.props.StringProperty(
-        name="Prefix",
-        description = "Adds a prefix to the names of all imported Objects, their Materials, and the Collections they are linked to.\nThis renaming is necessary to avoid name collisions between successive character imports\nin a same Blender project, and convenient for single character plus armor projects.\n• An empty prefix field means no prefixing.\n• Please include your own separators between the prefix and the names: spaces, a hyphen, etc.\nYou can prefix after import using the Prefix Tool in the Misc. Tools Panel instead",
-        default=""
-    )
-
     bpy.types.Scene.swca_gather_only_bool = bpy.props.BoolProperty(
         name="Gather Assets Only",
         description="Don't import the character, just copy the required assets\nto the Character's folder",
         default = False,
     )
+    
     bpy.types.Scene.swca_dont_overwrite_bool = bpy.props.BoolProperty(
         name="Don't overwrite Existing assets",
         description="If the character's folder contains some assets already, don't overwrite those.\nThat will preserve any changes done to them, such as manual retouchings",
@@ -625,25 +615,25 @@ def register():
 
     bpy.types.Scene.swca_collect_bool = bpy.props.BoolProperty(
         name="Collect By In-Game Names",
-        description="Organizes the Character's Objects in Collections named after their in-game names.\nThe Collections will be set inside the currently Active Collection in the Outliner.",
+        description="Organizes the Character's Objects in Collections named after their in-game names.\nThe Collections will be set inside the currently Active Collection in the Outliner",
         default = True,
     )
 
     bpy.types.Scene.swca_import_armor_only = bpy.props.BoolProperty(
         name="Import Armor Gear Only",
-        description="Import only the armor gear elements and omit the rest of the body.",
+        description="Import only the armor gear elements and omit the rest of the body",
         default = False,
     )
 
     bpy.types.Scene.swca_import_skeleton_bool = bpy.props.BoolProperty(
         name="Import Rigging Skeleton",
-        description="Import the character's Skeleton Object if available.",
+        description="Import the character's Skeleton Object if available",
         default = False,
     )
 
     bpy.types.Scene.swca_bind_to_skeleton_bool = bpy.props.BoolProperty(
         name="Bind Objects To Skeleton",
-        description="Bind all objects to the skeleton, if imported.",
+        description="Bind all objects to the skeleton, if imported",
         default = False,
     )
 

@@ -4,7 +4,7 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
     bl_idname = "zgswtor.set_modifiers"
     bl_label = "ZG Set Modifiers"
     bl_options = {'REGISTER', "UNDO"}
-    bl_description = "Adds / removes Subdivision, MultiRes, Displace and Solidify Modifiers,\nwith sensible settings for SWTOR asset work.\n\n• Requires a selection of objects.\n• Preserves Armature Modifiers from removal and allows for their repositioning"
+    bl_description = "Adds to several objects at once a Modifier, with sensible settings for SWTOR asset work.\n\n• Requires a selection of objects.\n• Doesn't allow for more than one modifier of the same type\n   (those will have to be added manually).\n• The Remove option doesn't affect any present Armature Modifier"
 
     # Check that there is a selection of objects (greys-out the UI button otherwise) 
     @classmethod
@@ -81,11 +81,12 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
     @staticmethod
     def add_shrinkwrap(obj):
         bpy.context.window.cursor_set("WAIT")
-        if not "Shrinkwrap" in obj.modifiers:
+        if not "Shrinkwrap" in obj.modifiers and bpy.context.scene.ZGshrinkwrap_target:
             mod = obj.modifiers.new(name= "Shrinkwrap", type="SHRINKWRAP")
             mod.wrap_method = "TARGET_PROJECT"
             mod.wrap_mode = "OUTSIDE"
             mod.offset = 0.0004
+            mod.target = bpy.context.scene.ZGshrinkwrap_target
 
     @staticmethod
     def remove_them(obj):
@@ -96,6 +97,7 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
             "Displace",
             "Solidify",
             "Shrinkwrap",
+            "add_smooth_corrective",
         ]
         if obj.modifiers:
             for mod in obj.modifiers:
@@ -182,12 +184,14 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
 # Registrations
 
 def register():
-    bpy.types.Scene.shrinkwrap_target = bpy.props.PointerProperty(type=bpy.types.Object)
+    bpy.types.Scene.ZGshrinkwrap_target = bpy.props.PointerProperty(type=bpy.types.Object)
+    
     bpy.utils.register_class(ZGSWTOR_OT_set_modifiers)
 
 def unregister():
     bpy.utils.unregister_class(ZGSWTOR_OT_set_modifiers)
-    del bpy.types.Scene.shrinkwrap_target
+    
+    del bpy.types.Scene.ZGshrinkwrap_target
 
 if __name__ == "__main__":
     register()

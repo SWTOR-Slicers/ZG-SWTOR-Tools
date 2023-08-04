@@ -22,7 +22,7 @@ bl_info = {
 modulesNames = [
     'ui',
     'preferences',
-    'process_uber_mats',
+    'process_named_mats',
     'remove_doubles',
     'remove_doubles_edit_mode',
     'deduplicate_materials',
@@ -39,6 +39,8 @@ modulesNames = [
     'shaders_io_copier',
     'selected_vertices_to_sculpt_mask',
     'character_assembler',
+    'prefixer',
+    'convert_to_legacy_materials'
     ]
   
 modulesFullNames = {}

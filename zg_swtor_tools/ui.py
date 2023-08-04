@@ -27,39 +27,48 @@ class ZGSWTOR_PT_status(bpy.types.Panel):
 
 
         layout = self.layout
-        layout.scale_y = 0.7
+        layout.scale_y = 0.65
 
         # Show whether the 'resources' folder is set correctly in Preferences.
         zgswtor_addon_status = layout.column(align=True)
         # zgswtor_addon_status.scale_y = 0.7
         
+        zgswtor_addon_status.alert = False
         if resources_folder_exists == True:
             zgswtor_addon_status.label(text="• 'resources' Folder: SET")
         else:
+            zgswtor_addon_status.alert = True
             zgswtor_addon_status.label(text="• 'resources' Folder: NOT SET")
 
+        zgswtor_addon_status.alert = False
         if custom_shaders_blend_file_exists == True:
             zgswtor_addon_status.label(text="• Custom Shaders: SET")
         else:
+            zgswtor_addon_status.alert = True
             zgswtor_addon_status.label(text="• Custom Shaders: NOT SET")
 
+        zgswtor_addon_status.alert = False
         if gr2_addon_exists == True:
-            zgswtor_addon_status.label(text="• .gr2 Addon: MODERN VERSION SET")
+            zgswtor_addon_status.label(text="• .gr2 Addon: MODERN VERSION")
         else:
             if legacy_gr2_addon_exists == True:
-                zgswtor_addon_status.label(text="• .gr2 Addon: LEGACY VERSION SET")
+                zgswtor_addon_status.label(text="• .gr2 Addon: LEGACY VERSION")
             else:
-                zgswtor_addon_status.label(text="• .gr2 Addon: UNAVAILABLE")
+                zgswtor_addon_status.alert = True
+                zgswtor_addon_status.label(text="• .gr2 Addon: NONE ENABLED")
 
-        
+
+        zgswtor_addon_status.alert = False
         if (
             resources_folder_exists == False
             or custom_shaders_blend_file_exists == False
             or gr2_addon_exists == False
             ):
             zgswtor_addon_status.label(text=" ")
-            zgswtor_addon_status.label(text="Tools in red require setting Addon")
-            zgswtor_addon_status.label(text="preferences (check their tooltips).")
+            zgswtor_addon_status.label(text="Tools in red need completing this")
+            zgswtor_addon_status.label(text="Addon's settings in Preferences")
+            zgswtor_addon_status.label(text="(check their tooltips)")
+
 
 # Files Tools sub-panel
 class ZGSWTOR_PT_files_tools(bpy.types.Panel):
@@ -91,17 +100,27 @@ class ZGSWTOR_PT_files_tools(bpy.types.Panel):
         tool_section = layout.box().column(align=True)
         tool_section.enabled = resources_folder_exists
         tool_section.alert = tool_section.enabled is False
-        tool_section.label(text="PC / NPC Importer")
+        
+        tool_section.label(text="Character Assembler")
         tool_section.operator("zgswtor.character_assembler", text="Select 'paths.json' File")
-        tool_section.prop(context.scene, "swca_prefix_str", text="Prefix")
+        # tool_section.prop(context.scene, "swca_prefix_str", text="Prefix")
         tool_section.prop(context.scene, "swca_gather_only_bool", text="Gather Assets only")
+        tool_section.prop(context.scene, "swca_assemble_only_bool", text="Assemble Assets only")
         tool_section.prop(context.scene, "swca_dont_overwrite_bool", text="Don't Overwrite Assets")
         tool_section.prop(context.scene, "swca_collect_bool", text="Collect By In-Game Names")
         tool_section.prop(context.scene, "swca_import_armor_only", text="Import Armor Gear Only")
         tool_section.prop(context.scene, "swca_import_skeleton_bool", text="Import Rigging Skeleton")
         tool_section.prop(context.scene, "swca_bind_to_skeleton_bool", text="Bind Objects To Skeleton",)
-
         
+        tool_section = tool_section.column(align=True)
+        tool_section.scale_y = 0.75
+        tool_section.label(text="")
+        tool_section.label(text="It is advisable to change the")
+        tool_section.label(text="character's Objects, Materials")
+        tool_section.label(text="and Skeleton's names to avoid")
+        tool_section.label(text="conflicts with further imports")
+        tool_section.label(text="(see Prefix tool in this Addon's")
+        tool_section.label(text="Misc. Tools section).")
 
 
 # Materials Tools sub-panel
@@ -129,28 +148,33 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         layout.scale_y = gral_y_scaling_factor
 
 
-        # process_uber_mats UI
+        # PROCESS NAMED MATERIALS UI
         tool_section = layout.box().column(align=True)
         tool_section.enabled = resources_folder_exists and gr2_addon_exists
         tool_section.alert = tool_section.enabled is False
 
-                
         tool_section.label(text="Process Named Materials In")
 
         split = tool_section.split(factor= 0.60, align=True)
         col_left, col_right = split.column(align=True), split.column(align=True)
 
-        process_mats_sel = col_left.operator("zgswtor.process_uber_mats", text="Selected Objects")
+        process_mats_sel = col_left.operator("zgswtor.process_named_mats", text="Selected Objects")
         col_left.enabled = len(bpy.context.selected_objects) != 0
         process_mats_sel.use_selection_only = True
 
-        process_mats_all = col_right.operator("zgswtor.process_uber_mats", text="All Objects")
+        process_mats_all = col_right.operator("zgswtor.process_named_mats", text="All Objects")
         col_right.enabled = len(bpy.data.objects) != 0
         process_mats_all.use_selection_only = False
 
         process_mats_sel = tool_section.prop(context.scene, "use_overwrite_bool", text="Overwrite Materials")
         process_mats_all = tool_section.prop(context.scene, "use_collect_colliders_bool", text="Collect Collider Objects")
         
+
+
+        # CONVERT TO LEGACY MATERIALS UI
+        # tool_section = layout.box().column(align=True)
+        # tool_section.operator("zgswtor.convert_to_legacy_materials", text="Convert All Materials to Legacy")
+        # tool_section.prop(context.scene, "add_baking_targets_bool", text="Add Baking Target Nodes")
 
 
         # CUSTOM SWTOR SHADERS SECTION
@@ -283,12 +307,14 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
         grid.operator("zgswtor.set_modifiers", text="Add Displace").action = "add_displace"
         grid.operator("zgswtor.set_modifiers", text="Add Solidify").action = "add_solidify"
         grid.operator("zgswtor.set_modifiers", text="Add Smooth Corrective").action = "add_smooth_corrective"
-        grid.operator("zgswtor.set_modifiers", text="Add Shrinkwrap").action = "add_shrinkwrap"
+        shbutton=grid.row(align=True)
+        shbutton.active = (bpy.context.scene.ZGshrinkwrap_target != None)
+        shbutton.operator("zgswtor.set_modifiers", text="Add Shrinkwrap").action = "add_shrinkwrap"
         row = tool_section.row(align=True)
         split = row.split(factor=0.55, align=True)
         col_left, col_right = split.column(align=True), split.column(align=True)
         col_left.label(text="Shrinkwrap Target")
-        col_right.prop(context.scene, "shrinkwrap_target", text="")
+        col_right.prop(context.scene, "ZGshrinkwrap_target", text="")
 
 
 
@@ -337,6 +363,11 @@ class ZGSWTOR_PT_misc_tools(bpy.types.Panel):
         # row = tool_section.row(align=True)
         # row.operator("zgswtor.turn_animation_180", text="Turn Animation 180°")
 
+        tool_section = layout.box()
+        col=tool_section.column(align=False)
+        col.operator("zgswtor.prefixer", text="Prefix Selected Items' Names")
+        col.prop(context.scene, "prefix", text = "Prefix")
+        col.prop(context.scene, "prefix_mats_skeletons_bool", text="Prefix their Materials / Skeletons")
 
 
         #### Block of simple already existing Blender operators:

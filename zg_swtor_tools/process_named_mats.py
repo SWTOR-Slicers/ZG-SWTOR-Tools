@@ -13,11 +13,11 @@ from .shd_EmissiveOnly import create_EmissiveOnly_nodegroup
 from .shd_AnimatedUV import create_AnimatedUV_nodegroup
 
 
-class ZGSWTOR_OT_process_uber_mats(bpy.types.Operator):
+class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
 
     bl_label = "ZG Process Uber Materials"
-    bl_idname = "zgswtor.process_uber_mats"
-    bl_description = "Scans for Uber materials in selected objects and places in them\nUber shaders and their associated textures.\n\n• Requires a selection of objects.\n• Requires an enabled SWTOR .gr2 Importer Add-on."
+    bl_idname = "zgswtor.process_named_mats"
+    bl_description = "Reads objects' materials names and looks for matching .mat files' information\nto apply the relevant SWTOR shaders and textures. Covers all six basic SWTOR\nshaders plus a few additional ones like AnimatedUV or EmissiveOnly.\nLIMITATION: .mat files lack recoloring palette and PC customization data.\n\n• Requires an enabled SWTOR .gr2 Importer Add-on.\n• Requires setting the path to a 'resources' folder in this addon's Preferences"
     bl_options = {'REGISTER', 'UNDO'}
 
     # ------------------------------------------------------------------
@@ -1194,14 +1194,14 @@ def register():
         description='Creates or uses a "Collider Objects" Collection and adds to it\nany object with an "util_collision_hidden" type of material\nto facilitate its management and / or deletion',
         default=True
     )
-    bpy.utils.register_class(ZGSWTOR_OT_process_uber_mats)
+    bpy.utils.register_class(ZGSWTOR_OT_process_named_mats)
 
 def unregister():
     del bpy.types.Scene.use_selection_only
     del bpy.types.Scene.use_overwrite_bool
     del bpy.types.Scene.use_collect_colliders_bool
     
-    bpy.utils.unregister_class(ZGSWTOR_OT_process_uber_mats)
+    bpy.utils.unregister_class(ZGSWTOR_OT_process_named_mats)
 
 if __name__ == "__main__":
     register()
