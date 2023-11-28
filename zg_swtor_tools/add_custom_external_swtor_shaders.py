@@ -39,7 +39,7 @@ class ZGSWTOR_OT_add_custom_external_swtor_shaders(bpy.types.Operator):
     # linking vs appending flag property
     link: bpy.props.BoolProperty(
         name="Link custom shaders",
-        description='If adding custom SWTOR shaders,\nlink them instead of appending them',
+        description='If adding or converting to custom SWTOR shaders,\nlink them instead of appending them',
         default=False,
         options={'HIDDEN'}
     )
@@ -116,7 +116,7 @@ def register():
 
     bpy.types.Scene.use_linking_bool = bpy.props.BoolProperty(
         name="Link custom materials",
-        description='If adding custom SWTOR shaders,\nlink them instead of appending them',
+        description='If adding or converting to custom SWTOR shaders,\nlink them instead of appending them',
         default=True
     )
     bpy.types.Scene.enable_adding_custom_shaders = bpy.props.BoolProperty(

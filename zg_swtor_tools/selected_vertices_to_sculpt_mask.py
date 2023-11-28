@@ -13,7 +13,7 @@ class ZGSWTOR_OT_selected_vertices_to_sculpt_mask(bpy.types.Operator):
     bl_idname = "zgswtor.selected_vertices_to_sculpt_mask"
     bl_label = "ZG Set Selected Vertices as a Sculpt Mode Mask"
     bl_options = {'REGISTER', "UNDO"}
-    bl_description = "Sets the active object's selected vertices to a masked state for Sculpt Mode\n(as vertex selections done in Edit Mode persist across modes\nthis tool can be used in any mode)\n\n• Requires an active object"
+    bl_description = "Sets the active object's selected vertices to a masked out state for Sculpt Mode\n(it masks everything but those) protecting the vertices from sculpting actions.\n\nUsage:\n1. Select the vertices in Edit Mode, leaving them so (Vertex selections\n    done in Edit Mode persist across modes).\n\n2. Use the tool while in Sculpt Mode to protect them: they'll turn darker to\n    show that they are excluded from the sculpting tools' influence"
 
     # Check that there is an active object 
     @classmethod
@@ -62,6 +62,7 @@ class ZGSWTOR_OT_selected_vertices_to_sculpt_mask(bpy.types.Operator):
 
 
         if report_verts > 0:
+            bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
             self.report({'INFO'}, obj.name + "'s " + str(report_verts) + " selected vertices set as a sculpting mask")
         else:
             self.report({"WARNING"}, obj.name + " has no selected vertices")

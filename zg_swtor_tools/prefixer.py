@@ -11,8 +11,7 @@ def selected_outliner_items(context):
     objects_and_collections_in_selection = []
 
     for window in context.window_manager.windows:
-        screen = window.screen
-        for area in screen.areas:
+        for area in window.screen.areas:
             if area.type == 'OUTLINER':
                 with context.temp_override(window=window, area=area):
                     for item in context.selected_ids:
@@ -31,24 +30,26 @@ class ZGSWTOR_OT_prefixer(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
 
-    # Check that there is a selection of objects either
-    # in the 3D Viewer or in any Outliner in order to
-    # enable the operator.
+    # Check that there is a selection of objects 
+    # in the 3D Viewer and/or in any Outliner,
+    # (which lets us include hidden objects)
+    # in order to enable the operator.
     @classmethod
     def poll(cls,context):
-        true_or_false = False
-        if bpy.context.selected_objects and bpy.context.mode == "OBJECT":
-            true_or_false = True
+        if bpy.context.mode == "OBJECT" and bpy.context.selected_objects:
+            enable_operator = True
         else:
+            enable_operator = False
             for window in context.window_manager.windows:
-                screen = window.screen
-                for area in screen.areas:
+                for area in window.screen.areas:
                     if area.type == 'OUTLINER':
                         with context.temp_override(window=window, area=area):
                             if context.selected_ids:
-                                true_or_false = True
-                                break
-        return true_or_false
+                                for item in context.selected_ids:
+                                    if item.type == "MESH":
+                                        enable_operator = True
+                                        break
+        return enable_operator
 
 
     # Some properties
@@ -56,7 +57,7 @@ class ZGSWTOR_OT_prefixer(bpy.types.Operator):
     prefix: bpy.props.StringProperty(
         name="Prefix",
         default="",
-        options=('HIDDEN'),
+        options={'HIDDEN'}
     )
 
     prefix_mats_skeletons: bpy.props.BoolProperty(
@@ -68,9 +69,9 @@ class ZGSWTOR_OT_prefixer(bpy.types.Operator):
 
     def execute(self, context):
         
-        self.prefix = context.scene.prefix  # Retrieve the prefix from the scene property
+        self.prefix = context.scene.zg_prefix  # Retrieve the prefix from the scene property
         
-        self.prefix_mats_skeletons = context.scene.prefix_mats_skeletons_bool
+        self.prefix_mats_skeletons = context.scene.zg_prefix_mats_skeletons_bool
         
         prefixable_rna_types = [
             "Armature",
@@ -123,12 +124,12 @@ class ZGSWTOR_OT_prefixer(bpy.types.Operator):
 def register():
     bpy.utils.register_class(ZGSWTOR_OT_prefixer)
     
-    bpy.types.Scene.prefix = bpy.props.StringProperty(
+    bpy.types.Scene.zg_prefix = bpy.props.StringProperty(
         name="Prefix text",
         description = "Please include in the prefix any separator between it\nand the original name: spaces, hyphens, etc\n\n• Confirm entered text with TAB, ENTER, RETURN\n   or by clicking outside the text field",
         default=""
         )
-    bpy.types.Scene.prefix_mats_skeletons_bool = bpy.props.BoolProperty(
+    bpy.types.Scene.zg_prefix_mats_skeletons_bool = bpy.props.BoolProperty(
         name="Prefix Materials and Armatures Too",
         description="Prefixes not just the objects (meshes and skeletons)\nbut the Materials and internal skeleton data-blocks linked to them, too",
         default = True
@@ -137,8 +138,8 @@ def register():
 def unregister():
     bpy.utils.unregister_class(ZGSWTOR_OT_prefixer)
     
-    del bpy.types.Scene.prefix
-    del bpy.types.Scene.prefix_mats_skeletons_bool
+    del bpy.types.Scene.zg_prefix
+    del bpy.types.Scene.zg_prefix_mats_skeletons_bool
 
 
 if __name__ == "__main__":

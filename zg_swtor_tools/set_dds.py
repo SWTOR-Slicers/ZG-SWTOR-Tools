@@ -4,7 +4,7 @@ class ZGSWTOR_OT_set_dds(bpy.types.Operator):
     bl_idname = "zgswtor.set_dds"
     bl_label = "ZG Set .dds"
     bl_options = {'REGISTER', "UNDO"}
-    bl_description = "Sets all .dds texture files to Raw, Channel-Packed.\n\nThis operator affects all .dds in the current Scene\nand doesn't require a selection"
+    bl_description = "Sets all .dds texture files to Non-Color\nso that Blender process them as raw data.\n\nThis operator affects all .dds in the current Scene\nand doesn't require a selection"
 
 
     
@@ -17,8 +17,7 @@ class ZGSWTOR_OT_set_dds(bpy.types.Operator):
             
             for img in selected_texturemaps:
                 print(img.name)
-                img.colorspace_settings.name = "Raw"
-                img.alpha_mode = "CHANNEL_PACKED"
+                img.colorspace_settings.name = "Non-Color"
 
             bpy.context.window.cursor_set("DEFAULT")
             return {"FINISHED"}

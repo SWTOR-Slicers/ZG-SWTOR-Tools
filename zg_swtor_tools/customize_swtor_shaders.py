@@ -3,19 +3,36 @@ import os
 from pathlib import Path
 
 
+def selected_outliner_items(context):
+    '''
+    Returns selected outliner items
+    as a list of RNA objects (in the
+    Python sense) including Collections
+    '''
+
+    items_in_selection = []
+
+    for window in context.window_manager.windows:
+        for area in window.screen.areas:
+            if area.type == 'OUTLINER':
+                with context.temp_override(window=window, area=area):
+                    for item in context.selected_ids:
+                        items_in_selection.append(item)
+                                
+    return items_in_selection
+
+
+
 class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
     bl_label = "ZG Customize SWTOR Shaders"
     bl_idname = "zgswtor.customize_swtor_shaders"
-    bl_description = 'Converts Darth Atroxa\'s smart modern SWTOR shaders to "dumb",\ntextures outside-type ones for easier customization.\n\n• Requires the modern .gr2 add-on to be enabled during the conversion\n• Requires setting a path to an appropriate .blend file holding\n   customizable SWTOR shaders in this Addon\'s Preferences'
+    bl_description = 'Converts the .gr2 Add-on\'s smart modern SWTOR shaders to "dumb",\ntextures outside-type ones for easier customization.\n\n• Requires the modern .gr2 add-on to be enabled during the conversion\n• Requires setting a path to an appropriate .blend file holding\n   customizable SWTOR shaders in this Addon\'s Preferences'
     bl_options = {'REGISTER', 'UNDO'}
 
-    # ------------------------------------------------------------------
-    # Check that there is a selection of objects (greys-out the UI button otherwise)
-    
     @classmethod
     def poll(cls,context):
-        if bpy.context.selected_objects:
+        if bpy.data.materials:
             return True
         else:
             return False
@@ -25,11 +42,19 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
     preserve_atroxa_bool: bpy.props.BoolProperty(
         name="Preserve original shaders",
-        description='Keep the original SWTOR shader, unconnected',
+        description='Keep the original SWTOR shaders, disconnected from the Output Node,\nso that comparing or reverting to them is possible',
         default = True,
         options={'HIDDEN'}
         )
 
+    # Property for the UI buttons to call different actions.
+    # See: https://b3d.interplanety.org/en/calling-functions-by-pressing-buttons-in-blender-custom-ui/
+    use_selection_only: bpy.props.BoolProperty(
+        name="Selection-only",
+        description='Applies the shaders conversion to the current selection of objects only',
+        default = False,
+        options={'HIDDEN'}
+        )
 
     # Some lists and dicts:
     
@@ -95,9 +120,13 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
     def execute(self, context):
         bpy.context.window.cursor_set("DEFAULT")
 
+        use_selection_only = context.scene.css_use_selection_only
         # I'm reading the selected objects here because for some reason
         # if I execute the external shaders linker the selection is lost.
-        selected_objs = bpy.context.selected_objects
+        if use_selection_only == True:
+            selected_objs = context.selected_objects
+        else:
+            selected_objs = bpy.data.objects
 
         # Call external shaders linker/appender operator
         shaders_lib_filepath = bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path
@@ -246,14 +275,19 @@ def register():
     
     bpy.types.Scene.preserve_atroxa_bool = bpy.props.BoolProperty(
         name="Preserve original shaders",
-        description='Keep the original SWTOR shaders, disconnected from the Output Node,\nso that comparing or reverting to them is possible.\n\n(Also, preserving them allows for future conversion to Legacy versions)',
+        description='Keep the original SWTOR shaders, disconnected from the Output Node,\nso that comparing or reverting to them is possible',
         default = True,
     )
-    
+    bpy.types.Scene.css_use_selection_only = bpy.props.BoolProperty(
+        description='Applies the shaders conversion to the current selection of objects only',
+        default = False
+    )
     bpy.utils.register_class(ZGSWTOR_OT_customize_swtor_shaders)
 
 def unregister():
     del bpy.types.Scene.preserve_atroxa_bool
+    del bpy.types.Scene.css_use_selection_only
+
     
     bpy.utils.unregister_class(ZGSWTOR_OT_customize_swtor_shaders)
 
