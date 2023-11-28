@@ -643,7 +643,7 @@ def register():
     bpy.types.Scene.zg_swca_import_skeleton_bool = bpy.props.BoolProperty(
         name="Import Rigging Skeleton",
         description="Import the character's Skeleton Object if available",
-        default = True,
+        default = False,
     )
 
     bpy.types.Scene.zg_swca_bind_to_skeleton_bool = bpy.props.BoolProperty(
