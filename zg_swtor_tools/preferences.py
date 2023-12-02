@@ -57,9 +57,18 @@ class addonPreferences(bpy.types.AddonPreferences):
         default_custom_shaders_blend_filepath = os.path.join(os.path.dirname(__file__), "Custom SWTOR Shaders.blend")
 
         if swtor_custom_shaders_blendfile_path == default_custom_shaders_blend_filepath:
-            pref_box.label(text="STATUS: currently set to internal file.")
+            pref_box.label(text="STATUS: currently set to internal Custom Shaders file.")
         else:
-            pref_box.label(text="STATUS: currently set to an external file.")
+            if swtor_custom_shaders_blendfile_path == "" or swtor_custom_shaders_blendfile_path == None:
+                pref_box.label(text="STATUS: not set.")
+            elif swtor_custom_shaders_blendfile_path.endswith(".blend"):
+                if os.path.isfile(swtor_custom_shaders_blendfile_path):
+                    pref_box.label(text="STATUS: currently set to an external Blender file.")
+                else:
+                    pref_box.label(text="WARNING: currently set to a non existing file. Please check")
+            else:
+                pref_box.label(text="WARNING: currently set to an incorrect, non-Blender file.")
+                
             pref_box.operator("zgswtor.reset_custom_shaders_prefs_to_internal", text="Reset to internal Custom Shaders file")
 
         pass

@@ -117,7 +117,7 @@ def register():
     bpy.types.Scene.use_linking_bool = bpy.props.BoolProperty(
         name="Link custom materials",
         description='If adding or converting to custom SWTOR shaders,\nlink them instead of appending them',
-        default=True
+        default=False
     )
     bpy.types.Scene.enable_adding_custom_shaders = bpy.props.BoolProperty(
         name="Disable adding custom SWTOR shaders",
