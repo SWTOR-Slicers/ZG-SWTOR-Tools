@@ -1,4 +1,6 @@
 import bpy
+import os
+
 import addon_utils
 from pathlib import Path
 
@@ -19,78 +21,199 @@ class ZGSWTOR_PT_status(bpy.types.Panel):
         # Extracted SWTOR assets' "resources" folder. 
         swtor_resources_folderpath = bpy.context.preferences.addons[__package__].preferences.swtor_resources_folderpath
         resources_folder_exists = ( Path(swtor_resources_folderpath) / "art/shaders/materials").exists()
+        
         # .gr2 Importer Addon
         gr2_addon_exists = addon_utils.check("io_scene_gr2")[1]
-        legacy_gr2_addon_exists = addon_utils.check("io_scene_gr2_legacy")[1]
+        
         # Custom shaders .blend file
-        custom_shaders_blend_file_exists =  Path(bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path).is_file()
+        # Current one
+        custom_shaders_blend_filepath = bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path
+        # Default one
+        default_custom_shaders_blend_filepath = os.path.join(os.path.dirname(__file__), "Custom SWTOR Shaders.blend")
+        
+        custom_shaders_blend_file_exists =  Path(custom_shaders_blend_filepath).is_file()
+        custom_shaders_blend_file_is_internal = (custom_shaders_blend_filepath == default_custom_shaders_blend_filepath)
 
+
+
+        gral_y_scaling_factor = 0.9
+        info_y_scaling_factor = 0.75
+        spacer_y_scaling_factor = 0.3
 
         layout = self.layout
-        layout.scale_y = 0.65
-
-        # Show whether the 'resources' folder is set correctly in Preferences.
-        zgswtor_addon_status = layout.column(align=True)
-        # zgswtor_addon_status.scale_y = 0.7
+        layout.scale_y = gral_y_scaling_factor
         
-        zgswtor_addon_status.alert = False
-        if resources_folder_exists == True:
-            zgswtor_addon_status.label(text="• 'resources' Folder: SET")
-        else:
-            zgswtor_addon_status.alert = True
-            zgswtor_addon_status.label(text="• 'resources' Folder: NOT SET")
-
-        zgswtor_addon_status.alert = False
-        if custom_shaders_blend_file_exists == True:
-            zgswtor_addon_status.label(text="• Custom Shaders: SET")
-        else:
-            zgswtor_addon_status.alert = True
-            zgswtor_addon_status.label(text="• Custom Shaders: NOT SET")
-
-        zgswtor_addon_status.alert = False
+        
+        # Show whether the 'resources' folder is set correctly in Preferences.
+        tool_section = layout.column(align=True)
+        
         if gr2_addon_exists == True:
-            zgswtor_addon_status.label(text="• .gr2 Addon: MODERN VERSION")
+            tool_section.alert = False
+            tool_section.label(text="• .gr2 Add-on: SET")
         else:
-            if legacy_gr2_addon_exists == True:
-                zgswtor_addon_status.label(text="• .gr2 Addon: LEGACY VERSION")
+            tool_section.alert = True
+            tool_section.label(text="• .gr2 Add-on: NOT SET")
+
+
+        tool_section.alert = False
+        if resources_folder_exists == True:
+            tool_section.label(text="• 'resources' Folder: SET")
+        else:
+            tool_section.alert = True
+            tool_section.label(text="• 'resources' Folder: NOT SET")
+
+
+        tool_section.alert = False
+        if custom_shaders_blend_file_exists == True:
+            if custom_shaders_blend_file_is_internal:
+                tool_section.label(text="• Custom Shaders: INTERNAL")
             else:
-                zgswtor_addon_status.alert = True
-                zgswtor_addon_status.label(text="• .gr2 Addon: NONE ENABLED")
+                tool_section.label(text="• Custom Shaders: EXTERNAL")
+        else:
+            tool_section.alert = True
+            tool_section.label(text="• Custom Shaders: NOT SET")
 
 
-        zgswtor_addon_status.alert = False
+
+        tool_section.alert = False
         if (
             resources_folder_exists == False
             or custom_shaders_blend_file_exists == False
             or gr2_addon_exists == False
             ):
-            zgswtor_addon_status.label(text=" ")
-            zgswtor_addon_status.label(text="Tools in red need completing this")
-            zgswtor_addon_status.label(text="Addon's settings in Preferences")
-            zgswtor_addon_status.label(text="(check their tooltips)")
+            # ---- spacer
+            tool_section_spacer = tool_section.column(align=True)
+            tool_section_spacer.scale_y = spacer_y_scaling_factor
+            tool_section_spacer.label(text="")
+            # -----------
+            tool_section_info = tool_section.column(align=True)
+            tool_section_info.scale_y = info_y_scaling_factor
+            tool_section_info.label(text="Tools showing up in red need")
+            tool_section_info.label(text="to satisfy certain requirements")
+            tool_section_info.label(text="(more info in their tooltips).")
+            # ---- spacer
+            tool_section_spacer = tool_section.column(align=True)
+            tool_section_spacer.scale_y = spacer_y_scaling_factor
+            tool_section_spacer.label(text="")
+            # -----------
+            tool_section_pref = tool_section.column(align=True)
+            tool_section_pref.scale_y = gral_y_scaling_factor
+            tool_section_pref.operator("zgswtor.open_addon_preferences", text="Add-on's Preferences")
 
 
-# Files Tools sub-panel
-class ZGSWTOR_PT_files_tools(bpy.types.Panel):
+# Area Tools sub-panel
+class ZGSWTOR_PT_area_tools(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "ZG SWTOR"
-    bl_label = "SWTOR Files Tools"
+    bl_label = "SWTOR Area Tools"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
 
-        gral_y_scaling_factor = 0.9
-
-        # CHECKS:
         # Extracted SWTOR assets' "resources" folder. 
         swtor_resources_folderpath = bpy.context.preferences.addons[__package__].preferences.swtor_resources_folderpath
         resources_folder_exists = ( Path(swtor_resources_folderpath) / "art/shaders/materials").exists()
+        
+        # .gr2 Importer Addon
+        modern_gr2_addon_is_enabled = addon_utils.check("io_scene_gr2")[1]
+
+
+
+        gral_y_scaling_factor = 0.9
+        info_y_scaling_factor = 0.75
+        spacer_y_scaling_factor = 0.3
+
+        layout = self.layout
+        layout.scale_y = gral_y_scaling_factor
+
+        # character_assembler UI
+        tool_section = layout.box().column(align=True)
+        tool_section.scale_y = 1.0
+        tool_section.enabled = resources_folder_exists
+        tool_section.alert = tool_section.enabled is False
+        
+        tool_section.label(text="SWTOR Area Assembler")
+        tool_section.operator("zgswtor.area_assembler", text="Select Area's .json Files")
+
+        tool_section_props = tool_section.column(align=True)
+        tool_section_props.scale_y = gral_y_scaling_factor
+        tool_section_props.prop(context.scene, "ZGSAA_ApplyFinalRotation",    text="Apply Final Rotation")
+        tool_section_props.prop(context.scene, "ZGSAA_ApplyMaterials",        text="Process Named Materials")
+        tool_section_props.prop(context.scene, "ZGSAA_ApplySceneScale",       text="Apply x10 Scene Scale")
+        tool_section_props.prop(context.scene, "ZGSAA_SkipDBOObjects",        text="Skip dbo Objects")
+        tool_section_props.prop(context.scene, "ZGSAA_CreateSceneLights",     text="Create Scene Lights")
+        tool_section_props.prop(context.scene, "ZGSAA_CollectionObjects",     text="Collect Objects By Type")
+        tool_section_props.prop(context.scene, "ZGSAA_MergeMultiMeshObjects", text="Merge Multi-Mesh Objects")
+        tool_section_props.prop(context.scene, "ZGSAA_ShowFullReport",        text="Full Report In Terminal")
+        # ---- spacer
+        tool_section_spacer = tool_section.column(align=True)
+        tool_section_spacer.scale_y = spacer_y_scaling_factor
+        tool_section_spacer.label(text="")
+        # -----------
+        tool_section_props = tool_section.column(align=True)
+        tool_section_props.scale_y = info_y_scaling_factor
+        tool_section_props.label(text="To keep Blender responsive")
+        tool_section_props.label(text="after importing massive areas:")
+        tool_section_props = tool_section.column(align=True)
+        tool_section_props.scale_y = gral_y_scaling_factor
+        tool_section_props.prop(context.scene, "ZGSAA_HideAfterImport",       text="Hide Objects",)
+        tool_section_props.prop(context.scene, "ZGSAA_ExcludeAfterImport",    text="Hide Collections' Contents",)
+
+
+
+        # group_collections UI
+        tool_section = layout.box().column(align=False)
+        
+        tool_section.operator("zgswtor.group_collections", text="Group Areas in SubCollections")
+        split = tool_section.split(factor= 0.70, align=False)
+        col_left, col_right = split.column(align=True).row(align=False), split.column(align=True).row(align=False)
+        col_left.label(text="Grouping Separator")
+        col_right.prop(context.scene, "GC_coll_grouping_separator", text="")
+        split = tool_section.split(factor= 0.70, align=False)
+        col_left, col_right = split.column(align=True).row(align=False), split.column(align=True).row(align=False)
+        col_left.label(text="Grouping Levels")
+        col_right.prop(context.scene, "GC_coll_grouping_levels", text="")
+        
+        
+        
+        # A few simple tools UI
+        tool_section = layout.box().column(align=False)
+        tool_section.label(text="All Collections In Outliner")
+        row = tool_section.row(align=True)
+        disable = row.operator("zgswtor.exclude_all_collections", text="Disable")
+        disable.untick = True
+        disable = row.operator("zgswtor.exclude_all_collections", text="Enable")
+        disable.untick = False
+
+
+
+# Character Tools sub-panel
+class ZGSWTOR_PT_character_tools(bpy.types.Panel):
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "ZG SWTOR"
+    bl_label = "SWTOR Character Tools"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+
+        # CHECKS:
+        
+        # Extracted SWTOR assets' "resources" folder. 
+        swtor_resources_folderpath = bpy.context.preferences.addons[__package__].preferences.swtor_resources_folderpath
+        resources_folder_exists = ( Path(swtor_resources_folderpath) / "art/shaders/materials").exists()
+        
         # .gr2 Importer Addon
         gr2_addon_exists = addon_utils.check("io_scene_gr2")[1]
+        
         # Custom shaders .blend file
         custom_shaders_blend_file_exists =  Path(bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path).is_file()
 
+
+        gral_y_scaling_factor = 0.9
+        info_y_scaling_factor = 0.75
+        spacer_y_scaling_factor = 0.3
 
         layout = self.layout
         layout.scale_y = gral_y_scaling_factor
@@ -98,29 +221,53 @@ class ZGSWTOR_PT_files_tools(bpy.types.Panel):
 
         # character_assembler UI
         tool_section = layout.box().column(align=True)
-        tool_section.enabled = resources_folder_exists
-        tool_section.alert = tool_section.enabled is False
         
         tool_section.label(text="Character Assembler")
+
+        if not resources_folder_exists:
+        # tool_section.enabled = resources_folder_exists
+            tool_section_info = tool_section.column(align=True)
+            tool_section_info.scale_y = info_y_scaling_factor
+            tool_section_info.alert = True
+            tool_section_info.label(text="Without setting a resources")
+            tool_section_info.label(text="folder, success will depend")
+            tool_section_info.label(text="on the PC/NPC folder already")
+            tool_section_info.label(text="having ALL the required assets.")
+            # ---- spacer
+            tool_section_spacer = tool_section.column(align=True)
+            tool_section_spacer.scale_y = spacer_y_scaling_factor
+            tool_section_spacer.label(text="")
+            # -----------
+            tool_section_info.alert = False
+
+        tool_section.scale_y = 1.0
         tool_section.operator("zgswtor.character_assembler", text="Select 'paths.json' File")
-        # tool_section.prop(context.scene, "swca_prefix_str", text="Prefix")
-        tool_section.prop(context.scene, "swca_gather_only_bool", text="Gather Assets only")
-        tool_section.prop(context.scene, "swca_assemble_only_bool", text="Assemble Assets only")
-        tool_section.prop(context.scene, "swca_dont_overwrite_bool", text="Don't Overwrite Assets")
-        tool_section.prop(context.scene, "swca_collect_bool", text="Collect By In-Game Names")
-        tool_section.prop(context.scene, "swca_import_armor_only", text="Import Armor Gear Only")
-        tool_section.prop(context.scene, "swca_import_skeleton_bool", text="Import Rigging Skeleton")
-        tool_section.prop(context.scene, "swca_bind_to_skeleton_bool", text="Bind Objects To Skeleton",)
         
+        # Options whose availability depends on a 'resources' folder in Preferences
+        tool_section_dimmables = tool_section.column(align=True)
+        tool_section_dimmables.enabled = resources_folder_exists
+        tool_section_dimmables.prop(context.scene, "zg_swca_gather_only_bool", text="Gather Assets only")
+        tool_section_dimmables.prop(context.scene, "zg_swca_dont_overwrite_bool", text="Don't Overwrite Assets")
         tool_section = tool_section.column(align=True)
-        tool_section.scale_y = 0.75
-        tool_section.label(text="")
-        tool_section.label(text="It is advisable to change the")
-        tool_section.label(text="character's Objects, Materials")
-        tool_section.label(text="and Skeleton's names to avoid")
-        tool_section.label(text="conflicts with further imports")
-        tool_section.label(text="(see Prefix tool in this Addon's")
-        tool_section.label(text="Misc. Tools section).")
+        tool_section.prop(context.scene, "zg_swca_collect_bool", text="Collect By In-Game Names")
+        tool_section.prop(context.scene, "zg_swca_import_armor_only", text="Import Armor Gear Only")
+        tool_section.prop(context.scene, "zg_swca_import_skeleton_bool", text="Import Rigging Skeleton")
+        tool_section.prop(context.scene, "zg_swca_bind_to_skeleton_bool", text="Bind Objects To Skeleton",)
+        
+        # ---- spacer
+        tool_section_spacer = tool_section.column(align=True)
+        tool_section_spacer.scale_y = spacer_y_scaling_factor
+        tool_section_spacer.label(text="")
+        # -----------
+        tool_section_info = tool_section.column(align=True)
+        tool_section_info.scale_y = info_y_scaling_factor
+        tool_section_info.label(text="It is advisable to change the")
+        tool_section_info.label(text="character's Objects, Materials")
+        tool_section_info.label(text="and Skeleton names to avoid")
+        tool_section_info.label(text="conflicts with further imports")
+        tool_section_info.label(text="(see Prefix tool in the")
+        tool_section_info.label(text="Misc. Tools section).")
+        
 
 
 # Materials Tools sub-panel
@@ -129,20 +276,31 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
     bl_region_type = "UI"
     bl_category = "ZG SWTOR"
     bl_label = "SWTOR Materials Tools"
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
 
         gral_y_scaling_factor = 0.9
 
-        # CHECKS:
+        # Checks:
+        
+        # .gr2 Importer Addon
+        gr2_addon_exists = addon_utils.check("io_scene_gr2")[1]
+
         # Extracted SWTOR assets' "resources" folder. 
         swtor_resources_folderpath = bpy.context.preferences.addons[__package__].preferences.swtor_resources_folderpath
         resources_folder_exists = ( Path(swtor_resources_folderpath) / "art/shaders/materials").exists()
-        # .gr2 Importer Addon
-        gr2_addon_exists = addon_utils.check("io_scene_gr2")[1]
-        # Custom shaders .blend file
-        custom_shaders_blend_file_exists =  Path(bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path).is_file()
 
+        # Custom shaders .blend file
+        # Current one
+        custom_shaders_blend_filepath = bpy.context.preferences.addons[__package__].preferences.swtor_custom_shaders_blendfile_path
+        custom_shaders_blend_file_exists =  Path(custom_shaders_blend_filepath).is_file()
+
+
+
+        gral_y_scaling_factor = 0.9
+        info_y_scaling_factor = 0.75
+        spacer_y_scaling_factor = 0.3
 
         layout = self.layout
         layout.scale_y = gral_y_scaling_factor
@@ -172,9 +330,23 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
 
 
         # CONVERT TO LEGACY MATERIALS UI
-        # tool_section = layout.box().column(align=True)
-        # tool_section.operator("zgswtor.convert_to_legacy_materials", text="Convert All Materials to Legacy")
-        # tool_section.prop(context.scene, "add_baking_targets_bool", text="Add Baking Target Nodes")
+        tool_section = layout.box().column(align=True)
+
+        tool_section.label(text="Convert To Legacy Materials")
+                
+        split = tool_section.split(factor= 0.60, align=True)
+        col_left, col_right = split.column(align=True), split.column(align=True)
+
+        process_mats_sel = col_left.operator("zgswtor.convert_to_legacy_materials", text="Selected Objects")
+        col_left.enabled = len(bpy.context.selected_objects) != 0
+        process_mats_sel.clm_use_selection_only = True
+
+        process_mats_all = col_right.operator("zgswtor.convert_to_legacy_materials", text="All Objects")
+        col_right.enabled = len(bpy.data.objects) != 0
+        process_mats_all.clm_use_selection_only = False
+
+        tool_section.prop(context.scene, "zg_add_baking_targets_bool", text="Add Baking Target Nodes")
+
 
 
         # CUSTOM SWTOR SHADERS SECTION
@@ -184,24 +356,44 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         tool_section = layout.box().column(align=True)
         tool_section.enabled = custom_shaders_blend_file_exists
         tool_section.alert = tool_section.enabled is False
+        tool_section.row(align=True).label(text="Convert to Custom Shaders")
+        # tool_section.operator("zgswtor.customize_swtor_shaders", text="Convert to Custom Shaders")
+        
+        split = tool_section.split(factor= 0.60, align=True)
+        col_left, col_right = split.column(align=True), split.column(align=True)
+
+        process_mats_sel = col_left.operator("zgswtor.customize_swtor_shaders", text="Selected Objects")
+        col_left.enabled = len(bpy.context.selected_objects) != 0
+        process_mats_sel.use_selection_only = True
+
+        process_mats_all = col_right.operator("zgswtor.customize_swtor_shaders", text="All Objects")
+        col_right.enabled = len(bpy.data.objects) != 0
+        process_mats_all.use_selection_only = False
+        
         dimmable_row1 = tool_section.row(align=True)
         dimmable_row1.enabled = context.scene.enable_adding_custom_shaders
-        dimmable_row1.operator("zgswtor.add_custom_external_swtor_shaders", text="Add Custom SWTOR Shaders")
-        tool_section.operator("zgswtor.customize_swtor_shaders", text="Convert to Custom SWTOR Shaders")
+        dimmable_row1.operator("zgswtor.add_custom_external_swtor_shaders", text="Just Add Shaders To Project")
         dimmable_row2 = tool_section.row(align=True)
         dimmable_row2.enabled = context.scene.enable_linking_custom_shaders
         dimmable_row2.prop(context.scene, "use_linking_bool", text="Link instead of Append")
         tool_section.prop(context.scene, "preserve_atroxa_bool", text="Preserve Original Shaders")
         
+        # ---- spacer
+        tool_section_spacer = tool_section.column(align=True)
+        tool_section_spacer.scale_y = spacer_y_scaling_factor
+        tool_section_spacer.label(text="")
+        # -----------
+                
         # skinsettings_ng_in_3d_viewer UI
-        tool_section = layout.box().column(align=False)
-        tool_section.operator("zgswtor.skinsettings_ng_in_3d_viewer", text="Apply New Skin Settings Group")
+        # (belongs to the same Custom Shaders toolset)
+
+        tool_section.operator("zgswtor.skinsettings_ng_in_3d_viewer", text="Create Skin Settings Group")
         row = tool_section.row()
         in_row = row.row(align=True)  # for setting a non-50% contiguous row region
-        in_row.scale_x = 0.90  # Percentage of a full half row
+        in_row.scale_x = 0.95  # Percentage of a full half row
         in_row.label(text="PC-NPC name")
         row.prop(context.scene, "apply_skinsettings_name", text="")
-        tool_section.prop(context.scene, "apply_skinsettings_twilek")
+        tool_section.prop(context.scene, "apply_skinsettings_twilek", text="Override Twi'lek Gloss")
 
 
 
@@ -211,7 +403,15 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         tool_section.operator("zgswtor.deduplicate_materials", text="Deduplicate All Materials")
         tool_section.operator("zgswtor.deduplicate_nodegroups", text="Deduplicate All Nodegroups")
         # Already existing Purge operator
-        tool_section.operator("outliner.orphans_purge", text="Purge All Orphan Data Recursively").do_recursive=True
+        tool_section.operator("outliner.orphans_purge", text="Purge All Orphan Data").do_recursive=True
+
+
+
+        # set_dds UIs
+        tool_section = layout.box()
+        col=tool_section.column(align=False)
+        col.operator("zgswtor.set_dds", text="Set all .dds to Non-Color")
+
 
 
 
@@ -235,6 +435,7 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
     bl_region_type = "UI"
     bl_category = "ZG SWTOR"
     bl_label = "SWTOR Objects Tools"
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         
@@ -245,50 +446,48 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
 
 
         # quickscale UI
-        tool_section = layout.box()
+        tool_section = layout.box().column(align=True)
+        row = tool_section.row(align=True).label(text="Scale Selected Objects")
         row = tool_section.row(align=True)
-        row.operator("zgswtor.quickscale", text="Downscale").action = "DOWNSCALE"
+        row.operator("zgswtor.quickscale", text="Down").action = "DOWNSCALE"
         in_row = row.row()
         in_row.scale_x = 0.9  # for a non-50% contiguous row region
-        in_row.prop(context.scene, "zgswtor_quickscale_factor", text="")
-        row.operator("zgswtor.quickscale", text="Upscale").action = "UPSCALE"
+        in_row.prop(context.scene, "zgswtor_quickscale_factor", text="",)
+        row.operator("zgswtor.quickscale", text="Up").action = "UPSCALE"
 
         # Apply Transforms
+        tool_section = layout.box()
         row = tool_section.row(align=True)
-        row.label(text="Apply Transforms")
-        in_row = row.row(align=True)
-        in_row.scale_x = 0.60
         # Passing multiple properties to an operator.
         # See: https://b3d.interplanety.org/en/executing-operators-with-parameters/
 
-        applPosButton = in_row.operator("object.transform_apply", text="Loc.")
+        row.label(text="Apply")
+
+        applPosButton = row.operator("object.transform_apply", text="ALL")
+        applPosButton.location = True
+        applPosButton.rotation = True
+        applPosButton.scale = True
+        applPosButton.properties = False
+
+        # row.label(text="")
+
+        applPosButton = row.operator("object.transform_apply", text="Loc.")
         applPosButton.location = True
         applPosButton.rotation = False
         applPosButton.scale = False
         applPosButton.properties = False
 
-        applRotButton = in_row.operator("object.transform_apply", text="Rot.",)
+        applRotButton = row.operator("object.transform_apply", text="Rot.",)
         applRotButton.location = False
         applRotButton.rotation = True
         applRotButton.scale = False
         applRotButton.properties = False
 
-        applSclButton = in_row.operator("object.transform_apply", text="Scale")
+        applSclButton = row.operator("object.transform_apply", text="Scale")
         applSclButton.location = False
         applSclButton.rotation = False
         applSclButton.scale = True
         applSclButton.properties = False
-
-        # Non-editable Transform data to check the effects of Apply Transforms 
-        # row = tool_section.row(align=False)
-        # row.scale_y = .70
-        # row.enabled = False
-        # col = row.column(align=True)
-        # col.prop(context.object, "location", text="Location")
-        # col = row.column(align=True)
-        # col.prop(context.object, "rotation_euler", text="Rotation")
-        # col = row.column(align=True)
-        # col.prop(context.object, "scale", text="Scale")
 
 
         # remove_doubles UI
@@ -313,7 +512,7 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
         row = tool_section.row(align=True)
         split = row.split(factor=0.55, align=True)
         col_left, col_right = split.column(align=True), split.column(align=True)
-        col_left.label(text="Shrinkwrap Target")
+        col_left.label(text="Shrinkw. Target")
         col_right.prop(context.scene, "ZGshrinkwrap_target", text="")
 
 
@@ -331,11 +530,53 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
         in_row.operator("zgswtor.set_modifiers", text="Last").action = "armature_last"
 
         row = tool_section.row()
-        row.label(text="Use Preserve Volume")
+        row.label(text="Preserve Volume")
         in_row = row.row(align=True)  # for setting a non-50% contiguous row region
         in_row.scale_x = 0.55  # Percentage of a full half row
         in_row.operator("zgswtor.set_modifiers", text="On").action = "preserve_volume_on"
         in_row.operator("zgswtor.set_modifiers", text="Off").action = "preserve_volume_off"
+
+
+
+
+# Pose/Sculpt Tools sub-panel
+class ZGSWTOR_PT_pose_sculpt_tools(bpy.types.Panel):
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "ZG SWTOR"
+    bl_label = "SWTOR Pose & Sculpt Tools"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+
+        gral_y_scaling_factor = 0.9
+        info_y_scaling_factor = 0.75
+        spacer_y_scaling_factor = 0.3
+
+        layout = self.layout
+        layout.scale_y = gral_y_scaling_factor
+
+        # Pose Position / Reset Position UI
+        tool_section = layout.box().column(align=True)
+        tool_section.label(text="Armatures In Scene:")
+        if context.scene.objects:
+            armature_col = tool_section.column(align=True)
+            for obj in context.scene.objects:
+                if obj.type == "ARMATURE":
+                    # ---- spacer
+                    tool_section_spacer = tool_section.column(align=True)
+                    tool_section_spacer.scale_y = spacer_y_scaling_factor
+                    tool_section_spacer.label(text="")
+                    # -----------
+                    armature_col = tool_section.column(align=True)
+                    armature_col.label(text=obj.name)
+                    armature_buttons = armature_col.row(align=True)
+                    armature_buttons.prop(obj.data, "pose_position", expand=True)
+
+                    
+        # selected_vertices_to_sculpt_mask UI
+        tool_section = layout.box()
+        tool_section.operator("zgswtor.selected_vertices_to_sculpt_mask", text="Mask Selected Verts from Sculpting")
 
 
 
@@ -346,19 +587,19 @@ class ZGSWTOR_PT_misc_tools(bpy.types.Panel):
     bl_region_type = "UI"
     bl_category = "ZG SWTOR"
     bl_label = "SWTOR Misc. Tools"
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
 
+        gral_y_scaling_factor = 0.9
+        info_y_scaling_factor = 0.75
+        spacer_y_scaling_factor = 0.3
+
         layout = self.layout
-        layout.scale_y = 0.8
+        layout.scale_y = gral_y_scaling_factor
 
 
         #### Block of simple custom operators:
-        tool_section = layout.box()
-        col=tool_section.column(align=False)
-        col.operator("zgswtor.set_dds", text="Set all .dds images to Raw/Packed")
-        col.operator("zgswtor.selected_vertices_to_sculpt_mask", text="Mask Selected Verts from Sculpting")
-
 
         # row = tool_section.row(align=True)
         # row.operator("zgswtor.turn_animation_180", text="Turn Animation 180°")
@@ -366,36 +607,10 @@ class ZGSWTOR_PT_misc_tools(bpy.types.Panel):
         tool_section = layout.box()
         col=tool_section.column(align=False)
         col.operator("zgswtor.prefixer", text="Prefix Selected Items' Names")
-        col.prop(context.scene, "prefix", text = "Prefix")
-        col.prop(context.scene, "prefix_mats_skeletons_bool", text="Prefix their Materials / Skeletons")
+        col.prop(context.scene, "zg_prefix", text = "Prefix")
+        col.prop(context.scene, "zg_prefix_mats_skeletons_bool", text="Prefix their Materials / Skeletons")
 
 
-        #### Block of simple already existing Blender operators:
-        tool_section = layout.box()
-        
-        # Simplify 
-        row = tool_section.row(align=True)
-
-        row.prop(context.scene.render, "use_simplify", text=" Simplify")
-        in_row = row.row()  # for a non-50% contiguous row region
-        in_row.scale_x = 1.2
-        in_row.prop(context.scene.render, "simplify_subdivision", text="Max SubD")
-
-        # Pose Position / Reset Position
-        tool_section = layout.box()
-
-        row = tool_section.row(align=True)
-        row.label(text="Armatures In Scene:")
-        # Arbitrary selected objects limit to avoid
-        # the whole panel grinding to a halt in cases
-        # of selected whole worlds and such.
-        if context.scene.objects:
-            for obj in context.scene.objects:
-                if obj.type == "ARMATURE":
-                    armature_col = tool_section.column(align=True)
-                    armature_col.label(text=obj.name)
-                    armature_buttons = armature_col.row(align=True)
-                    armature_buttons.prop(obj.data, "pose_position", expand=True)
 
 
 
@@ -463,9 +678,12 @@ class ZGSWTOR_PT_shader_tools(bpy.types.Panel):
 
 classes = [
     ZGSWTOR_PT_status,
-    ZGSWTOR_PT_files_tools,
+    ZGSWTOR_PT_area_tools,
+    ZGSWTOR_PT_character_tools,
+    # ZGSWTOR_PT_collections_tools,
     ZGSWTOR_PT_materials_tools,
     ZGSWTOR_PT_objects_tools,
+    ZGSWTOR_PT_pose_sculpt_tools,
     ZGSWTOR_PT_misc_tools,
     ZGSWTOR_PT_shader_tools
 ]

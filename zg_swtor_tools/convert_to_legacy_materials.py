@@ -3,12 +3,52 @@ import os
 from pathlib import Path
 
 
+def selected_outliner_items(context):
+    '''
+    Returns selected outliner items
+    as a list of RNA objects (in the
+    Python sense) including Collections
+    '''
+
+    items_in_selection = []
+
+    for window in context.window_manager.windows:
+        for area in window.screen.areas:
+            if area.type == 'OUTLINER':
+                with context.temp_override(window=window, area=area):
+                    for item in context.selected_ids:
+                        items_in_selection.append(item)
+                                
+    return items_in_selection
+
+
+
 # -------------------------------------------------------------
 class ZGSWTOR_OT_convert_to_legacy_materials(bpy.types.Operator):
     bl_idname = "zgswtor.convert_to_legacy_materials"
-    bl_label = "ZG Convert Materials to Legacy Shaders"
-    bl_description = "Converts all SWTOR materials in the Blender project to Legacy Shaders-based ones.\nThose shaders work better with Blender's PBR-oriented baking functionality.\n\n• Requires the presence of Materials produced by the current .gr2 Importer Addon.\n\n(The Legacy Shaders used by this Addon are contained in a Blender project stored\nin the Addon's folder, which can be freely modified as long as no Materials, Shaders,\nor Shaders' Inputs and Outputs are renamed, as that would break this tool's workings)"
+    bl_label = "Convert Materials to Legacy Shaders"
+    bl_description = "Converts all SWTOR materials in the Blender project to Legacy Shaders-based ones.\nThose shaders work better with Blender's PBR-oriented baking functionality.\n\n• Requires the presence of Materials produced by the modern .gr2 Importer Addon.\n\n(The Legacy Shaders used by this Addon are contained in a Blender project stored\nin the Addon's folder, which can be freely modified as long as its Materials, Shaders,\nor Shaders' Inputs and Outputs aren't renamed, as that would break this tool's workings)"
     bl_options = {'REGISTER', 'UNDO'}
+
+
+    @classmethod
+    def poll(cls,context):
+        if bpy.data.materials:
+            return True
+        else:
+            return False
+
+
+
+    # Property for the UI buttons to call different actions.
+    # See: https://b3d.interplanety.org/en/calling-functions-by-pressing-buttons-in-blender-custom-ui/
+    clm_use_selection_only: bpy.props.BoolProperty(
+        name="Selection-only",
+        description='Applies the material conversion to the current selection of objects only',
+        default = False,
+        options={'HIDDEN'}
+        )
+
 
 
     add_baking_targets_bool: bpy.props.BoolProperty(
@@ -121,9 +161,13 @@ class ZGSWTOR_OT_convert_to_legacy_materials(bpy.types.Operator):
         
         converted_materials_counter = 0
         
-        if bpy.data.materials == None:
-            self.report({"WARNING"}, "No objects present in this Blender Scene.")
-            return {"CANCELLED"}
+        self.clm_use_selection_only = context.scene.clm_use_selection_only
+        
+        if self.clm_use_selection_only == True:
+            objects_list = context.selected_objects
+        else:
+            objects_list = bpy.data.materials
+        
 
 
         materials_converted_counter = 0
@@ -214,11 +258,11 @@ class ZGSWTOR_OT_convert_to_legacy_materials(bpy.types.Operator):
             return {"CANCELLED"}
         else:
             # Deduplicate nodegroups and materials
-            bpy.ops.zgswtor.deduplicate_nodegroups()
-            bpy.ops.zgswtor.deduplicate_materials()
+            bpy.ops.swtor.deduplicate_nodegroups()
+            bpy.ops.swtor.deduplicate_materials()
             
             # Add baking targets
-            if context.scene.add_baking_targets_bool == True:
+            if context.scene.zg_add_baking_targets_bool == True:
                 for legacy_mat in [mat for mat in bpy.data.materials if " - LGC" in mat.name]:
                     legacy_mat_nodes = legacy_mat.node_tree.nodes
                     
@@ -230,7 +274,7 @@ class ZGSWTOR_OT_convert_to_legacy_materials(bpy.types.Operator):
                         size_ref = 1024
                         
                     bake_target_image = bpy.data.images.new(
-                        name="baked-" + legacy_mat.name.replace(" - LGC", ""),
+                        name="BAKED-" + legacy_mat.name.replace(" - LGC", ""),
                         width=size_ref,
                         height=size_ref,
                         alpha=True,
@@ -260,17 +304,25 @@ class ZGSWTOR_OT_convert_to_legacy_materials(bpy.types.Operator):
 
 def register():
     bpy.utils.register_class(ZGSWTOR_OT_convert_to_legacy_materials)
-    bpy.types.Scene.add_baking_targets_bool = bpy.props.BoolProperty(
+    
+    bpy.types.Scene.zg_add_baking_targets_bool = bpy.props.BoolProperty(
         name="Add Baking Target Nodes",
         description='Adds an Active Texturemap Node as a baking target to every\nSWTOR material converted to a Legacy Shader-based one',
         default = True,
+    )
+
+    bpy.types.Scene.clm_use_selection_only = bpy.props.BoolProperty(
+        description='Applies the material processing to the current selection of objects only',
+        default = False
     )
 
 
 
 def unregister():
     bpy.utils.unregister_class(ZGSWTOR_OT_convert_to_legacy_materials)
-    del bpy.types.Scene.add_baking_targets_bool
+    
+    del bpy.types.Scene.zg_add_baking_targets_bool
+    del bpy.types.Scene.clm_use_selection_only
 
 if __name__ == "__main__":
     register()
