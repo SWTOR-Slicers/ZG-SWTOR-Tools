@@ -3,7 +3,7 @@
 ### WARNING: this tool isn't yet compatible with Blender 4.x.
 ---
 
-**Download the latest release [here](https://github.com/SWTOR-Slicers/ZG-SWTOR-Tools/releases/latest)**.
+## Download the latest release [here](https://github.com/SWTOR-Slicers/ZG-SWTOR-Tools/releases/latest).
 
 ---
 **This Blender Add-on provides with a miscellanea of tools to import, assemble, texture and improve upon Star Wars: The Old Republic's game assets. It grows in features as new ideas come up. Quality of code-wise, "this is not a place of honor": It Just (Kinda) Works™.**
