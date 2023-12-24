@@ -217,15 +217,16 @@ class ZGSWTOR_PT_character_tools(bpy.types.Panel):
         
         tool_section_info = tool_section.column(align=True)
         tool_section_info.scale_y = Y_SCALING_INFO
-        tool_section_info.label(text="It is advisable to change the")
+        tool_section_info.label(text="It is advisable to rename the")
         tool_section_info.label(text="character's Objects, Materials")
-        tool_section_info.label(text="and Skeleton names to avoid")
-        tool_section_info.label(text="conflicts with further imports.")
+        tool_section_info.label(text="Skeleton and Collections in")
+        tool_section_info.label(text="order to avoid conflicts with")
+        tool_section_info.label(text="further imports.")
         
         col=tool_section.column(align=False)
-        col.operator("zgswtor.prefixer", text="Prefix Selected Items' Names")
+        col.operator("zgswtor.prefixer", text="Prefix Selected Items")
         col.prop(context.scene, "zg_prefix", text = "Prefix")
-        col.prop(context.scene, "zg_prefix_mats_skeletons_bool", text="Prefix their Materials / Skeletons")
+        col.prop(context.scene, "zg_prefix_mats_skeletons_bool", text="Materials & Skeletons Too")
         
 
 
