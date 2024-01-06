@@ -220,7 +220,7 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                                     
                                     txtr_node.location = (-350 - new_node_input_index * 16,
                                                           nodes_io_y_offset - new_node_input_index * nodes_io_y_incrmt)
-                                    txtr_node.width = txtr_node.width_hidden = 300
+                                    txtr_node.width = 300
                                     txtr_node.hide = True
 
                                     #link it to the SWTOR nodegroup (Color and Alpha)

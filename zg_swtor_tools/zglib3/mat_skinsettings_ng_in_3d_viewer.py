@@ -8,7 +8,7 @@ from bpy.app.handlers import persistent
 class ZGSWTOR_OT_skinsettings_ng_in_3d_viewer(bpy.types.Operator):
     bl_idname = "zgswtor.skinsettings_ng_in_3d_viewer"
     bl_label = "ZG Apply Skin Settings-Holder Nodegroup to selected objects"
-    bl_description = "Applies a Skin Settings-holding \"control panel\" Nodegroup to selected objects's SkinB materials.\n\n• Only works on Custom SWTOR Shaders.\n• Requires a selection of objects.\n• Copies the head's SkinB settings if available, others if not"
+    bl_description = "Applies a Skin Settings-holding \"control panel\" Nodegroup to selected objects's SkinB materials\nso that the skin in all the body parts of a character can be adjusted from a single set of controls.\n\nIt's only applied to Custom SWTOR SkinB Shaders, even if other non-skin objects are selected.\nThat said, the Groups can be manually added to non-skin materials to use their skin data or\nany other data (manually added to the Group or calculated inside) in any fashion.\n\n• Requires a selection of objects.\n• Automatically chooses the head's SkinB settings as the default values\n   if found in the selection. Otherwise, it'll use other body parts' settings"
     bl_options = {'REGISTER', 'UNDO'}
 
 
@@ -71,7 +71,7 @@ class ZGSWTOR_OT_skinsettings_ng_in_3d_viewer(bpy.types.Operator):
         # Prepare character-specific local skin settings Nodegroup -----------------------------
         
         character_name = context.scene.apply_skinsettings_name
-        zg_skinsettings_name = character_name + "'s Skin Settings"
+        zg_skinsettings_name = character_name + "Skin Settings"
 
         if zg_skinsettings_name in bpy.data.node_groups:
             bpy.context.window.cursor_set("DEFAULT")
@@ -153,7 +153,7 @@ def register():
     )
     bpy.types.Scene.apply_skinsettings_name = bpy.props.StringProperty(
         name="Skin Settings Nodegroup's prefix name",
-        description="Name of the character to apply to\nthe Nodegroup's name (\"<name>'s Skin Settings\").\n\n• It is case-sensitive.\n• This field reverts to empty after application.\nCan be changed manually later on.",
+        description="Name of the character to apply to\nthe Nodegroup's name (\"<name>'s Skin Settings\").\n\n• It is case-sensitive.\n• Adds a \"Skin Settings\" to the entered name. Any desired separator\n   characters (spaces, hyphens, etc.) have to be entered in the name.\n• The Group's name can be changed manually afterwards.\n• This field reverts to empty after application.",
         subtype = "NONE",
         default = "",
     )

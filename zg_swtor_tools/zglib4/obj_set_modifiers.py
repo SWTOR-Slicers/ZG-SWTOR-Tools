@@ -41,40 +41,82 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
     @staticmethod
     def add_subd(obj):
         bpy.context.window.cursor_set("WAIT")
-        if not "Subdivision" in obj.modifiers:
-            mod = obj.modifiers.new(
-                name= "Subdivision",
-                type="SUBSURF")
+        mod_exists = False
+        if obj.modifiers:
+            for mod in obj.modifiers:
+                if mod.type == "SUBSURF":
+                    mod_exists = True
+                    break
+        if not mod_exists:
+            mod = obj.modifiers.new(name= "Subdivision", type="SUBSURF")
             mod.levels = 2
             mod.render_levels = 2
             mod.quality = 3
             mod.use_custom_normals = True
+            mod.use_creases = True
+            mod.show_only_control_edges = False
+            mod.use_limit_surface = False
 
     @staticmethod
     def add_multires(obj):
         bpy.context.window.cursor_set("WAIT")
-        if not "Multires" in obj.modifiers:
+        mod_exists = False
+        if obj.modifiers:
+            for mod in obj.modifiers:
+                if mod.type == "MULTIRES":
+                    mod_exists = True
+                    break
+        if not mod_exists:
             mod = obj.modifiers.new(name= "Multires", type="MULTIRES")
-            bpy.ops.object.multires_subdivide({'object': obj}, modifier="Multires", mode='CATMULL_CLARK')
-
+            bpy.ops.object.multires_subdivide(
+                modifier=mod.name,
+                mode='CATMULL_CLARK'
+            ) # Apply a level of SubD
+            mod.levels = 2
+            mod.render_levels = 2
+            mod.sculpt_levels = 2
+            mod.quality = 3
+            mod.use_custom_normals = True
+            mod.boundary_smooth = "PRESERVE_CORNERS"
+            mod.use_creases = True
+            mod.show_only_control_edges = False
+            
     @staticmethod
     def add_displace(obj):
         bpy.context.window.cursor_set("WAIT")
-        if not "Displace" in obj.modifiers:
+        mod_exists = False
+        if obj.modifiers:
+            for mod in obj.modifiers:
+                if mod.type == "DISPLACE":
+                    mod_exists = True
+                    break
+        if not mod_exists:
             mod = obj.modifiers.new(name= "Displace", type="DISPLACE")
             mod.strength = 0.0004
 
     @staticmethod
     def add_solidify(obj):
         bpy.context.window.cursor_set("WAIT")
-        if not "Solidify" in obj.modifiers:
+        mod_exists = False
+        if obj.modifiers:
+            for mod in obj.modifiers:
+                if mod.type == "SOLIDIFY":
+                    mod_exists = True
+                    break
+        if not mod_exists:
             mod = obj.modifiers.new(name= "Solidify", type="SOLIDIFY")
             mod.thickness = 0.0004
 
     @staticmethod
     def add_smooth_corrective(obj):
         bpy.context.window.cursor_set("WAIT")
-        if not "CorrectiveSmooth" in obj.modifiers:
+        mod_exists = False
+        if obj.modifiers:
+            for mod in obj.modifiers:
+                if mod.type == "CORRECTIVE_SMOOTH":
+                    mod_exists = True
+                    break
+        if not mod_exists:
             mod = obj.modifiers.new(name= "CorrectiveSmooth", type="CORRECTIVE_SMOOTH")
             mod.factor = 0.250
             mod.iterations = 3
@@ -86,8 +128,20 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
 
     @staticmethod
     def add_shrinkwrap(obj):
+        if not bpy.context.scene.ZGshrinkwrap_target:
+            return
+        
+        if  bpy.context.scene.ZGshrinkwrap_target == obj:
+            return
+        
         bpy.context.window.cursor_set("WAIT")
-        if not "Shrinkwrap" in obj.modifiers and bpy.context.scene.ZGshrinkwrap_target:
+        mod_exists = False
+        if obj.modifiers:
+            for mod in obj.modifiers:
+                if mod.type == "SHRINKWRAP":
+                    mod_exists = True
+                    break
+        if not mod_exists:
             mod = obj.modifiers.new(name= "Shrinkwrap", type="SHRINKWRAP")
             mod.wrap_method = "TARGET_PROJECT"
             mod.wrap_mode = "OUTSIDE"
@@ -98,51 +152,71 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
     def remove_them(obj):
         bpy.context.window.cursor_set("WAIT")
         removable_modifiers = [
-            "Subdivision",
-            "Multires",
-            "Displace",
-            "Solidify",
-            "Shrinkwrap",
-            "add_smooth_corrective",
+            "SUBSURF",
+            "MULTIRES",
+            "DISPLACE",
+            "SOLIDIFY",
+            "SHRINKWRAP",
+            "CORRECTIVE_SMOOTH",
         ]
         if obj.modifiers:
             for mod in obj.modifiers:
-                if mod.name in removable_modifiers:
+                if mod.type in removable_modifiers:
                     obj.modifiers.remove(obj.modifiers.get(mod.name))
 
     @staticmethod
     def armature_first(obj):
         bpy.context.window.cursor_set("WAIT")
-        index = obj.modifiers.find("Armature")
-        if index != -1:
-            for i in range(index):
-                bpy.ops.object.modifier_move_up({'object': obj}, modifier="Armature")
+        if obj.modifiers:
+            armature_exists = False
+            for idx in range(len(obj.modifiers)):
+                mod = obj.modifiers[idx]
+                if mod.type == "ARMATURE":
+                    armature_exists = True
+                    break
+            
+            if armature_exists:
+                for i in range(idx):
+                    bpy.ops.object.modifier_move_up(modifier=mod.name)
 
     @staticmethod
     def armature_last(obj):
         bpy.context.window.cursor_set("WAIT")
-        index = obj.modifiers.find("Armature")
-        if index != -1:
-            mod_stack_depth = len(obj.modifiers)
-            if index < mod_stack_depth:
-                for i in range(mod_stack_depth - index - 1):
-                    try:
-                        bpy.ops.object.modifier_move_down({'object': obj}, modifier="Armature")
-                    except:
-                        pass  # in case of failure because of Multires/SubD priority
+        if obj.modifiers:
+            armature_exists = False
+            for idx in range(len(obj.modifiers)):
+                mod = obj.modifiers[idx]
+                if mod.type == "ARMATURE":
+                    armature_exists = True
+                    break
+                
+            if armature_exists:
+                mod_stack_depth = len(obj.modifiers)
+                if idx < mod_stack_depth:
+                    for i in range(mod_stack_depth - idx - 1):
+                        bpy.ops.object.modifier_move_down(modifier=mod.name)
 
     @staticmethod
     def preserve_volume_on(obj):
         bpy.context.window.cursor_set("WAIT")
-        if "Armature" in obj.modifiers:
-            obj.modifiers["Armature"].use_deform_preserve_volume = True
+        if obj.modifiers:
+            for idx in range(len(obj.modifiers)):
+                mod = obj.modifiers[idx]
+                if mod.type == "ARMATURE":
+                    obj.modifiers[mod.name].use_deform_preserve_volume = True
+                    break
 
     @staticmethod
     def preserve_volume_off(obj):
         bpy.context.window.cursor_set("WAIT")
-        if "Armature" in obj.modifiers:
-            obj.modifiers["Armature"].use_deform_preserve_volume = False
+        if obj.modifiers:
+            for idx in range(len(obj.modifiers)):
+                mod = obj.modifiers[idx]
+                if mod.type == "ARMATURE":
+                    obj.modifiers[mod.name].use_deform_preserve_volume = False
+                    break
 
+    
     
     def execute(self, context):
         selected_objects = [obj for obj in bpy.context.selected_editable_objects
@@ -162,7 +236,17 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
                 elif self.action == "add_smooth_corrective":
                     self.add_smooth_corrective(obj)
                 elif self.action == "add_shrinkwrap":
-                    self.add_shrinkwrap(obj)
+                    if bpy.context.scene.ZGshrinkwrap_target == obj:
+                        self.report({"WARNING"}, "Object can't shrinkwrap itself. Choose a different target.")
+                        bpy.context.window.cursor_set("DEFAULT")
+                        return {"FINISHED"}
+                    else:
+                        if bpy.context.scene.ZGshrinkwrap_target == None:
+                            self.report({"WARNING"}, "Please choose a Shrinkwrap target.")
+                            bpy.context.window.cursor_set("DEFAULT")
+                            return {"CANCELLED"}
+                        else:
+                            self.add_shrinkwrap(obj)
                 elif self.action == "remove_them":
                     self.remove_them(obj)
                 elif self.action == "armature_first":

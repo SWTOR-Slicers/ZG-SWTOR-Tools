@@ -49,6 +49,9 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
             mod.render_levels = 2
             mod.quality = 3
             mod.use_custom_normals = True
+            mod.use_creases = True
+            mod.show_only_control_edges = False
+            mod.use_limit_surface = False
 
     @staticmethod
     def add_multires(obj):

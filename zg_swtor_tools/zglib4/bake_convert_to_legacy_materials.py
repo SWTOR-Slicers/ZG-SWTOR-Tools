@@ -18,11 +18,14 @@ def selected_outliner_items(context):
     for window in context.window_manager.windows:
         for area in window.screen.areas:
             if area.type == 'OUTLINER':
-                with context.temp_override(window=window, area=area):
-                    for item in context.selected_ids:
-                        items_in_selection.append(item)
-                                
+                for region in area.regions:
+                    if region.type == 'WINDOW':
+                        with context.temp_override(window=window, area=area, region=region):
+                            if context.selected_ids:
+                                for item in context.selected_ids:
+                                    items_in_selection.append(item)                                
     return items_in_selection
+
 
 
 
@@ -250,19 +253,19 @@ class ZGSWTOR_OT_convert_to_legacy_materials(bpy.types.Operator):
                                         if modern_shader_prop_names_to_legacy_fields[prop] in legacy_inputs_names:
                                             input_position = legacy_inputs_names[ modern_shader_prop_names_to_legacy_fields[prop] ]
                                             legacy_inputs[input_position].default_value = getattr(modern_shader_nodegroup, prop)
-                                        
-                                    
-                                    
-                        
-                                
-                   
+
+
+
+
+
+
         if converted_materials_counter == 0:
             self.report({"WARNING"}, "No modern SWTOR shaders used in this Blender Scene's materials.")
             return {"CANCELLED"}
         else:
             # Deduplicate nodegroups and materials
-            bpy.ops.swtor.deduplicate_nodegroups()
-            bpy.ops.swtor.deduplicate_materials()
+            bpy.ops.zgswtor.deduplicate_nodegroups()
+            bpy.ops.zgswtor.deduplicate_materials()
             
             # Add baking targets
             if context.scene.zg_add_baking_targets_bool == True:
@@ -283,7 +286,7 @@ class ZGSWTOR_OT_convert_to_legacy_materials(bpy.types.Operator):
                         alpha=True,
                     )
                     bake_target_image.alpha_mode = "CHANNEL_PACKED"
-                    bake_target_image.colorspace_settings.name = "Raw"
+                    bake_target_image.colorspace_settings.name = "Non-Color"
             
                     bake_target_node = legacy_mat_nodes.new("ShaderNodeTexImage")
                     bake_target_node.location = [-140, 600]

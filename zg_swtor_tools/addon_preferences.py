@@ -56,7 +56,8 @@ class addonPreferences(bpy.types.AddonPreferences):
 
         col=pref_box.column()
         col.prop(self, 'swtor_resources_folderpath', expand=True, )
-                
+        
+        col.alert = not checks["resources"]
         col.label(text="Status: " + checks["resources_status_verbose"])
 
 
@@ -72,7 +73,8 @@ class addonPreferences(bpy.types.AddonPreferences):
         
         col=pref_box.column()
         col.prop(self, 'swtor_custom_shaders_blendfile_path', expand=True, )
-
+        
+        col.alert = not checks["custom_shaders"]
         col.label(text="Status: " + checks["custom_shaders_status_verbose"])
 
         col.operator("zgswtor.reset_custom_shaders_prefs_to_internal", text="Reset to internal Custom Shaders file")

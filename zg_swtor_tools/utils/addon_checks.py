@@ -17,6 +17,16 @@ def requirements_checks():
 
 
 
+    # -----------------------------
+    # Blender version checks
+
+    blender_version_major_number, blender_version_minor_number , _ = bpy.app.version
+    checks["blender_version"] = float(str(blender_version_major_number) + "." + str(blender_version_minor_number))
+    checks["blender_version_status"] = bpy.app.version
+    checks["blender_version_status_verbose"] = bpy.app.version
+
+
+
 
     # -----------------------------
     # .gr2 Add-on checks

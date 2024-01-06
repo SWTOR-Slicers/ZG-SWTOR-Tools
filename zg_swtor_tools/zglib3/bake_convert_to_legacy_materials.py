@@ -30,7 +30,7 @@ def selected_outliner_items(context):
 class ZGSWTOR_OT_convert_to_legacy_materials(bpy.types.Operator):
     bl_idname = "zgswtor.convert_to_legacy_materials"
     bl_label = "Convert Materials to Legacy Shaders"
-    bl_description = "Converts all SWTOR materials in the Blender project to Legacy Shaders-based ones.\nThose shaders work better with Blender's PBR-oriented baking functionality.\n\n• Requires the presence of Materials produced by the modern .gr2 Importer Addon.\n\n(The Legacy Shaders used by this Addon are contained in a Blender project stored\nin the Addon's folder, which can be freely modified as long as its Materials, Shaders,\nor Shaders' Inputs and Outputs aren't renamed, as that would break this tool's workings)"
+    bl_description = "Converts all SWTOR materials in the Blender project to Legacy Shaders-based ones.\nThose shaders work better with Blender's PBR-oriented baking functionality.\n\n• Requires the presence of Materials produced by the modern .gr2 Importer Add-on.\n\n(The Legacy Shaders used by this Add-on are contained in a Blender project stored\nin the Add-on's folder, which can be freely modified as long as its Materials, Shaders,\nor Shaders' Inputs and Outputs aren't renamed, as that would break this tool's workings)"
     bl_options = {'REGISTER', 'UNDO'}
 
 
@@ -45,7 +45,7 @@ class ZGSWTOR_OT_convert_to_legacy_materials(bpy.types.Operator):
 
     # Property for the UI buttons to call different actions.
     # See: https://b3d.interplanety.org/en/calling-functions-by-pressing-buttons-in-blender-custom-ui/
-    clm_use_selection_only: bpy.props.BoolProperty(
+    clm_use_selection_only: bpy.props.BoolProperty(  # Keep prefix as it is directly addressed in UI
         name="Selection-only",
         description='Applies the material conversion to the current selection of objects only',
         default = False,
@@ -156,7 +156,7 @@ class ZGSWTOR_OT_convert_to_legacy_materials(bpy.types.Operator):
                     link=False,
                     )
                 except:
-                    self.report({"WARNING"}, "Unable to find the " + legacy_material_name + " in the .blend file holding the Legacy SWTOR Materials in this Addon's directory.")
+                    self.report({"WARNING"}, "Unable to find the " + legacy_material_name + " in the .blend file holding the Legacy SWTOR Materials in this Add-on's directory.")
                     return {"CANCELLED"}
             
         
@@ -172,9 +172,7 @@ class ZGSWTOR_OT_convert_to_legacy_materials(bpy.types.Operator):
             objects_list = bpy.data.materials
         
 
-
-        materials_converted_counter = 0
-        
+       
         for obj in bpy.data.objects:
             if hasattr(obj, 'material_slots') is False:
                 continue

@@ -1,0 +1,30 @@
+DONE
+
+character_assembler
+character_prefixer
+obj_quickscale
+mat_set_dds
+mat_add_custom_external_swtor_shaders
+obj_remove_doubles
+mat_deduplicate_materials
+mat_deduplicate_nodegroups
+mat_customize_swtor_shaders
+mat_set_custom_shaders_values
+bake_convert_to_legacy_materials
+obj_remove_doubles_edit_mode
+sculpt_mask_out_selected_vertices
+mat_skinsettings_ng_in_3d_viewer
+mat_shaders_io_copier  -----  Needs rethinking
+mat_shaders_io_linker
+mat_skinsettings_ng_in_shader_editor  ----- make sure it fully works
+area_collections_tools  ----- Needs rethinking
+mat_set_backface_culling  ----- Needs rethinking the UI
+area_assembler
+obj_set_modifiers
+
+
+
+PENDING
+
+mat_process_named_materials
+

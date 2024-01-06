@@ -133,8 +133,10 @@ class ZGSWTOR_OT_skinsettings_ng_in_shader_editor(bpy.types.Operator):
 
             zg_skinsettings_nodegroup_output = zg_skinsettings_node.nodes["Group Output"]
 
+            zg_skinsettings_node_outputs = [item for item in zg_skinsettings_node.interface.items_tree if getattr(item, 'item_type', None) == 'SOCKET' and getattr(item, 'in_out', None) == 'OUTPUT']
 
-            for output in zg_skinsettings_node.outputs:
+
+            for output in zg_skinsettings_node_outputs:
                 if output.hide_value == False and output.name in zg_skinb_node.inputs:  # If sockets aren't cosmetic then do
                     zg_skinsettings_nodegroup_output.inputs[output.name].default_value = zg_skinb_node.inputs[output.name].default_value
 

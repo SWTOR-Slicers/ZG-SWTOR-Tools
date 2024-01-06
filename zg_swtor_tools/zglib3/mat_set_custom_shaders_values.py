@@ -140,7 +140,8 @@ class ZGSWTOR_OT_set_custom_shaders_values(bpy.types.Operator):
                         mat = mat_slot.material
                         node_tree = mat.node_tree
                         for node in node_tree.nodes:
-                            if node.name.startswith("SWTOR - "):
+                            # if node.name.startswith("SWTOR - "):
+                            if node.type == "GROUP":
                                 print("    Material: " + mat.name)
                                 for input in node.inputs:
                                     if self.specular_checkbox and "Specular Strength" in input.name:

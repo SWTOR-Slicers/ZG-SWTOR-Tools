@@ -1,3 +1,4 @@
+from ctypes import alignment
 from json import tool
 from re import T
 import bpy
@@ -16,7 +17,7 @@ ADDON_ROOT = __file__.rsplit(__name__.rsplit(".")[0])[0] + __name__.rsplit(".")[
 
 Y_SCALING_GRAL = 0.9
 Y_SCALING_INFO = 0.75
-Y_SCALING_SPACER = 0.3
+Y_SCALING_SPACER = 0.6
 
 
 
@@ -61,11 +62,7 @@ class ZGSWTOR_PT_status(bpy.types.Panel):
             or checks["gr2"] == False
             ):
             
-            # ---- spacer
-            tool_section_spacer = tool_section.column(align=True)
-            tool_section_spacer.scale_y = Y_SCALING_SPACER
-            tool_section_spacer.label(text="")
-            # -----------
+            tool_section.separator(factor=Y_SCALING_SPACER)
             
             tool_section_info = layout.column(align=True)
             tool_section_info.scale_y = Y_SCALING_INFO
@@ -73,12 +70,7 @@ class ZGSWTOR_PT_status(bpy.types.Panel):
             tool_section_info.label(text="to satisfy certain requirements")
             tool_section_info.label(text="(more info in their tooltips).")
             
-            # ---- spacer
-            tool_section_spacer = tool_section.column(align=True)
-            tool_section_spacer.scale_y = Y_SCALING_SPACER
-            tool_section_spacer.label(text="")
-            # -----------
-
+            
 
 # Area Tools sub-panel
 class ZGSWTOR_PT_area_tools(bpy.types.Panel):
@@ -115,20 +107,23 @@ class ZGSWTOR_PT_area_tools(bpy.types.Panel):
         tool_section_props.prop(context.scene, "ZGSAA_MergeMultiMeshObjects", text="Merge Multi-Mesh Objects")
         tool_section_props.prop(context.scene, "ZGSAA_ShowFullReport",        text="Full Report In Terminal")
         
-        # ---- spacer
-        tool_section_spacer = tool_section.column(align=True)
-        tool_section_spacer.scale_y = Y_SCALING_SPACER
-        tool_section_spacer.label(text="")
-        # -----------
+        tool_section.separator(factor=Y_SCALING_SPACER)
         
         tool_section_props = tool_section.column(align=True)
         tool_section_props.scale_y = Y_SCALING_INFO
         tool_section_props.label(text="To keep Blender responsive")
-        tool_section_props.label(text="after importing massive areas:")
+        tool_section_props.label(text="after importing massive")
+        tool_section_props.label(text="areas, use these settings:")
         tool_section_props = tool_section.column(align=True)
         tool_section_props.scale_y = Y_SCALING_GRAL
         tool_section_props.prop(context.scene, "ZGSAA_HideAfterImport",       text="Hide Objects",)
         tool_section_props.prop(context.scene, "ZGSAA_ExcludeAfterImport",    text="Hide Collections' Contents",)
+        
+        # if checks["blender_version"] >= 4.0:
+        #     progress = context.scene.ZGSAA_ProgressFactor
+        #     progress_text = context.scene.ZGSAA_ProgressText
+        #     if progress > 0:
+        #         tool_section.progress(text=progress_text, factor=progress, type='BAR')
 
 
 
@@ -189,11 +184,7 @@ class ZGSWTOR_PT_character_tools(bpy.types.Panel):
             tool_section_info.label(text="on the PC/NPC folder already")
             tool_section_info.label(text="holding ALL its assets.")
             
-            # ---- spacer
-            tool_section_spacer = tool_section.column(align=True)
-            tool_section_spacer.scale_y = Y_SCALING_SPACER
-            tool_section_spacer.label(text="")
-            # -----------
+            tool_section.separator(factor=Y_SCALING_SPACER)
             
             tool_section_info.alert = False
 
@@ -219,7 +210,7 @@ class ZGSWTOR_PT_character_tools(bpy.types.Panel):
         tool_section_info.scale_y = Y_SCALING_INFO
         tool_section_info.label(text="It is advisable to rename the")
         tool_section_info.label(text="character's Objects, Materials")
-        tool_section_info.label(text="Skeleton and Collections in")
+        tool_section_info.label(text="Skeleton, and Collections in")
         tool_section_info.label(text="order to avoid conflicts with")
         tool_section_info.label(text="further imports.")
         
@@ -246,6 +237,16 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
 
         layout = self.layout
         layout.scale_y = Y_SCALING_GRAL
+
+
+        # set_backface_culling UI
+        tool_section = layout.box()
+        row = tool_section.row(align=True)
+        row.operator("zgswtor.set_backface_culling", text="Set Backface Culling On").action="BACKFACE_CULLING_ON"
+        
+        in_row = row.row()  # for setting a non-50% contiguous row region
+        in_row.scale_x = 0.35
+        in_row.operator("zgswtor.set_backface_culling", text="Off").action="BACKFACE_CULLING_OFF"
 
 
         # PROCESS NAMED MATERIALS UI
@@ -277,6 +278,7 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         tool_section = layout.box().column(align=True)
         tool_section.enabled = checks["custom_shaders"]
         tool_section.alert = tool_section.enabled is False
+        
         tool_section.row(align=True).label(text="Convert to Custom Shaders")
         # tool_section.operator("zgswtor.customize_swtor_shaders", text="Convert to Custom Shaders")
         
@@ -299,32 +301,12 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         dimmable_row2.prop(context.scene, "use_linking_bool", text="Link instead of Append")
         tool_section.prop(context.scene, "preserve_atroxa_bool", text="Preserve Original Shaders")
         
-        tool_section.label(text="")
-
+        tool_section.separator(factor=1.0)
 
         # set_custom_shaders_values UI
         # (belongs to the same Custom Shaders toolset)
         tool_section.label(text="Apply to Custom Shaders")
-        split=tool_section.split(factor=0.7)
-        split.scale_x = 0.5
-        split.scale_y = 0.7
         
-        col = split.column(align=True)
-        col.prop(context.scene, "scsv_specular_checkbox", text="Specular Str.")
-        col.prop(context.scene, "scsv_roughness_checkbox", text="Roughness Fac.")
-        col.prop(context.scene, "scsv_emission_checkbox", text="Emission Str.")
-        col.prop(context.scene, "scsv_saturation_checkbox", text="Emiss. Saturation")
-        col.prop(context.scene, "scsv_normal_checkbox", text="Normal Str.")
-
-
-        col = split.column(align=True)
-        col.prop(context.scene, "scsv_specular", text="")
-        col.prop(context.scene, "scsv_roughness", text="")
-        col.prop(context.scene, "scsv_emission", text="")
-        col.prop(context.scene, "scsv_saturation", text="")
-        col.prop(context.scene, "scsv_normal", text="")
-
-
         split = tool_section.split(factor= 0.60, align=True)
         col_left, col_right = split.column(align=True), split.column(align=True)
 
@@ -336,29 +318,36 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         col_right.enabled = len(bpy.data.objects) != 0
         scsv_to_all.use_selection_only = False
 
-        tool_section.label(text="")
+        split=tool_section.split(factor=0.7)
+        split.scale_x = 0.5
+        split.scale_y = 0.7
+        col = split.column(align=True)
+        col.prop(context.scene, "scsv_specular_checkbox", text="Specular Str.")
+        col.prop(context.scene, "scsv_roughness_checkbox", text="Roughness Fac.")
+        col.prop(context.scene, "scsv_emission_checkbox", text="Emission Str.")
+        col.prop(context.scene, "scsv_saturation_checkbox", text="Emiss. Saturation")
+        col.prop(context.scene, "scsv_normal_checkbox", text="Normal Str.")
 
+        col = split.column(align=True)
+        col.prop(context.scene, "scsv_specular", text="")
+        col.prop(context.scene, "scsv_roughness", text="")
+        col.prop(context.scene, "scsv_emission", text="")
+        col.prop(context.scene, "scsv_saturation", text="")
+        col.prop(context.scene, "scsv_normal", text="")
+
+        tool_section.separator(factor=1.4)
 
         # skinsettings_ng_in_3d_viewer UI
         # (belongs to the same Custom Shaders toolset)
-        tool_section.operator("zgswtor.skinsettings_ng_in_3d_viewer", text="Create Skin Settings Group")
+        tool_section.label(text="Apply Skin Settings Group")
+        tool_section.operator("zgswtor.skinsettings_ng_in_3d_viewer", text="Create And Apply To Selection")
         row = tool_section.row()
         in_row = row.row(align=True)  # for setting a non-50% contiguous row region
         in_row.scale_x = 0.95  # Percentage of a full half row
         in_row.label(text="PC-NPC name")
         row.prop(context.scene, "apply_skinsettings_name", text="")
         tool_section.prop(context.scene, "apply_skinsettings_twilek", text="Override Twi'lek Gloss")
-        
-
-        # set_backface_culling UI
-        tool_section = layout.box()
-        row = tool_section.row(align=True)
-        row.operator("zgswtor.set_backface_culling", text="Set Backface Culling On").action="BACKFACE_CULLING_ON"
-        
-        in_row = row.row()  # for setting a non-50% contiguous row region
-        in_row.scale_x = 0.35
-        in_row.operator("zgswtor.set_backface_culling", text="Off").action="BACKFACE_CULLING_OFF"
-
+    
 
         # deduplicate_nodegroups and deduplicate_materials UIs
         tool_section = layout.box().column(align=True)
@@ -399,19 +388,15 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
 
 
         # quickscale UI
-        tool_section = layout.box().column(align=True)
-        row = tool_section.row(align=True).label(text="Scale Selected Objects")
+        tool_section = layout.box().column(align=False)
+        row = tool_section.row(align=True).label(text="QuickScale Selected Objects")
         row = tool_section.row(align=True)
         row.operator("zgswtor.quickscale", text="Down").action = "DOWNSCALE"
         in_row = row.row()
         in_row.scale_x = 0.9  # for a non-50% contiguous row region
         in_row.prop(context.scene, "zgswtor_quickscale_factor", text="",)
         row.operator("zgswtor.quickscale", text="Up").action = "UPSCALE"
-        # ---- spacer
-        tool_section_spacer = tool_section.column(align=True)
-        tool_section_spacer.scale_y = Y_SCALING_SPACER
-        tool_section_spacer.label(text="")
-        # -----------
+                
         # Apply Transforms
         row = tool_section.row(align=True)
         # Passing multiple properties to an operator.
@@ -456,13 +441,13 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
 
         # set_modifiers UI
         tool_section = layout.box()
-        tool_section.label(text="Add Modifier To Selection")
+        tool_section.label(text="Add Modifier To Selected Objects")
         grid = tool_section.grid_flow(row_major=True, columns=2, align=True)
         grid.operator("zgswtor.set_modifiers", text="SubD").action = "add_subd"
         grid.operator("zgswtor.set_modifiers", text="Multires").action = "add_multires"
         grid.operator("zgswtor.set_modifiers", text="Displace").action = "add_displace"
         grid.operator("zgswtor.set_modifiers", text="Solidify").action = "add_solidify"
-        grid.operator("zgswtor.set_modifiers", text="Smooth Corrective").action = "add_smooth_corrective"
+        grid.operator("zgswtor.set_modifiers", text="Smooth Correct.").action = "add_smooth_corrective"
         shbutton=grid.row(align=True)
         shbutton.active = (bpy.context.scene.ZGshrinkwrap_target != None)
         shbutton.operator("zgswtor.set_modifiers", text="Shrinkwrap").action = "add_shrinkwrap"
@@ -516,11 +501,7 @@ class ZGSWTOR_PT_pose_sculpt_tools(bpy.types.Panel):
             armature_col = tool_section.column(align=True)
             for obj in context.scene.objects:
                 if obj.type == "ARMATURE":
-                    # ---- spacer
-                    tool_section_spacer = tool_section.column(align=True)
-                    tool_section_spacer.scale_y = Y_SCALING_SPACER
-                    tool_section_spacer.label(text="")
-                    # -----------
+                    tool_section.separator(factor=Y_SCALING_SPACER)
                     armature_col = tool_section.column(align=True)
                     armature_col.label(text=obj.name)
                     armature_buttons = armature_col.row(align=True)
@@ -598,9 +579,6 @@ class ZGSWTOR_PT_misc_tools(bpy.types.Panel):
 
 #         tool_section = layout.box()
 #         col=tool_section.column(align=False)
-#         col.operator("zgswtor.prefixer", text="Prefix Selected Items' Names")
-#         col.prop(context.scene, "zg_prefix", text = "Prefix")
-#         col.prop(context.scene, "zg_prefix_mats_skeletons_bool", text="Prefix their Materials / Skeletons")
 
 
 

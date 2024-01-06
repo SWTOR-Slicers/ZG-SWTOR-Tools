@@ -670,9 +670,7 @@ class ZGSWTOR_OT_area_assembler(Operator):
                 objects_before_importing = list(bpy.data.objects)
                 try:
                     with suppress_stdout():  # To silence .obj importing outputs
-                        result = bpy.ops.import_scene.obj(
-                            filepath=terrain_path,
-                            use_image_search=False)  # .obj importer
+                        result = bpy.ops.wm.obj_import(filepath=terrain_path)  # .obj importer
                     if result == "CANCELLED":
                         print(f"\n           WARNING: Blender's .obj importer failed to import {swtor_id} - {str( Path(swtor_resources_folderpath) / Path(swtor_filepath) )}\n")
                         continue
@@ -1226,6 +1224,16 @@ def register():
         description="If checked, a full length report will be produced, including not just errors but importing successes, too.\n\nFull length reports may exceed the Console's default capacity and become truncated.\nTo avoid that, increase that setting accordingly, around 500 lines per expected .json file,\nin your Operating System's Terminal app or in your IDE (Integrated Development Environment)",
         default=False,
     )
+
+    bpy.types.Scene.ZGSAA_ProgressFactor = bpy.props.FloatProperty(
+        description="Area Assembler's Progress Bar Factor",
+        default=0.0,
+    )
+    bpy.types.Scene.ZGSAA_ProgressText = bpy.props.StringProperty(
+        description="Area Assembler's Progress Bar Text",
+        default="",
+    )
+
 
     bpy.utils.register_class(ZGSWTOR_OT_area_assembler)
     
