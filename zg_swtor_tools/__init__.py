@@ -7,7 +7,7 @@ import importlib
 bl_info = {
     "name": "ZG SWTOR Tools",
     "author": "ZeroGravitas",
-    "version": (1, 5, 0),
+    "version": (1, 5, 1),
     "blender": (3, 1, 0),
     "category": "SWTOR",
     "location": "View 3D > Sidebar > ZG SWTOR",
