@@ -198,42 +198,42 @@ class ZGSWTOR_OT_character_assembler(Operator):
         name="Gather Assets Only",
         description="Don't Import The Character, and just copy the required assets\nto the Character's folder",
         default = False,
-        options={'HIDDEN'}
+        # options={'HIDDEN'}
     )
 
     dont_overwrite: bpy.props.BoolProperty(
         name="Don't overwrite Existing assets",
         description="If the character's folder contains some assets already, don't overwrite those.\nThat will preserve any changes done to them, such as manual retouchings",
         default = True,
-        options={'HIDDEN'}
+        # options={'HIDDEN'}
     )
 
     collect: bpy.props.BoolProperty(
         name="Collect By In-game Names",
         description="Organize the Character's Objects in Collections named after their in-game names.\nThe Collections will be set inside the currently Active Collection in the Outliner.",
         default = True,
-        options={'HIDDEN'}
+        # options={'HIDDEN'}
     )
     
     import_armor_only: bpy.props.BoolProperty(
         name="Import Armor Gear Only",
         description="Import only the armor gear elements and omit the rest of the body.",
         default = False,
-        options={'HIDDEN'}
+        # options={'HIDDEN'}
     )
 
     import_skeleton: bpy.props.BoolProperty(
         name="Import Rigging Skeleton",
         description="Import the character's Skeleton Object if available.",
         default = True,
-        options={'HIDDEN'}
+        # options={'HIDDEN'}
     )
 
     bind_to_skeleton: bpy.props.BoolProperty(
         name="Bind Objects To Skeleton",
         description="Bind all objects to the skeleton, if imported.",
         default = True,
-        options={'HIDDEN'}
+        # options={'HIDDEN'}
     )
 
 
