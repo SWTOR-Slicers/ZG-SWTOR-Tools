@@ -24,4 +24,3 @@
 * Better status reporting.
 * Sundry User Interface changes (subpanel organization, tooltips…).
 * Bugfixes.
-
