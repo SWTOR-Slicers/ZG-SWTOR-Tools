@@ -15,7 +15,7 @@ from .shd_AnimatedUV import create_AnimatedUV_nodegroup
 
 class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
 
-    bl_label = "ZG Process Uber Materials"
+    bl_label = "ZG Process Named Materials"
     bl_idname = "zgswtor.process_named_mats"
     bl_description = "Reads objects' materials names and looks for matching .mat files' information\nto apply the relevant SWTOR shaders and textures. Covers all six basic SWTOR\nshaders plus a few additional ones like AnimatedUV or EmissiveOnly.\nLIMITATION: .mat files lack recoloring palette and PC customization data.\n\n• Requires an enabled SWTOR .gr2 Importer Add-on.\n• Requires setting the path to a 'resources' folder in this addon's Preferences.\n\nFor objects using materials with generic names such as 'default': renaming those\nmaterials to appropriate ones present in 'resources\\art\\shaders\\materials'\nwill make them processable)"
     bl_options = {'REGISTER', 'UNDO'}

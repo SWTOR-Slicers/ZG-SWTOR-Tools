@@ -219,6 +219,7 @@ class ZGSWTOR_OT_convert_to_legacy_materials(bpy.types.Operator):
                                     
                                     equiv_legacy_node.image = node.image
                                     equiv_legacy_node.interpolation = node.interpolation
+                                    equiv_legacy_node.mute = node.mute
                                     # Colorspace_settings, alpha_mode and others are
                                     # image properties, not node's ones. We assume
                                     # them correctly set by the modern .gr2 importer .
@@ -265,7 +266,7 @@ class ZGSWTOR_OT_convert_to_legacy_materials(bpy.types.Operator):
         else:
             # Deduplicate nodegroups and materials
             bpy.ops.zgswtor.deduplicate_nodegroups()
-            bpy.ops.zgswtor.deduplicate_materials()
+            # bpy.ops.zgswtor.deduplicate_materials()
             
             # Add baking targets
             if context.scene.zg_add_baking_targets_bool == True:
@@ -286,6 +287,8 @@ class ZGSWTOR_OT_convert_to_legacy_materials(bpy.types.Operator):
                         alpha=True,
                     )
                     bake_target_image.alpha_mode = "CHANNEL_PACKED"
+                    
+                    # Raw no longer exists in Blender 4.0. Non-Color is functionally identical
                     bake_target_image.colorspace_settings.name = "Non-Color"
             
                     bake_target_node = legacy_mat_nodes.new("ShaderNodeTexImage")

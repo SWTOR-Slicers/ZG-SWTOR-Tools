@@ -1,4 +1,3 @@
-from email.policy import default
 import bpy
 
 class ZGSWTOR_OT_quickscale(bpy.types.Operator):
@@ -25,7 +24,7 @@ class ZGSWTOR_OT_quickscale(bpy.types.Operator):
         name="Scaling Type",
         items=[
             ("UPSCALE", "Upscale", "Upscale"),
-            ("DOWNSCALE", "Downscale", "Downscale")
+            ("DOWNSCALE", "Downscale", "Downscale"),
             ],
         options={'HIDDEN'}
         )

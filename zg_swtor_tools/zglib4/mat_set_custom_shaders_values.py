@@ -4,15 +4,15 @@ class ZGSWTOR_OT_set_custom_shaders_values(bpy.types.Operator):
 
     bl_label = "ZG Set Custom Shaders' Values"
     bl_idname = "zgswtor.set_custom_shaders_values"
-    bl_description = "Changes the values of some Custom SWTOR Shaders' settings\nin a selection or in all objects in the Scene that use them.\n\n• Only acts on Materials that use Custom SWTOR Shaders.\n• The checkboxes determine which settings will be affected"
+    bl_description = "Changes chosen values and settings in a selection of objects or all objects' materials.\n\n• The checkboxes determine which settings will be collectively affected.\n• The Nodegroup inputs-level changes only act on Nodegroups with matching input names\n   (that excludes the .gr2 Add-on's default SWTOR shaders)\n• Check the Material-Level Settings' Show Backface's tooltips"
     bl_options = {'REGISTER', 'UNDO'}
 
-    # @classmethod
-    # def poll(cls,context):
-    #     if context.selectable_objects:
-    #         return True
-    #     else:
-    #         return False
+    @classmethod
+    def poll(cls,context):
+        if bpy.data.materials:
+            return True
+        else:
+            return False
 
 
     # Properties
@@ -108,17 +108,50 @@ class ZGSWTOR_OT_set_custom_shaders_values(bpy.types.Operator):
     )
 
 
+    blend_mode: bpy.props.EnumProperty(
+        name="Blend Mode",
+        description="Material's Blend Mode",
+        items=[
+            ("OPAQUE", "Opaque", "Set Materials' Blend mode to Opaque\nand Shadow Mode to Opaque."),
+            ("CLIP", "Clip", "Set Materials' Blend mode to Alpha Clip\nand Shadow Mode to Alpha Clip."),
+            ("HASHED", "Hashed", "Set Materials' Blend mode to Alpha Hashed\nand Shadow Mode to Alpha Hashed."),
+            ("BLEND", "Blend", "Set Materials' Blend mode to Alpha Blend,\nShadow Mode to Alpha Hashed,\nand disable Show Backface."),
+            ],
+        default = "BLEND",
+        options={'HIDDEN'},
+    )
+    blend_mode_checkbox: bpy.props.BoolProperty(
+        name="Blend Mode Checkbox",
+        description="Allow Blend Mode to be altered",
+        default = False,
+        options={'HIDDEN'},
+    )
+
+
+    show_backface: bpy.props.EnumProperty(
+        name="Show Backface",
+        description="Materials' Show Backface property",
+        items=[
+            ("YES", "Yes", "Set Materials' Show Backface property to True\n(renders multiple transparent layers).\n\nThis setting's effect is only visible in materials\nwith Blend Mode set to Alpha Blend, and on EEVEE."),
+            ("NO", "No", "Set Materials' Show Backface property to False.\n\nThis setting's effect is only visible in materials\nwith Blend Mode set to Alpha Blend, and on EEVEE."),
+            ],
+        default = "NO",
+        options={'HIDDEN'},
+    )
+    show_backface_checkbox: bpy.props.BoolProperty(
+        name="Show Backface Checkbox",
+        description="Allow Show Backface setting to be altered",
+        default = False,
+        options={'HIDDEN'},
+    )
+
+
 
     def execute(self, context):
         
         context.window.cursor_set("WAIT")  # Show wait cursor icon
 
-        if self.use_selection_only:
-            selected_objs = context.selected_objects
-        else:
-            selected_objs = bpy.data.objects
-
-        # Properties
+        # Nodegroup-level Properties
         self.specular = context.scene.scsv_specular
         self.specular_checkbox = context.scene.scsv_specular_checkbox
         self.roughness = context.scene.scsv_roughness
@@ -130,6 +163,39 @@ class ZGSWTOR_OT_set_custom_shaders_values(bpy.types.Operator):
         self.normal = context.scene.scsv_normal
         self.normal_checkbox = context.scene.scsv_normal_checkbox
 
+        there_are_nodegroup_level_changes = (
+            self.specular_checkbox or
+            self.roughness_checkbox or
+            self.emission_checkbox or
+            self.saturation_checkbox or
+            self.normal_checkbox
+            )
+                            
+
+        # Material-level Properties
+        self.blend_mode = context.scene.scsv_blend_mode
+        self.blend_mode_checkbox = context.scene.scsv_blend_mode_checkbox
+        self.show_backface = context.scene.scsv_show_backface
+        self.show_backface_checkbox = context.scene.scsv_show_backface_checkbox
+        
+        there_are_material_level_changes = (
+            self.blend_mode_checkbox or
+            self.show_backface_checkbox
+        )
+
+
+        if not (there_are_nodegroup_level_changes or there_are_material_level_changes):
+            context.window.cursor_set("DEFAULT")  # Show normal cursor icon
+            return {"CANCELLED"}
+
+
+        if self.use_selection_only:
+            selected_objs = context.selected_objects
+        else:
+            selected_objs = bpy.data.objects
+
+
+        materials_changes_report = 0
 
         for obj in selected_objs:
             if obj.type == "MESH":
@@ -138,25 +204,74 @@ class ZGSWTOR_OT_set_custom_shaders_values(bpy.types.Operator):
                 if obj.material_slots:
                     for mat_slot in obj.material_slots:
                         mat = mat_slot.material
-                        node_tree = mat.node_tree
-                        for node in node_tree.nodes:
-                            if node.name.startswith("SWTOR - "):
-                                print("    Material: " + mat.name)
-                                for input in node.inputs:
-                                    if self.specular_checkbox and "Specular Strength" in input.name:
-                                        input.default_value = self.specular
-                                    if self.roughness_checkbox and "Roughness Factor" in input.name:
-                                        input.default_value = self.roughness
-                                    if self.emission_checkbox and "Emission Strength" in input.name:
-                                        input.default_value = self.emission
-                                    if self.saturation_checkbox and "Emission Saturation Factor" in input.name:
-                                        input.default_value = self.saturation
-                                    if self.normal_checkbox and "Normal Strength" in input.name:
-                                        input.default_value = self.normal
-                                        
-                                        
-        bpy.context.window.cursor_set("DEFAULT")  # Show normal cursor icon
+                        
+                        material_was_changed = False
+                        
+                        # Material-level settings changes
+                        if there_are_material_level_changes:
+                            material_was_changed = True  # They are guaranteed at the material level
+
+                            if self.blend_mode_checkbox:
+                                material_was_changed = True
+                                mat.blend_method = self.blend_mode
+                                                                
+                                if mat.blend_method == "OPAQUE":
+                                    mat.shadow_method = "OPAQUE"
+                                
+                                if mat.blend_method == "CLIP":
+                                    mat.shadow_method = "CLIP"
                                     
+                                if mat.blend_method == "HASHED":
+                                    mat.shadow_method = "HASHED"
+                                
+                                if mat.blend_method == "BLEND":
+                                    mat.shadow_method = "HASHED"
+                                    mat.show_transparent_back = False
+                                
+                            if self.show_backface_checkbox:
+                                mat.show_transparent_back = (self.show_backface == "YES")
+                                
+
+                        # Nodegroup-level settings changes
+                        if there_are_nodegroup_level_changes:
+                        
+                            node_tree = mat.node_tree
+                            for node in node_tree.nodes:
+                                if node.name.startswith("SWTOR - "):
+                                    print("    Material: " + mat.name)
+                                    for input in node.inputs:
+                                        
+                                        if self.specular_checkbox and "Specular Strength" in input.name:
+                                            input.default_value = self.specular
+                                            material_was_changed = True
+                                            
+                                        if self.roughness_checkbox and "Roughness Factor" in input.name:
+                                            input.default_value = self.roughness
+                                            material_was_changed = True
+                                            
+                                        if self.emission_checkbox and "Emission Strength" in input.name:
+                                            input.default_value = self.emission
+                                            material_was_changed = True
+                                            
+                                        if self.saturation_checkbox and "Emission Saturation Factor" in input.name:
+                                            input.default_value = self.saturation
+                                            material_was_changed = True
+                                            
+                                        if self.normal_checkbox and "Normal Strength" in input.name:
+                                            input.default_value = self.normal
+                                            material_was_changed = True
+                                        
+                                        
+                        # Counter for final report
+                        if material_was_changed:
+                            materials_changes_report += 1
+
+
+        context.window.cursor_set("DEFAULT")  # Show normal cursor icon
+        if materials_changes_report == 1:
+            self.report({'INFO'}, str(materials_changes_report) + " applicable Material processed" )
+        else:
+            self.report({'INFO'}, str(materials_changes_report) + " applicable Materials processed" )
         return {"FINISHED"}
 
 
@@ -250,6 +365,48 @@ def register():
         options={'HIDDEN'},
     )
 
+
+    bpy.types.Scene.scsv_blend_mode= bpy.props.EnumProperty(
+        name="Blend Mode",
+        description="Materials' Blend Mode",
+        items=[
+            ("OPAQUE", "Opaque", "Set Materials' Blend mode to Opaque\nand Shadow Mode to Opaque."),
+            ("CLIP", "Clip", "Set Materials' Blend mode to Alpha Clip\nand Shadow Mode to Alpha Clip."),
+            ("HASHED", "Hashed", "Set Materials' Blend mode to Alpha Hashed\nand Shadow Mode to Alpha Hashed."),
+            ("BLEND", "Blend", "Set Materials' Blend mode to Alpha Blend,\nShadow Mode to Alpha Hashed,\nand disable Show Backface."),
+            ],
+        default = "BLEND",
+        options={'HIDDEN'},
+    )
+    bpy.types.Scene.scsv_blend_mode_checkbox= bpy.props.BoolProperty(
+        name="Blend Mode Checkbox",
+        description="Allow Blend Mode to be altered",
+        default = False,
+        options={'HIDDEN'},
+    )
+
+    bpy.types.Scene.scsv_show_backface= bpy.props.EnumProperty(
+        name="Show Backface",
+        description="Materials' Show Backface property",
+        items=[
+            ("YES", "Yes", "Set Materials' Show Backface property to True\n(renders multiple transparent layers).\n\nThis setting's effect is only visible in materials\nwith Blend Mode set to Alpha Blend, and on EEVEE."),
+            ("NO", "No", "Set Materials' Show Backface property to False.\n\nThis setting's effect is only visible in materials\nwith Blend Mode set to Alpha Blend, and on EEVEE."),
+            ],
+        default = "NO",
+        options={'HIDDEN'},
+    )
+    bpy.types.Scene.scsv_show_backface_checkbox= bpy.props.BoolProperty(
+        name="Show Backface Checkbox",
+        description="Allow Show Backface setting to be altered",
+        default = False,
+        options={'HIDDEN'},
+    )
+
+
+
+
+
+
 def unregister():
     bpy.utils.unregister_class(ZGSWTOR_OT_set_custom_shaders_values)
     
@@ -263,6 +420,11 @@ def unregister():
     del bpy.types.Scene.scsv_saturation_checkbox
     del bpy.types.Scene.scsv_normal
     del bpy.types.Scene.scsv_normal_checkbox
+    del bpy.types.Scene.scsv_blend_mode
+    del bpy.types.Scene.scsv_blend_mode_checkbox
+    del bpy.types.Scene.scsv_show_backface
+    del bpy.types.Scene.scsv_show_backface_checkbox
+
 
 if __name__ == "__main__":
     register()

@@ -214,6 +214,7 @@ class ZGSWTOR_OT_convert_to_legacy_materials(bpy.types.Operator):
                                     
                                     equiv_legacy_node.image = node.image
                                     equiv_legacy_node.interpolation = node.interpolation
+                                    equiv_legacy_node.mute = node.mute
                                     # Colorspace_settings, alpha_mode and others are
                                     # image properties, not node's ones. We assume
                                     # them correctly set by the modern .gr2 importer .
@@ -260,7 +261,7 @@ class ZGSWTOR_OT_convert_to_legacy_materials(bpy.types.Operator):
         else:
             # Deduplicate nodegroups and materials
             bpy.ops.swtor.deduplicate_nodegroups()
-            bpy.ops.swtor.deduplicate_materials()
+            # bpy.ops.swtor.deduplicate_materials()
             
             # Add baking targets
             if context.scene.zg_add_baking_targets_bool == True:

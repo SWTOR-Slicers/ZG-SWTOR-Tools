@@ -9,6 +9,20 @@ import os
 import time
 import datetime
 
+# ImportHelper is a helper class, defines filename and an
+# implicit invoke() function which calls the file selector.
+# We might use invoke() for that, though, if we have to
+# make some kind of initialization stuff there.
+from bpy_extras.io_utils import ImportHelper
+
+from bpy.props import (BoolProperty,
+                       FloatProperty,
+                       StringProperty,
+                       CollectionProperty
+                       )
+from bpy.types import Operator
+
+
 # These imports are for a "hide console output" fn
 import contextlib
 import io
@@ -26,14 +40,7 @@ ADDON_ROOT = __file__.rsplit(__name__.rsplit(".")[0])[0] + __name__.rsplit(".")[
 # -------------------------------------------------------------------------------
 
 
-# ImportHelper is a helper class, defines filename and
-# invoke() function which calls the file selector.
-from bpy_extras.io_utils import ImportHelper
-from bpy.props import (BoolProperty,
-                       StringProperty,
-                       CollectionProperty
-                       )
-from bpy.types import Operator
+
 
 
 
@@ -43,27 +50,6 @@ class ZGSWTOR_OT_area_assembler(Operator):
     bl_label = "Import Area .json files"
     bl_description = "Import SWTOR Area data files (json) from Jedipedia.net's File Viewer.\n\nRequires:\n• Setting the path to an assets 'resources' folder in SWTOR Area Assembler's Addon Preferences.\n• An active Modern .gr2 importer Addon"
     bl_options = {'REGISTER', 'UNDO'}
-
-
-
-
-    # File Browser for selecting paths.json file
-    
-    def invoke(self, context, event):
-        # Match properties to UI's checkboxes
-        self.ApplyFinalRotation = context.scene.ZGSAA_ApplyFinalRotation
-        self.ApplyMaterials = context.scene.ZGSAA_ApplyMaterials
-        self.ApplySceneScale = context.scene.ZGSAA_ApplySceneScale
-        self.SkipDBOObjects = context.scene.ZGSAA_SkipDBOObjects
-        self.CreateSceneLights = context.scene.ZGSAA_CreateSceneLights
-        self.CollectionObjects = context.scene.ZGSAA_CollectionObjects
-        self.MergeMultiMeshObjects = context.scene.ZGSAA_MergeMultiMeshObjects
-        self.HideAfterImport = context.scene.ZGSAA_HideAfterImport
-        self.ExcludeAfterImport = context.scene.ZGSAA_ExcludeAfterImport
-        self.ShowFullReport = context.scene.ZGSAA_ShowFullReport
-
-        context.window_manager.fileselect_add(self)
-        return {'RUNNING_MODAL'}
 
 
     # Checks that the 'resources' folder set in Preferences is valid
@@ -78,36 +64,8 @@ class ZGSWTOR_OT_area_assembler(Operator):
         else:
             return False
 
-    
 
-
-    # ImportHelper mixin class' properties
-    # (pay attention to their types)
-
-    # Filetype filter
-    filter_glob: StringProperty(
-        default="*.json",
-        options={'HIDDEN'},
-        maxlen=255,  # Max internal buffer length, longer would be clamped.
-    )
-    
-    # Selected files
-    files: CollectionProperty(type=bpy.types.PropertyGroup)
-    
-    # Filepath property
-    # Always a single one even when selecting multiple files.
-    # If none selected, it gets the directory, with a trailing final separator
-    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
-
-    # Filename property
-    filename: bpy.props.StringProperty()
-
-    # Directory property
-    directory: bpy.props.StringProperty()
-
-
-
-    # List of operator properties, the attributes will be assigned
+    # List of operator properties. Their attributes are assigned
     # to the class instance from the operator settings before calling.
     ApplyFinalRotation: BoolProperty(
         name="Apply Final Rotation",
@@ -123,6 +81,11 @@ class ZGSWTOR_OT_area_assembler(Operator):
         name="Apply Scene Scale",
         description="Automatically scale the entire scene after import by 10x to better match Blender Units",
         default=False,
+    )
+    SceneScaleFactor: FloatProperty(
+        name="Scene Scale Factor",
+        description="Scale Factor If Applying Scene Scale",
+        default=10.0,
     )
     SkipDBOObjects: BoolProperty(
         name="Skip dbo Objects",
@@ -161,8 +124,8 @@ class ZGSWTOR_OT_area_assembler(Operator):
     )
 
     
-    # Register some properties in the object class for helping
-    # dealing with them in certain phases of the process
+    # Register some custom properties in the object class for
+    # storing helpful info for diagnosing and stuff
     bpy.types.Object.swtor_type = bpy.props.StringProperty()
     bpy.types.Object.swtor_id = bpy.props.StringProperty()
     bpy.types.Object.swtor_parent_id = bpy.props.StringProperty()
@@ -170,7 +133,63 @@ class ZGSWTOR_OT_area_assembler(Operator):
     
 
 
+    # File Browser for selecting paths.json file
+    def invoke(self, context, event):
+        # Apply the UI panel's settings to the class' properties
+        # before opening the File Browser, so that they match.
+        self.ApplyFinalRotation = context.scene.ZGSAA_ApplyFinalRotation
+        self.ApplyMaterials = context.scene.ZGSAA_ApplyMaterials
+        self.ApplySceneScale = context.scene.ZGSAA_ApplySceneScale
+        self.SceneScaleFactor = context.scene.ZGSAA_SceneScaleFactor
+        self.SkipDBOObjects = context.scene.ZGSAA_SkipDBOObjects
+        self.CreateSceneLights = context.scene.ZGSAA_CreateSceneLights
+        self.CollectionObjects = context.scene.ZGSAA_CollectionObjects
+        self.MergeMultiMeshObjects = context.scene.ZGSAA_MergeMultiMeshObjects
+        self.HideAfterImport = context.scene.ZGSAA_HideAfterImport
+        self.ExcludeAfterImport = context.scene.ZGSAA_ExcludeAfterImport
+        self.ShowFullReport = context.scene.ZGSAA_ShowFullReport
 
+        # Check if we are dealing with the latest version of the
+        # .gr2 importer add-on and its scaling settings to use them
+        # in ApplySceneScale.
+        
+        gr2_addon_prefs = bpy.context.preferences.addons["io_scene_gr2"].preferences
+        if hasattr(gr2_addon_prefs, 'gr2_scale_object'):
+            if gr2_addon_prefs.gr2_scale_object:
+                if gr2_addon_prefs.gr2_scale_factor != 1.0:
+                    self.ApplySceneScale = gr2_addon_prefs.gr2_scale_object
+                    self.SceneScaleFactor = gr2_addon_prefs.gr2_scale_factor
+
+
+
+        # Open File Browser.
+        context.window_manager.fileselect_add(self)
+        
+        return {'RUNNING_MODAL'}
+
+    # ImportHelper and invoke() mixin class' properties
+    # (pay attention to their types):
+
+    # Filetype filter
+    filter_glob: StringProperty(
+        default="*.json",
+        options={'HIDDEN'},
+        maxlen=255,  # Max internal buffer length, longer would be clamped.
+    )
+    
+    # Selected files
+    files: CollectionProperty(type=bpy.types.PropertyGroup)
+    
+    # Filepath property
+    # Always a single one even when selecting multiple files.
+    # If none selected, it gets the directory, with a trailing final separator
+    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
+
+    # Filename property
+    filename: bpy.props.StringProperty()
+
+    # Directory property
+    directory: bpy.props.StringProperty()
 
 
     def execute(self, context):
@@ -179,25 +198,6 @@ class ZGSWTOR_OT_area_assembler(Operator):
             # When nothing is selected, self.filepath gets the directory too, so…
             self.report({'ERROR'}, "No files selected")
             return {'CANCELLED'}
-
-
-
-        # if this is in invoke() already it isn't necessary here
-        
-        # # Match properties to UI's checkboxes
-        # self.ApplyFinalRotation = context.scene.ZGSAA_ApplyFinalRotation
-        # self.ApplyMaterials = context.scene.ZGSAA_ApplyMaterials
-        # self.ApplySceneScale = context.scene.ZGSAA_ApplySceneScale
-        # self.SkipDBOObjects = context.scene.ZGSAA_SkipDBOObjects
-        # self.CreateSceneLights = context.scene.ZGSAA_CreateSceneLights
-        # self.CollectionObjects = context.scene.ZGSAA_CollectionObjects
-        # self.MergeMultiMeshObjects = context.scene.ZGSAA_MergeMultiMeshObjects
-        # self.HideAfterImport = context.scene.ZGSAA_HideAfterImport
-        # self.ExcludeAfterImport = context.scene.ZGSAA_ExcludeAfterImport
-        # self.ShowFullReport = context.scene.ZGSAA_ShowFullReport
-
-
-
 
 
         # Terminal's VT100 escape codes (most terminals understand them).
@@ -670,7 +670,14 @@ class ZGSWTOR_OT_area_assembler(Operator):
                 objects_before_importing = list(bpy.data.objects)
                 try:
                     with suppress_stdout():  # To silence .obj importing outputs
+                        # BLENDER 3.X-SPECIFIC .OBJ IMPORT:
+                        # result = bpy.ops.import_scene.obj(
+                        #     filepath=terrain_path,
+                        #     use_image_search=False)  # .obj importer
+
+                        # BLENDER 4.X-SPECIFIC .OBJ IMPORT:
                         result = bpy.ops.wm.obj_import(filepath=terrain_path)  # .obj importer
+
                     if result == "CANCELLED":
                         print(f"\n           WARNING: Blender's .obj importer failed to import {swtor_id} - {str( Path(swtor_resources_folderpath) / Path(swtor_filepath) )}\n")
                         continue
@@ -756,7 +763,7 @@ class ZGSWTOR_OT_area_assembler(Operator):
                     if os.path.isfile(gr2_filepath):
                         try:
                             with suppress_stdout():  # To silence Darth Atroxa's print() outputs
-                                result = bpy.ops.import_mesh.gr2(filepath=gr2_filepath)
+                                result = bpy.ops.import_mesh.gr2(filepath=gr2_filepath, enforce_neutral_settings=True)
                             if result == "CANCELLED":
                                 print(f"\n\nWARNING: .gr2 importer addon failed to import {swtor_id} - {str( Path(swtor_resources_folderpath) / Path(swtor_filepath) )}\n")
                                 continue
@@ -1088,9 +1095,9 @@ class ZGSWTOR_OT_area_assembler(Operator):
 
         if self.ApplySceneScale is True:
             print("\n\nFINAL SCENE SCALING:\n--------------------\n")
-            scalescene()
+            scalescene(scale_factor=self.SceneScaleFactor)
             print(LINEBACK + "DONE!")
-        
+
         deselectall()
 
 
@@ -1112,6 +1119,8 @@ class ZGSWTOR_OT_area_assembler(Operator):
             view_layer = bpy.context.view_layer
             for collection in view_layer.layer_collection.children:
                 iterate_collections(collection, exclude_collection_lights)
+                # exclude_collection_lights DOESN'T WORK!!!
+                # Collections have no .exclude method, which that fn tries
 
 
         # If Hide after Import is on, hide area objects from view
@@ -1196,6 +1205,10 @@ def register():
         description="Automatically scale the entire scene after import by 10x to better match Blender Units",
         default=False,
     )
+    bpy.types.Scene.ZGSAA_SceneScaleFactor = bpy.props.FloatProperty(
+        description="Scale Factor If Applying Scene Scale",
+        default=10.0,
+    )
     bpy.types.Scene.ZGSAA_SkipDBOObjects = bpy.props.BoolProperty(
         description="Don't import design blockout (DBO) objects such as blockers, portals, etc",
         default=True,
@@ -1225,16 +1238,6 @@ def register():
         default=False,
     )
 
-    bpy.types.Scene.ZGSAA_ProgressFactor = bpy.props.FloatProperty(
-        description="Area Assembler's Progress Bar Factor",
-        default=0.0,
-    )
-    bpy.types.Scene.ZGSAA_ProgressText = bpy.props.StringProperty(
-        description="Area Assembler's Progress Bar Text",
-        default="",
-    )
-
-
     bpy.utils.register_class(ZGSWTOR_OT_area_assembler)
     
 
@@ -1245,6 +1248,7 @@ def unregister():
     del bpy.types.Scene.ZGSAA_ApplyFinalRotation
     del bpy.types.Scene.ZGSAA_ApplyMaterials
     del bpy.types.Scene.ZGSAA_ApplySceneScale
+    del bpy.types.Scene.ZGSAA_SceneScaleFactor
     del bpy.types.Scene.ZGSAA_SkipDBOObjects
     del bpy.types.Scene.ZGSAA_CreateSceneLights
     del bpy.types.Scene.ZGSAA_CollectionObjects
@@ -1333,8 +1337,7 @@ def suppress_stdout(suppress=True):
         yield
 
 
-# Cre
-
+# Create objects-fitting Empties (not in use yet)
 def encase_objects_with_empty(objects, empty_name = "Empty", collection_name = ""):
     # Create a new Empty object
     empty = bpy.data.objects.new(empty_name, None)
@@ -1450,7 +1453,13 @@ def hide_outliner_one_level():
 
 # Functions for managing Collections in the Outliner
 
+# THIS IS PROBABLY NOT WORKING
 def iterate_collections(collection, function):
+    # (its only use in this operator is passing it
+    # exclude_collection_lights, which excludes
+    # the collection from the view_layer, but that
+    # fn is known not to be working)
+    #
     # Define a function to recursively iterate over
     # all collections in a hierarchy and apply
     # a function to them.
@@ -1462,8 +1471,11 @@ def iterate_collections(collection, function):
         iterate_collections(child_collection, function)
 
 def exclude_collection_lights(collection):
+    # DOESN'T WORK (collections don't
+    # have an .exclude method)
     if " - Lights" in collection.name:
         collection.exclude = True
+        
 
 def hide_collection_children(collection):
     for child in collection.children:
@@ -1524,11 +1536,16 @@ def parent_with_transformations(obj_to_parent, parent_obj, inherit_transformatio
     return
 
 
+# UNUSED DISCARDED
 def find_closest_match(strings_list, reference_string):
+    
     # Finds the closest match to a reference string
     # among the strings in a list.
     # Meant to find which sub-object in a multi-object
     # is the main one (name closest to the file's one).
+    # CHECK IF IT'S JUST THE FIRST ONE CONSISTENTLY (ALTHOUGH
+    # BPY.DATA.OBJECTS MIGHT DISORDER THEM) OR IF
+    # THERE IS SOME SIMPLE HEURISTIC (UNDERLINES?)
     closest_match = strings_list[0] # a default winner if all are equally bad
     highest_closeness = 0
     for candidate_string in strings_list:
@@ -1538,6 +1555,7 @@ def find_closest_match(strings_list, reference_string):
             closest_match = candidate_string
     return closest_match
 
+# UNUSED DISCARDED
 def count_matching_characters(string1, string2):
     # A gross and cheap approach to calculating
     # the "distance" between two strings
@@ -1635,6 +1653,7 @@ def selectall():
     return
 
 
+# WHY NOT OPS-BASED?
 def deselectall():
     for obj in bpy.data.objects:
         obj.select_set(False)
@@ -1659,8 +1678,8 @@ def finalrotation():
             
     return
 
-
-def finalrotationbymethod(): # MOST PROBABLY IT WILL BE DELETED
+# UNUSED. MOST PROBABLY IT WILL BE DELETED
+def finalrotationbymethod():
     if bpy.data.objects:
         for obj in bpy.data.objects:
             if "swtor_parent_id" in obj.keys():
@@ -1687,13 +1706,13 @@ def finalrotationbymethod(): # MOST PROBABLY IT WILL BE DELETED
 
 
     
-def scalescene():
+def scalescene(scale_factor=10.0):
     print("----------------------------------------------------")
     print("\n\nAPPLY SCENE SCALE\n\n") 
     print("----------------------------------------------------")
         
     # Final Size correction pass to the whole construction
-    bpy.ops.transform.resize(value=(10, 10, 10),
+    bpy.ops.transform.resize(value=(scale_factor, scale_factor, scale_factor),
                             orient_type='GLOBAL',
                             orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)),
                             orient_matrix_type='GLOBAL',

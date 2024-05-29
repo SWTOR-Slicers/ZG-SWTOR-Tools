@@ -7,7 +7,7 @@ import importlib
 bl_info = {
     "name": "ZG SWTOR Tools",
     "author": "ZeroGravitas",
-    "version": (1, 5, 1),
+    "version": (1, 6, 0),
     "blender": (3, 1, 0),
     "category": "SWTOR",
     "location": "View 3D > Sidebar > ZG SWTOR",
@@ -37,9 +37,8 @@ else:
 # Add-on modules loader:
 # Simplifies coding the loading of the modules to keeping a list of their names
 # (See https://b3d.interplanety.org/en/creating-multifile-add-on-for-blender/ ).
-# We could just load all the modules inside the relevant subfolders, but this
-# lets us be more selective while developing them.
 
+# In add-on's main folder 
 baseModulesNames = [
     'addon_property_group',
     'addon_preferences',
@@ -47,14 +46,21 @@ baseModulesNames = [
     'addon_ui',
 ]
 
-toolModulesNames = [
+# Subfoldered per Blender version
+toolModulesNames = [  
     'area_assembler',
-    'area_collections_tools',
+    'area_collections_exclude_include',
+    'area_collections_group_by_name',
+    'area_reset_group_transforms',
     'bake_convert_to_legacy_materials',
+    'bake_twilek_corrections',
+    'bake_save_images',
     'character_assembler',
     'character_prefixer',
     'mat_add_custom_external_swtor_shaders',
+    # 'mat_create_swtor_material',
     'mat_customize_swtor_shaders',
+    'mat_deduplicate_images',
     'mat_deduplicate_materials',
     'mat_deduplicate_nodegroups',
     'mat_process_named_materials',
@@ -70,30 +76,34 @@ toolModulesNames = [
     'obj_remove_doubles',
     'obj_set_modifiers',
     'sculpt_mask_out_selected_vertices',
+    'misc_preview_lighting_to_render_nodes',
     ]
 
-# build dict modulesFullNames:
+
+# build dict modulesFullNames (full directory paths):
 modulesFullNames = {}
 
+# For modules in add-on's main folder 
 for currentModuleName in baseModulesNames:
     modulesFullNames[currentModuleName] = ('{}.{}'.format(__name__, currentModuleName))
-    
+
+# For modules subfoldered per Blender version
 for currentModuleName in toolModulesNames:
     modulesFullNames[currentModuleName] = ('{}.{}.{}'.format(__name__, zglib, currentModuleName))
 
-
+# Load (or reload) modules
 for currentModuleFullName in modulesFullNames.values():
     if currentModuleFullName in sys.modules:
         # If the module had been loaded already, recompile it and reload it
         importlib.reload(sys.modules[currentModuleFullName])
     else:
         # Loads the module in the app's global symbols table
-        # globals()[currentModuleFullName] = importlib.import_module(currentModuleFullName)
         globals()[currentModuleFullName] = importlib.import_module(currentModuleFullName)
         setattr(globals()[currentModuleFullName], 'modulesNames', modulesFullNames)
 
 
 def register():
+    # If a module has a register function, execute it
     for currentModuleName in modulesFullNames.values():
         if currentModuleName in sys.modules:
             if hasattr(sys.modules[currentModuleName], 'register'):
@@ -101,10 +111,11 @@ def register():
     
 
 def unregister():
+    # If a module has an unregister function, execute it
     for currentModuleName in modulesFullNames.values():
         if currentModuleName in sys.modules:
             if hasattr(sys.modules[currentModuleName], 'unregister'):
                 sys.modules[currentModuleName].unregister()
  
 if __name__ == "__main__":
-    register()#
+    register()

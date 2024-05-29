@@ -1,6 +1,18 @@
 import bpy
-from bpy.props import StringProperty, BoolProperty
-from bpy.types import Operator
+
+import bmesh
+import mathutils
+from mathutils import Vector, Matrix
+import numpy as np
+
+
+# ImportHelper is a helper class, defines filename and an
+# implicit invoke() function which calls the file selector.
+# The string properties ‘filepath’, ‘filename’, ‘directory’
+# and a ‘files’ collection
+# are assigned when present in the operator
+from bpy_extras.io_utils import ImportHelper
+
 
 import os
 from pathlib import Path
@@ -9,7 +21,7 @@ import shutil
 import json
 import xml.etree.ElementTree as ET
 
-
+# This Add-on's own modules
 from ..utils.addon_checks import requirements_checks
 
 
@@ -17,6 +29,74 @@ ADDON_ROOT = __file__.rsplit(__name__.rsplit(".")[0])[0] + __name__.rsplit(".")[
 
 
 # Aux Functions
+
+def bind_objects_to_armature(objects, armature, single_armature_only=True):
+    """
+    Bind a set of objects to an armature, producing Armature Modifiers in the process.
+
+    :param objects: A list of objects to be bound to the armature
+    :param armature: The armature object
+    :param single_armature_only: prevents from adding armatures when there are any already
+    """
+    for obj in objects:
+        # Ensure the object has a mesh data type
+        if obj.type == 'MESH':
+            # Add an Armature modifier if it doesn't already exist
+            # or if it does but we allow multiple ones
+            if not ( single_armature_only and any(mod.type == 'ARMATURE' for mod in obj.modifiers) ):
+                mod = obj.modifiers.new(name="Armature", type='ARMATURE')
+                mod.object = armature
+                
+                # Create a parent relationship
+                # DON'T USE A PARENT_TYPE OF 'ARMATURE'. THE MODIFIER IS DOING THAT ALREADY
+                obj.parent = armature
+                obj.matrix_parent_inverse = armature.matrix_world.inverted() # Is this necessary?
+
+                # Automatic weight assignment is more complex and would usually require the operator,
+                # so here we assume weights have been assigned manually or by another method. For
+                # implementing it, it would be bpy.ops.object.parent_set(type='ARMATURE_AUTO')
+
+# THIS VARIANT IS NOT IN USE
+def bind_objects_to_armature_ops_version(objects, armature, automatic_weights=False):
+    """
+    Bind a set of objects to an armature, producing Armature Modifiers in the process.
+
+    :param objects: A list of objects to be bound to the armature
+    :param armature: The armature object
+    :param automatic_weights: calculate automatic weights while parenting the objects
+    """
+    # Make sure the armature is in Object mode
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    # Loop through each object in the list
+    for obj in objects:
+        # Ensure we are in Object mode
+        bpy.ops.object.mode_set(mode='OBJECT')
+        
+        # Select the object
+        bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
+
+        # Add an Armature modifier to the object
+        mod = obj.modifiers.new(name="Armature", type='ARMATURE')
+        mod.object = armature
+
+        # THIS MIGHT HAVE ISSUES DONE AT THIS STEP, BECAUSE 'ARMATURE'
+        # DOUBLE-DIPS ON WHAT THE MODIFIER IS DOING ALREADY. MAYBE BETTER
+        # TO PARENT FIRST FOR 'ARMATURE-AUTO', THEN UNPARENT, THEN
+        # ADD THE MODIFIER, THEN PARENT NORMALLY.
+        if automatic_weights:
+            # Parent the object to the armature with automatic weights
+            bpy.ops.object.parent_set(type='ARMATURE_AUTO')
+        else:
+            bpy.ops.object.parent_set(type='ARMATURE')
+
+        # Deselect the object
+        obj.select_set(False)
+
+    # Select the armature at the end
+    bpy.context.view_layer.objects.active = armature
+    armature.select_set(True)
 
 def get_wrinkles_and_directionmaps(mat_file_abs_path):
     '''Reads a shader .mat file and returns any DirectionMap
@@ -174,22 +254,207 @@ def link_collections_to_collection(collections, destination_collection, create =
     else:
         return False
 
+def translate_uv_coordinates(mesh_object, material_slot = None, uv_offset = (0,0) ):
+    # uv_offset's default is needed because there can't be args without defaults
+    # after an arg with one
+    
+    '''
+    Offset an object's polys' UVs, either all or those
+    associated to a material. Motivated by Twi'lek's
+    off-image coordinates eye UVs producing black bakes.
+    '''
+    
+    # Ensure the object is a mesh
+    if mesh_object.type != 'MESH':
+        print("Selected object is not a mesh.")
+        return
+
+    # Get the mesh data
+    mesh = mesh_object.data
+
+    # Ensure the mesh has UV coordinates
+    if not mesh.uv_layers.active:
+        print("Mesh has no UV coordinates.")
+        return
+
+    # Get the active UV layer
+    uv_layer = mesh.uv_layers.active.data
+
+    # Translate UV coordinates
+    for face in mesh.polygons:
+        if face.material_index == material_slot or material_slot == None:
+            for loop_index in face.loop_indices:
+                uv = uv_layer[loop_index].uv
+                if uv.y <= 1:
+                    return
+                uv.x += uv_offset[0]
+                uv.y += uv_offset[1]
+
+    return False
+
+def separate_eyes(self, obj_to_separate):
+    
+    # SEPARATE BY MATERIAL ----------------
+    
+    objs_before_separating = list(bpy.data.objects)
+    
+    # Make object Active
+    bpy.context.view_layer.objects.active = obj_to_separate
+    # Switch object to edit mode
+    bpy.ops.object.mode_set(mode='EDIT')
+    
+    # Separate by material
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.separate(type='MATERIAL')
+    
+    # Switch back to object mode
+    bpy.ops.object.mode_set(mode='OBJECT')
+        
+    separated_obj = list( set(bpy.data.objects).difference(objs_before_separating) )[0]
+    
+    
+    # Determine which object is the eyes: the remainder of the original,
+    # which still exists in bpy.data.objects, modified by the operator,
+    # or the new one resulting from separating by material.
+    # Uses polycount as eye detector (eyes' polycount < head's polycount).
+    if len(separated_obj.data.polygons) < len(obj_to_separate.data.polygons):
+        eyes_obj = separated_obj
+        head_obj = obj_to_separate
+    else:
+        eyes_obj = obj_to_separate
+        head_obj = separated_obj
+    
+    # Some renaming to avoid ".00x" suffixes.
+    # (this could be smarter but I can't be bothered)
+    if head_obj.name[-3:].isdigit():
+        head_obj.name = head_obj.name[:-4]
+    head_obj.data.name = head_obj.name
+        
+    if eyes_obj.name[-3:].isdigit():
+        eyes_obj.name = eyes_obj.name[:-4] + ".eyes"
+    else:
+        eyes_obj.name = eyes_obj.name + ".eyes"
+    eyes_obj.data.name = eyes_obj.name
+    
+    if not self.separate_each_eye:
+        return eyes_obj, None, None, head_obj
 
 
+    # SEPARATE BY SIDE OF YZ ----------------
+    
+    objs_before_separating = list(bpy.data.objects)
+    
+    # Separate by selection
+    select_faces_right_of_plane(eyes_obj, threshold=0.0)
+    bpy.ops.mesh.separate(type="SELECTED")
+
+    # Switch back to object mode
+    bpy.ops.object.mode_set(mode='OBJECT')
+    
+    objs_after_separating_by_yz = list(bpy.data.objects)
+    
+    separated_objs = list( set(objs_after_separating_by_yz).difference(objs_before_separating) )
+    
+    eye_l_obj = eyes_obj
+    eye_r_obj = separated_objs[0]
+    
+    eye_l_obj.name = eye_l_obj.name + ".l"
+    eye_l_obj.data.name = eye_l_obj.name
+    
+    eye_r_obj.name = eye_r_obj.name[:-4] + ".r"
+    eye_r_obj.data.name = eye_r_obj.name
 
 
+    # REPOSITION EYES' ORIGINS ----------------
+
+    highest_vertex, lowest_vertex = find_highest_lowest_vertices(eye_l_obj)
+    new_origin_location = (highest_vertex + lowest_vertex) / 2
+    set_mesh_origin(eye_l_obj, new_origin_location)
+    
+    highest_vertex, lowest_vertex = find_highest_lowest_vertices(eye_r_obj)
+    new_origin_location = (highest_vertex + lowest_vertex) / 2
+    set_mesh_origin(eye_r_obj, new_origin_location)
+
+    return None, eye_r_obj, eye_l_obj, head_obj
+
+def select_faces_right_of_plane(obj, threshold=0.0):
+    # Make object Active
+    bpy.context.view_layer.objects.active = obj
+    # Switch object to edit mode
+    bpy.ops.object.mode_set(mode='EDIT')
+    # Deselect all
+    bpy.ops.mesh.select_all(action='DESELECT')
+
+    bm = bmesh.from_edit_mesh(obj.data)
+
+    # Define the YZ plane
+    plane_normal = Vector((1, 0, 0))  # Normal vector of the YZ plane
+    plane_origin = Vector((0, 0, 0))  # Origin point of the YZ plane
+
+    for face in bm.faces:
+        # Calculate the center of the face
+        face_center = sum((v.co for v in face.verts), Vector()) / len(face.verts)
+        
+        # Calculate the vector from the origin to the face center
+        vec_to_center = face_center - plane_origin
+
+        # Calculate the dot product between the vector to the center and the plane normal
+        dot_product = vec_to_center.dot(plane_normal)
+
+        # If dot product is greater than the threshold, select the face
+        if dot_product > threshold:
+            face.select = True
+
+    bmesh.update_edit_mesh(obj.data)
+
+def find_highest_lowest_vertices(obj):
+    # Get the mesh data from the object
+    mesh = obj.data
+    
+    # Initialize variables to store highest and lowest vertices
+    highest_vertex = None
+    lowest_vertex = None
+    
+    # Initialize variables to store maximum and minimum Z coordinates
+    max_z = -float('inf')
+    min_z = float('inf')
+    
+    # Iterate through all vertices in the mesh
+    for vert in mesh.vertices:
+        # Get the world coordinates of the vertex
+        world_vert = obj.matrix_world @ vert.co
+        
+        # Update highest and lowest vertices based on Z coordinate
+        if world_vert.z > max_z:
+            max_z = world_vert.z
+            highest_vertex = world_vert
+        
+        if world_vert.z < min_z:
+            min_z = world_vert.z
+            lowest_vertex = world_vert
+    
+    return highest_vertex, lowest_vertex
+
+def set_mesh_origin(obj, pos):
+    '''Given a mesh object set it's origin to a given position.'''
+    # Casting pos to vector so you can pass in tuples or lists
+    pos = Vector(pos)
+    mat = Matrix.Translation(pos - obj.location)
+    obj.location = pos
+    obj.data.transform(mat.inverted())
+    # obj.data.update()
 
 
 
 # Operator
 
-class ZGSWTOR_OT_character_assembler(Operator):
+class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
     bl_label = "SWTOR Character Assembler"
     bl_idname = "zgswtor.character_assembler"
     bl_description = "Processes the 'path.json' file in a Player Character/NPC folder\nexported by TORCommunity.com, filling its subfolders with all\nrelated objects and textures, then importing the Character\n\n• Requires setting the path to a 'resources' folder in this addon's Preferences.\n• Requires an enabled modern .gr2 Importer Addon (not the Legacy version)"
     bl_options = {'REGISTER', 'UNDO'}
 
-    filepath: StringProperty(subtype='FILE_PATH')
+    filepath: bpy.props.StringProperty(subtype='FILE_PATH')
 
 
     # Properties
@@ -236,6 +501,62 @@ class ZGSWTOR_OT_character_assembler(Operator):
         # options={'HIDDEN'}
     )
 
+    separate_eyes: bpy.props.BoolProperty(
+        name="Separate Eyes From Head Object",
+        description="Separates the eyes from the character's head object to make them\neasier to rig and animate (certain rigging systems require that).\nNeeds them to be using a material with 'eye' in its name, as separating criteria.\n\nThe result is a single object with both eyes.\n\nTo further separate them into individual eyes,\nuse the 'Separate Eyes From Each Other' option, too",
+        default = False,
+        # options={'HIDDEN'}
+    )
+    
+    separate_each_eye: bpy.props.BoolProperty(
+        name="   Separate Eyes From Each Other",
+        description="When separating the eyes from the character's head object\nmake each eye its own object and set their origin points\nso that they can also be posed via simple rotations",
+        default = False,
+        # options={'HIDDEN'}
+    )
+
+    correct_twilek_eyes_uv: bpy.props.BoolProperty(
+        name="Correct Twi'lek's Eyes' UVs",
+        description="When importing a Twi'lek character, reposition their eyes' UVs\ninside their textures' area so that they produce correct results\nin baking operations\n\n(This doesn't affect renderings)",
+        default = True,
+        # options={'HIDDEN'}
+    )
+
+
+
+    # File Browser for selecting paths.json file
+    def invoke(self, context, event):
+
+        # Sync properties with their UI matches
+        self.gather_only = context.scene.zg_swca_gather_only_bool
+        # self.assemble_only = context.scene.zg_swca_assemble_only_bool
+        self.dont_overwrite = context.scene.zg_swca_dont_overwrite_bool
+        self.collect = context.scene.zg_swca_collect_bool
+        self.import_armor_only = context.scene.zg_swca_import_armor_only
+        self.import_skeleton = context.scene.zg_swca_import_skeleton_bool
+        self.bind_to_skeleton = context.scene.zg_swca_bind_to_skeleton_bool
+        self.separate_eyes = context.scene.zg_swca_separate_eyes
+        self.separate_each_eye = context.scene.zg_swca_separate_each_eye
+        self.correct_twilek_eyes_uv = context.scene.zg_correct_twilek_eyes_uv
+
+        # Open File Browser.
+        context.window_manager.fileselect_add(self)
+        
+        return {'RUNNING_MODAL'}
+
+
+
+    # File Browsing properties
+
+    filter_glob: bpy.props.StringProperty(
+        default='*.json;',  # file wildcards separated by semicolons
+        options={'HIDDEN'}
+    )
+
+
+
+
+
 
     def execute(self, context):
         # Terminal's VT100 escape codes (most terminals understand them).
@@ -247,14 +568,18 @@ class ZGSWTOR_OT_character_assembler(Operator):
         LINE_BACK_1ST_COL = '\033[F'    # Move cursor one line up, 1st column.
 
 
-        # Sync properties with their UI matches
-        self.gather_only = context.scene.zg_swca_gather_only_bool
-        # self.assemble_only = context.scene.zg_swca_assemble_only_bool
-        self.dont_overwrite = context.scene.zg_swca_dont_overwrite_bool
-        self.collect = context.scene.zg_swca_collect_bool
-        self.import_armor_only = context.scene.zg_swca_import_armor_only
-        self.import_skeleton = context.scene.zg_swca_import_skeleton_bool
-        self.bind_to_skeleton = context.scene.zg_swca_bind_to_skeleton_bool
+        # Sync properties with their UI matches (MOVED TO AN INVOKE FN)
+        # self.gather_only = context.scene.zg_swca_gather_only_bool
+        # # self.assemble_only = context.scene.zg_swca_assemble_only_bool
+        # self.dont_overwrite = context.scene.zg_swca_dont_overwrite_bool
+        # self.collect = context.scene.zg_swca_collect_bool
+        # self.import_armor_only = context.scene.zg_swca_import_armor_only
+        # self.import_skeleton = context.scene.zg_swca_import_skeleton_bool
+        # self.bind_to_skeleton = context.scene.zg_swca_bind_to_skeleton_bool
+        # self.separate_eyes = context.scene.zg_swca_separate_eyes
+        # self.separate_each_eye = context.scene.zg_swca_separate_each_eye
+        # self.correct_twilek_eyes_uv = context.scene.zg_correct_twilek_eyes_uv
+
 
         # Get the extracted SWTOR assets' "resources" folder from the add-on's preferences. 
         swtor_resources_folderpath = bpy.context.preferences.addons["zg_swtor_tools"].preferences.swtor_resources_folderpath
@@ -494,6 +819,29 @@ class ZGSWTOR_OT_character_assembler(Operator):
             
             character_objects = list(set(objects_after_importing) - set(objects_before_importing))
 
+            
+            # Check for Twi'lek heads to correct their eyes' UVs
+            # (do it before separating eye objects just in case)
+            if self.correct_twilek_eyes_uv:
+                for obj in character_objects:
+                    if "head_twilek" in obj.name:
+                        translate_uv_coordinates(obj, 1, (0, -2) )
+                        break
+            
+            
+            # Separate character's eye objects
+            if self.separate_eyes:
+                for obj in character_objects:
+                    if "head" in obj.name:
+                        eyes_obj, eye_r_obj, eye_l_obj, head_obj = separate_eyes(self, obj)
+                        break
+                
+                if eyes_obj:
+                        character_objects.append(head_obj)
+                        
+                if eye_r_obj:
+                        character_objects.extend( [eye_r_obj, eye_l_obj, head_obj] )
+
 
             # Importing skeleton, if any, using Atroxa's .gr2 Importer Addon.
             if self.import_skeleton:
@@ -508,24 +856,19 @@ class ZGSWTOR_OT_character_assembler(Operator):
                         skeleton_object = []
                     else:
                         print("\nSkeleton Object Imported\n")
-                        
-                        objects_after_importing = list(bpy.data.objects)
-                        
-                        skeleton_object = list(set(objects_after_importing) - set(objects_before_importing))[0]
+                                                
+                        skeleton_object = list( set(bpy.data.objects).difference(objects_before_importing) )[0]
+                        skeleton_object.show_in_front = True
 
                         # Binding character's objects to skeleton
                         if character_objects and self.bind_to_skeleton:
-                            for obj in character_objects:
-                                obj.parent = skeleton_object
-                                obj.parent_type = "ARMATURE"
-                                obj.matrix_parent_inverse = skeleton_object.matrix_world.inverted()
-                                skeleton_object.show_in_front = True
-                                
+                            bind_objects_to_armature(character_objects, skeleton_object)
                             print("Character's Objects Bound To Skeleton")
                     
                 except:
                     print(f"\n\nWARNING: the .gr2 Importer addon CRASHED while importing:\n{skeleton_filepath}\n\n")
                     skeleton_exists = False
+                    skeleton_object = []
                 
             
             # identify what's armor and what's body parts
@@ -602,12 +945,6 @@ class ZGSWTOR_OT_character_assembler(Operator):
         return {'FINISHED'}
 
 
-    # File Browser for selecting paths.json file
-    def invoke(self, context, event):
-        context.window_manager.fileselect_add(self)
-        return {'RUNNING_MODAL'}
-
-
 
 
 # REGISTRATIONS ---------------------------------------------
@@ -617,8 +954,7 @@ classes = [
 ]
 
 def register():
-    for cls in classes:
-        bpy.utils.register_class(cls)
+    bpy.utils.register_class(ZGSWTOR_OT_character_assembler)
 
     bpy.types.Scene.zg_swca_gather_only_bool = bpy.props.BoolProperty(
         name="Gather Assets Only",
@@ -656,16 +992,36 @@ def register():
         default = True,
     )
 
+    bpy.types.Scene.zg_swca_separate_eyes = bpy.props.BoolProperty(
+        name="Separate Eyes From Head Object",
+        description="Separates the eyes from the character's head object to make them\neasier to rig and animate (certain rigging systems require that).\nNeeds them to be using a material with 'eye' in its name, as separating criteria.\n\nThe result is a single object with both eyes.\n\nTo further separate them into individual eyes,\nuse the 'As Two Eye Objects' option, too",
+        default = False,
+    )
+
+    bpy.types.Scene.zg_swca_separate_each_eye = bpy.props.BoolProperty(
+        name="As Two Eye Objects",
+        description="When separating the eyes from the character's head object\nmake each eye its own object and set their origin points\nso that they can also be posed via simple rotations",
+        default = False,
+        # options={'HIDDEN'}
+    )
+
+    bpy.types.Scene.zg_correct_twilek_eyes_uv = bpy.props.BoolProperty(
+        name="Correct Twi'lek's Eyes' UVs",
+        description="When importing a Twi'lek character, reposition their eyes' UVs\ninside their textures' area so that they produce correct results\nin baking operations.\n\n(This doesn't affect renderings)",
+        default = True,
+    )
+
 
 def unregister():
-    for cls in reversed(classes):
-        bpy.utils.unregister_class(cls) 
+    bpy.utils.unregister_class(ZGSWTOR_OT_character_assembler) 
         
     del bpy.types.Scene.zg_swca_gather_only_bool
     del bpy.types.Scene.zg_swca_dont_overwrite_bool
     del bpy.types.Scene.zg_swca_collect_bool
     del bpy.types.Scene.zg_swca_import_skeleton_bool
     del bpy.types.Scene.zg_swca_bind_to_skeleton_bool
+    del bpy.types.Scene.zg_swca_separate_eyes
+    del bpy.types.Scene.zg_correct_twilek_eyes_uv
 
 
 if __name__ == "__main__":

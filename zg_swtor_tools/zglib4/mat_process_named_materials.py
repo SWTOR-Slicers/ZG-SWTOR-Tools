@@ -6,9 +6,25 @@ import bpy
 import pathlib
 import xml.etree.ElementTree as ET
 import addon_utils
-
+import datetime
 
 from .shd_AnimatedUV import create_AnimatedUV_nodegroup
+    
+
+# def progress_bar(self, context):
+    
+#     # progress: bpy.props.FloatProperty()
+    
+#     row = self.layout.row()
+#     row.progress(
+#         factor=progress_bar.progress,
+#         type="BAR",
+#         text="Operation in progress..." if progress_bar.progress < 1 else "Operation Finished !"
+#     )
+#     row.scale_x = 2
+
+# progress_bar.progress = 0
+
 
 
 def link_objects_to_collection (objects, collection, move = False):
@@ -71,7 +87,7 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
     
     use_overwrite_bool: bpy.props.BoolProperty(
         name="Overwrite Uber materials",
-        description='Processes the selected objects Uber materials even if they have an Uber shader already, effectively "regenerating" those ones',
+        description="Reprocesses already processed materials. This allows for updating them if better versions\nof our SWTOR Materials are implemented in new Add-on releases.",
         default = False,
         options={'HIDDEN'}
         )
@@ -84,7 +100,6 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
         )
 
 
-
     # Register some custom properties in the Material class for helping
     # diagnose issues. These appear in Blender's Material Properties panel
     bpy.types.Material.swtor_derived = bpy.props.StringProperty()
@@ -94,7 +109,7 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
     def execute(self, context):
 
         bpy.context.window.cursor_set("WAIT")
-        
+
         # Make operator properties' values match UI properties' ones
         self.use_collect_colliders_bool = bpy.context.scene.use_collect_colliders_bool
         self.use_overwrite_bool = bpy.context.scene.use_overwrite_bool
@@ -174,6 +189,12 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
         items_to_process = len(selected_objects)
         items_processed = 0
 
+        # progress_bar.progress = 0.0
+        # now_seconds = datetime.datetime.now().second
+        # before_seconds = int(now_seconds)
+        
+        # bpy.types.VIEW3D_HT_header.append(progress_bar)
+        
         for ob in selected_objects:
             if ob.type == "MESH":
 
@@ -181,6 +202,11 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
 
                 print("-------------------------------------------")
                 print(f"{items_processed*100/items_to_process:6.2f} %    Object: {ob.name}")
+                # progress_bar.progress = items_processed/items_to_process
+                # now = datetime.datetime.now().second
+                # if now_seconds > before_seconds:
+                #     bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+                #     before_seconds = int(now_seconds)
 
                 is_collision_object = False
 
@@ -1045,9 +1071,12 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
 
         print("\n\nDone!")
 
-        bpy.context.window.cursor_set("DEFAULT")
-        return {"FINISHED"}
+        # del bpy.types.VIEW3D_HT_header.progress_bar
 
+        bpy.context.window.cursor_set("DEFAULT")
+        
+        return {"FINISHED"}
+    
 
 # UI is set in ui.py
 
@@ -1061,14 +1090,16 @@ def register():
         default = False
     )
     bpy.types.Scene.use_overwrite_bool = bpy.props.BoolProperty(
-        description="Rewrites already existing creature and EmissiveOnly materials.\nThis allows for converting Legacy Uber materials\nto modern ones and viceversa.",
+        description="Reprocesses already processed materials. This allows for updating them if better versions\nof our SWTOR Materials are implemented in new Add-on releases.",
         default=False
     )
     bpy.types.Scene.use_collect_colliders_bool = bpy.props.BoolProperty(
         description='Creates or uses a "Collider Objects" Collection and adds to it\nany object with an "util_collision_hidden" type of material\nto facilitate its management and / or deletion',
         default=True
-    )
+    )    
+
     bpy.utils.register_class(ZGSWTOR_OT_process_named_mats)
+
 
 def unregister():
     del bpy.types.Scene.use_selection_only

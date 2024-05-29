@@ -7,23 +7,26 @@ import bmesh
 class ZGSWTOR_OT_remove_doubles(bpy.types.Operator):
     bl_idname = "zgswtor.remove_doubles"
     bl_label = "ZG Remove Doubles"
-    bl_description = "Removes double vertices (does a Merge by Distance\nin selected objects using a threshold of 0.0000001),\nand applies a Normals > Average > Face Area.\n\n• Requires a selection of objects.\n• Processes each selected object individually."
+    bl_description = "Removes objects' double vertices (does a Merge by Distance\n using a threshold of 0.0000001),\nand applies an 'Use Sharp Edge From Normals'.\n\nIt processes each selected object individually."
     bl_options = {'REGISTER', "UNDO"}
+
 
     # Check that there is a selection of objects and that we are in Object mode
     # (greys-out the UI button otherwise) 
     @classmethod
     def poll(cls,context):
-        if bpy.context.selected_objects and bpy.context.mode == "OBJECT":
-            there_are_meshes = False
-            for obj in bpy.context.selected_objects:
-                if obj.type == "MESH":
-                    there_are_meshes = True
-                    break
-            return there_are_meshes
-        else:
-            return False
+        for obj in bpy.data.objects:
+            if obj.type == "MESH":
+                return True
+        return False
+    
 
+    use_selection_only : bpy.props.BoolProperty(
+        name="Apply To Selected Objects Only",
+        description="Apply to selected objects only.",
+        default=True,
+        options={'HIDDEN'},
+    )
 
     def execute(self, context):
 
@@ -38,7 +41,16 @@ class ZGSWTOR_OT_remove_doubles(bpy.types.Operator):
         # bpy.ops-based instead of BMESH based, as that allows for using a type of normals processing
         # that better preserves sharp edges with just an additional parameter.
         vert_count_report = 0
-        copy_of_selected_objects = list(context.selected_objects)
+
+        if self.use_selection_only == True:
+            copy_of_selected_objects = [obj for obj in bpy.context.selected_objects if obj.type == "MESH"]
+            if not copy_of_selected_objects:
+                self.report({"WARNING"}, "No mesh objects were selected.")
+                return {"CANCELLED"}
+        else:
+            copy_of_selected_objects = [obj for obj in bpy.data.objects if obj.type == "MESH"]
+                    
+
         bpy.ops.object.select_all(action='DESELECT')
         for obj in copy_of_selected_objects:
             if obj.type == 'MESH':
