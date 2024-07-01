@@ -66,7 +66,7 @@ class ZGSWTOR_OT_set_backface_culling(bpy.types.Operator):
             return {"CANCELLED"}
 
 
-# UI is set in ui.py
+# UI is set in addon_ui.py
 
 
 # Registrations

@@ -275,7 +275,7 @@ class ZGSWTOR_OT_set_custom_shaders_values(bpy.types.Operator):
         return {"FINISHED"}
 
 
-# UI is set in ui.py
+# UI is set in addon_ui.py
 
 
 

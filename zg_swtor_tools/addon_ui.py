@@ -526,6 +526,20 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
         in_row.prop(context.scene, "zgswtor_quickscale_factor", text="",)
         row.operator("zgswtor.quickscale", text="Up").action = "UPSCALE"
 
+
+        # Apply Transforms UI
+        row = tool_section.row(align=True)
+
+        row.label(text="Apply")
+        row.operator("zgswtor.apply_transforms", text="Rot.").action = 'ROTATION'
+        row.operator("zgswtor.apply_transforms", text="Scale").action = 'SCALE'
+        row.operator("zgswtor.apply_transforms", text="BOTH").action = 'BOTH'
+        col = tool_section.column(align=True)
+        col.prop(context.scene, "OAT_set_custom_props", text="Annotate As Obj. Props.")
+
+
+        # Show object data related to the previous tools
+        # (completely implemented here, no operators called)
         selected_obj = context.object
         
         col=tool_section.column(align=True)
@@ -546,22 +560,35 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
             
             row = col.row(align=True)
             row.prop(selected_obj, "scale", text="")
+            
+            if 'gr2_scale' in selected_obj:
+                col.label(text=f"gr2_axis_conversion: {selected_obj['gr2_axis_conversion']}")
+                col.label(text=f"gr2_scale: {selected_obj['gr2_scale']}")
+            else:
+                col.label(text="No gr2_axis_conversion info.")
+                col.label(text="No gr2_scale info.")
         else:
             pass
 
 
-        # Apply Transforms UI
-        row = tool_section.row(align=True)
+        # set_swtor_obj_custom_props UI
+        col=tool_section.column(align=True)
 
-        row.label(text="Apply")
-        row.operator("zgswtor.apply_transforms", text="Rot.").action = 'ROTATION'
-        row.operator("zgswtor.apply_transforms", text="Scale").action = 'SCALE'
-        row.operator("zgswtor.apply_transforms", text="BOTH").action = 'BOTH'
+        col.label(text="Set Obj. Props. Manually To")
+        split = col.split(factor= 0.7, align=True)
+        col_left, col_right = split.column(align=True), split.column(align=True)
 
-        col = tool_section.column(align=True)
+        set_props = col_left.operator("zgswtor.set_swtor_obj_custom_props", text="Selected Objects")
+        col_left.enabled = len(bpy.context.selected_objects) != 0
+        set_props.use_selection_only = True
 
-        col.prop(context.scene, "OAT_set_custom_props", text="Record In SWTOR Object")
+        set_props = col_right.operator("zgswtor.set_swtor_obj_custom_props", text="All")
+        col_right.enabled = len(bpy.data.objects) != 0
+        set_props.use_selection_only = False
         
+        col.prop(context.scene, "OCP_gr2_axis_conversion")
+        col.prop(context.scene, "OCP_gr2_scale")
+
 
 
 

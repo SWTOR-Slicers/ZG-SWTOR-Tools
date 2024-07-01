@@ -19,7 +19,7 @@ class ZGSWTOR_OT_apply_transforms(bpy.types.Operator):
     
     set_custom_props: bpy.props.BoolProperty(
         name="Set Custom .gr2 Object Properties",
-        description="Creates or modifies SWTOR Objects/Skeletons' custom properties to annotate\nscale and axis conversion data relative to what a SWTOR object\nwith neutral import settings would show",
+        description="Creates or modifies SWTOR Objects/Skeletons' custom properties to annotate\nscale and axis conversion data relative to what a SWTOR object with neutral\nimport settings would show (gr2_scale = 1.0, gr2_axis_conversion = False)",
         default=True,
         options={'HIDDEN'}
     )
@@ -31,9 +31,9 @@ class ZGSWTOR_OT_apply_transforms(bpy.types.Operator):
             for obj in context.selected_objects:
                 if self.action == 'BOTH' or self.action == 'SCALE':
                     if 'gr2_scale' in obj:
-                        obj['gr2_scale'] *= obj.scale
+                        obj['gr2_scale'] *= obj.scale[0]
                     else:
-                        obj['gr2_scale'] = obj.scale
+                        obj['gr2_scale'] = obj.scale[0]
                         
                 if self.action == 'BOTH' or self.action == 'ROTATE':
                     obj['gr2_axis_conversion'] = obj.rotation_euler[0] != 1.5707963705062866
@@ -57,7 +57,7 @@ def register():
     
     bpy.types.Scene.OAT_set_custom_props = bpy.props.BoolProperty(
         name="Set Custom .gr2 Object Properties",
-        description="Creates or modifies SWTOR Objects/Skeletons' custom properties to annotate\nscaling and axis conversion data relative to what a SWTOR object\nwith neutral import settings would show",
+        description="Creates or modifies SWTOR Objects/Skeletons' custom properties to annotate\nscale and axis conversion data relative to what a SWTOR object with neutral\nimport settings would show (gr2_scale = 1.0, gr2_axis_conversion = False)",
         default = True,
     )
     

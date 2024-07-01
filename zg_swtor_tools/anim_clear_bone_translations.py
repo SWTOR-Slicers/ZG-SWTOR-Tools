@@ -3,7 +3,7 @@ import bpy
 class ZGSWTOR_OT_clear_bone_translations(bpy.types.Operator):
     bl_idname = "zgswtor.clear_bone_translations"
     bl_label = "Clear Bones' Translations"
-    bl_description = "Clears all translation data from all bones in an armature, and\nall keyframes' translations if animated. it's meant to correct\nimperfections in imported animations that distort characters'\nbodies (they might need manual adjustments afterwards to\ncompensate for what the translations added to the poses).\n\nDoesn't affect the GrannyRootBone, Master, and Bip01 bones\nthat contribute to major movements in the stage"
+    bl_description = "Clears all translation data from all bones in an armature, and\nall keyframes' translations if animated. it's meant to correct\nimperfections in imported animations that distort characters'\nbodies (they might need manual adjustments afterwards to\ncompensate for what the translations added to the poses).\n\nIt doesn't affect the GrannyRootBone, Master, Bip01, Root\nand RootSpine bones that contribute to major movements\nacross the stage"
     bl_options = {'REGISTER', 'UNDO'}
     
         
@@ -13,7 +13,7 @@ class ZGSWTOR_OT_clear_bone_translations(bpy.types.Operator):
             self.report({'ERROR'}, "Active object is not an armature")
             return {'CANCELLED'}
         
-        excluded_bones = {"GrannyRootBone", "Master", "Bip01"}
+        excluded_bones = {"GrannyRootBone", "Master", "Bip01", "Root", "RootSpine"}
         
         bones = obj.pose.bones
         

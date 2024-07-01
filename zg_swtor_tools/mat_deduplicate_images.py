@@ -39,7 +39,7 @@ class ZGSWTOR_OT_deduplicate_images(bpy.types.Operator):
         return {'FINISHED'}
 
 
-# UI is set in ui.py
+# UI is set in addon_ui.py
 
 
 # Registrations

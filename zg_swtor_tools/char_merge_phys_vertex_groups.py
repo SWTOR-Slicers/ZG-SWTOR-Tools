@@ -148,7 +148,7 @@ def merge_vertex_groups(obj, destination_vertex_group_name, common_name_part, de
             obj.vertex_groups.remove(vg)
             
 
-# UI is set in ui.py
+# UI is set in addon_ui.py
 
 
 # Registrations

@@ -56,6 +56,7 @@ modulesNames = [
     'mat_skinsettings_ng_in_shader_editor',
 
     'obj_apply_transforms',
+    'obj_set_swtor_obj_custom_props',
     'obj_quickscale',
     'obj_remove_doubles',
     'obj_remove_doubles_edit_mode',

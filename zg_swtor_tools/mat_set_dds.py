@@ -28,7 +28,7 @@ class ZGSWTOR_OT_set_dds(bpy.types.Operator):
             return {"CANCELLED"}
 
 
-# UI is set in ui.py
+# UI is set in addon_ui.py
 
 
 # Registrations
