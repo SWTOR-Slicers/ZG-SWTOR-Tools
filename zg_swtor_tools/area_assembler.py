@@ -1,7 +1,8 @@
 import bpy
+import bmesh
 import json
-from math import degrees, radians
-from mathutils import Matrix
+from math import degrees, radians, ceil
+from mathutils import Matrix, Vector
 from pathlib import Path
 from zipfile import ZipFile
 import copy
@@ -51,7 +52,8 @@ class ZGSWTOR_OT_area_assembler(Operator):
     bl_description = "Import SWTOR Area data files (json) from Jedipedia.net's File Viewer.\n\nRequires:\n• Setting the path to an assets 'resources' folder in SWTOR Area Assembler's Addon Preferences.\n• An active Modern .gr2 importer Addon"
     bl_options = {'REGISTER', 'UNDO'}
 
-
+    # region classmethods, properties and invoke()
+    
     # Checks that the 'resources' folder set in Preferences is valid
     # and that the .gr2 importer addon's operator is available.
     # Greys-out the Import sub-menu otherwise.
@@ -91,6 +93,11 @@ class ZGSWTOR_OT_area_assembler(Operator):
         name="Skip dbo Objects",
         description="Don't import design blockout (DBO) objects such as blockers, portals, etc",
         default=True,
+    )
+    TerrainOnly: BoolProperty(
+        name="Import Terrain Objects Only",
+        description="Import terrain objects only, mostly for diagnostic purposes",
+        default=False,
     )
     CreateSceneLights: BoolProperty(
         name="Create Scene Lights",
@@ -160,13 +167,14 @@ class ZGSWTOR_OT_area_assembler(Operator):
         # (it's alwasys as if it was applied).
         if checks['gr2HasParams'] and not context.scene.ZGSAA_ApplySceneScale:
             prefs = context.preferences.addons["io_scene_gr2"].preferences
-            self.ApplySceneScale = prefs['gr2_scale_object']
-            self.SceneScaleFactor = prefs['gr2_scale_factor']
+            self.ApplySceneScale = getattr(prefs, 'gr2_scale_object')
+            self.SceneScaleFactor = getattr(prefs, 'gr2_scale_factor')
         else:
             self.ApplySceneScale = context.scene.ZGSAA_ApplySceneScale
             self.SceneScaleFactor = context.scene.ZGSAA_SceneScaleFactor
 
         self.SkipDBOObjects = context.scene.ZGSAA_SkipDBOObjects
+        self.TerrainOnly = context.scene.ZGSAA_TerrainOnly
         self.CreateSceneLights = context.scene.ZGSAA_CreateSceneLights
         self.CollectionObjects = context.scene.ZGSAA_CollectionObjects
         self.MergeMultiMeshObjects = context.scene.ZGSAA_MergeMultiMeshObjects
@@ -205,8 +213,12 @@ class ZGSWTOR_OT_area_assembler(Operator):
     directory: bpy.props.StringProperty()
 
 
+    # endregion
+
     def execute(self, context):
         
+        # region preprocessings and stuff previous to assembling loop
+
         if self.filepath == self.directory:
             # When nothing is selected, self.filepath gets the directory too, so…
             self.report({'ERROR'}, "No files selected")
@@ -228,13 +240,8 @@ class ZGSWTOR_OT_area_assembler(Operator):
         
         if checks['gr2HasParams']:
             gr2HasParams = True
-            # gr2_prefs = context.preferences.addons["io_scene_gr2"].preferences
-            # self.ApplySceneScale = gr2_prefs['gr2_scale_object']
-            # self.SceneScaleFactor = gr2_prefs['gr2_scale_factor']
         else:
             gr2HasParams = False
-            # self.ApplySceneScale = context.scene.ZGSAA_ApplySceneScale
-            # self.SceneScaleFactor = context.scene.ZGSAA_SceneScaleFactor
 
 
         # Terminal's VT100 escape codes (most terminals understand them).
@@ -358,7 +365,7 @@ class ZGSWTOR_OT_area_assembler(Operator):
                         json_location_data = json.load(read_file)
                         print()  # adds line feed to previous print()
                     except:
-                        print(" -- EMPTY OR BADLY WRITTEN .JSON FILE. OMITTED.")
+                        print(" -- EMPTY OR BADLY WRITTEN .JSON FILE. OMITTED.", end="\n")
                         continue
             except FileNotFoundError:
                 print(" -- .json file not found")  # Console.
@@ -388,8 +395,13 @@ class ZGSWTOR_OT_area_assembler(Operator):
             
             indirect_object_elements = []
             
-            for element in json_location_data:
+            for element in json_location_data[:]:
                 if "assetName" in element:
+                    if self.TerrainOnly:
+                        if not ".hms" in element["assetName"]:
+                            json_location_data.remove(element)
+                            continue
+                    
                     element["make_dyn_empty"] = False
                     swtor_filepath = element["assetName"]
                     # delete preceding directory separator if it exists. It shouldn't vary so much
@@ -401,16 +413,17 @@ class ZGSWTOR_OT_area_assembler(Operator):
                     # Add json_name to element
                     element["json_name"] = json_name
 
-
-                    if (
-                        (".gr2" in swtor_filepath or
-                         ".hms" in swtor_filepath or
-                         ".lit" in swtor_filepath or
-                         ".mag" in swtor_filepath or
-                         ".spn_p" in swtor_filepath or
-                         ("dbo" in swtor_filepath and self.SkipDBOObjects == False) )
-                         and not "_fadeportal_" in swtor_filepath
-                        ):
+                    if any(
+                           (".gr2" in swtor_filepath,
+                            ".spt" in swtor_filepath,
+                            ".hms" in swtor_filepath,
+                            ".lit" in swtor_filepath,
+                            ".mag" in swtor_filepath,
+                            ".spn_p" in swtor_filepath,
+                            ".fxp" in swtor_filepath,
+                            "dbo" in swtor_filepath and self.SkipDBOObjects == False
+                           )
+                        ) and not "_fadeportal_" in swtor_filepath:
                     
                         
                         # Calculate max name length For console output formatting
@@ -563,9 +576,6 @@ class ZGSWTOR_OT_area_assembler(Operator):
 
 
 
-
-
-
         # -------------------------------------------------------------------------------
         # ACTUAL PROCESSING OF THE ELEMENTS IN THE AREA DATA ----------------------------
         # -------------------------------------------------------------------------------
@@ -616,8 +626,11 @@ class ZGSWTOR_OT_area_assembler(Operator):
         amount_processed = 0
 
 
+        # endregion
+
         # LOOP THROUGH ELEMENTS STARTS HERE ----------------------------------------
 
+        element_report = ""
 
         print("\n\nPROCESSING AREA OBJECTS' DATA:\n------------------------------\n")
 
@@ -633,10 +646,12 @@ class ZGSWTOR_OT_area_assembler(Operator):
             # Set some variables that will be used per element constantly.
             swtor_filepath = element["assetName"]
             if not (swtor_filepath.endswith(".gr2") or
+                    swtor_filepath.endswith(".spt") or
                     swtor_filepath.endswith(".lit") or
                     swtor_filepath.endswith(".hms") or
                     swtor_filepath.endswith(".mag") or
                     swtor_filepath.endswith(".spn_p") or
+                    swtor_filepath.endswith(".fxp") or
                     ("dbo" in swtor_filepath and self.SkipDBOObjects == False)
                     ):
                 continue
@@ -652,14 +667,55 @@ class ZGSWTOR_OT_area_assembler(Operator):
             json_name = element["json_name"]
 
 
+
+
+
+
+            # I'm printing the previous loop's element report
+            # here because the loop has too many 'continue'
+            # situations and it is easier to print it before
+            # the next loop.
+            # This means another printing after the end of the
+            # loop will be needed.
+
+            # Print previous loop's element's report ("" if none)
+            print(f"{LINEBACK}{element_report}")
+            
+            # Fill basic report data on element. Results
+            # are concatenated to var as the loop flows.
+            element_report = f"{amount_processed * 100 / amount_to_process:6.2f} %   AREA: {json_name:<{max_json_name_length}}   ID: {swtor_id}"
+
+
+
+
+
+
             # Unlikely to happen, but…
             if swtor_id in bpy.data.objects:
                 continue
 
-            
+
+            if swtor_filepath.endswith(".fxp"):
+
+                # FXPLACEABLE PARENT OBJECT. ---------------------
+                
+                # Some objects use them as parents,
+                # so, we do them as Empties.
+
+                blender_object = bpy.data.objects.new(swtor_id, None)
+                blender_object.empty_display_size = 0.1
+                blender_object.empty_display_type = 'CUBE'
+                
+                # Collection where the Empty will be moved to
+                if self.CollectionObjects == True:
+                    location_objects_collection = bpy.data.collections[json_name + " - Objects"]
+                else:
+                    location_objects_collection = bpy.data.collections[json_name]
+
+                link_objects_to_collection(blender_object, location_objects_collection, move = True)
 
 
-            if swtor_filepath.endswith(".lit"):
+            elif swtor_filepath.endswith(".lit"):
 
                 # LIGHT OBJECT. ----------------------------------
 
@@ -684,10 +740,10 @@ class ZGSWTOR_OT_area_assembler(Operator):
 
                 # TERRAIN OBJECT. ---------------------------------
 
-                print(f'{LINEBACK}{amount_processed * 100 / amount_to_process:6.2f} %   AREA: {json_name:<{max_json_name_length}}   ID: {swtor_id}   -- TERRAIN OBJECT --   ', end="")
+                element_report = element_report + "  -- TERRAIN OBJECT --   "
 
                 if terrain_folderpath is None:
-                    print("WARNING: NO RESOURCES\\WORLD\\HEIGHTMAPS FOLDER AVAILABLE")
+                    element_report = element_report + ("\n           WARNING: NO RESOURCES\\WORLD\\HEIGHTMAPS FOLDER AVAILABLE\n")
                     continue
 
                 # Collection where the terrain object will be moved to
@@ -699,40 +755,41 @@ class ZGSWTOR_OT_area_assembler(Operator):
                 terrain_path = str(terrain_folderpath / Path(swtor_id + ".obj") )
 
                 # ACTUAL IMPORTING:
-                # …through Blender's bpy.ops.import_scene.obj addon.
+                # …through Blender's built-in bpy.ops.import_scene.obj Add-on.
                 # Does a after-minus-before bpy.data.objects check to determine
                 # the objects resulting from the importing, as the addon doesn't
                 # return that information.
 
                 objects_before_importing = list(bpy.data.objects)
                 try:
-                    with suppress_stdout():  # To silence .obj importing outputs
-                        if blender_version < 4.0:
+                    if blender_version < 4.0:
+                        with suppress_stdout():  # To silence .obj importing outputs
                             # BLENDER 3.X-SPECIFIC .OBJ IMPORT:
-                            result = bpy.ops.import_scene.obj(
-                                filepath=terrain_path,
-                                use_image_search=False)
-                        else:
+                            result = bpy.ops.import_scene.obj(filepath=terrain_path, use_image_search=False)
+                        print("\n", LINEBACK, LINEBACK, end="") # To delete .obj import's output. Suppress_stdout() doesn't seem to work
+                    else:
+                        with suppress_stdout():  # To silence .obj importing outputs
                             # BLENDER 4.X-SPECIFIC .OBJ IMPORT:
                             result = bpy.ops.wm.obj_import(filepath=terrain_path)
+                        print("\n", LINEBACK, LINEBACK, end="") # To delete .obj import's output. Suppress_stdout() doesn't seem to work
 
                     if result == "CANCELLED":
-                        print(f"\n           WARNING: Blender's .obj importer failed to import {swtor_id} - {str( Path(swtor_resources_folderpath) / Path(swtor_filepath) )}\n")
+                        element_report = element_report + (f"\n           WARNING: Blender's .obj importer failed to import {swtor_id} - {str( Path(swtor_resources_folderpath) / Path(swtor_filepath) )}\n")
                         continue
                     else:
-                        print("IMPORTED")
+                        element_report = element_report + ("IMPORTED")
                         objects_after_importing = list(bpy.data.objects)
                         imported_objects_amount = 1
                         blender_object = list(set(objects_after_importing) - set(objects_before_importing))[0]
                         blender_object.name = swtor_id
-                        link_objects_to_collection(blender_object, location_terrains_collection, move = True)
+                        link_objects_to_collection(blender_object, location_terrains_collection, move = True)                        
+                        
                 except:
-                    print(f"\n\n           WARNING: Blender's .obj Importer CRASHED while trying to import it.")
-                    print("           Despite that, the Area Importer addon will keep on importing the rest of the objects.\n")
+                    element_report = element_report + (f"\n\n           WARNING: Blender's .obj Importer CRASHED while trying to import it.")
+                    element_report = element_report + ("\n           Despite that, the Area Importer addon will keep on importing the rest of the objects.\n")
                     continue
 
                 
-
             elif element["make_dyn_empty"] == True:
                 
                 # DYN PARENT. ---------------------------------
@@ -757,7 +814,7 @@ class ZGSWTOR_OT_area_assembler(Operator):
 
                 # MESH OBJECT  ----------------------------------
 
-                print(f'{LINEBACK}{amount_processed * 100 / amount_to_process:6.2f} %   AREA: {json_name:<{max_json_name_length}}   ID: {swtor_id}   NAME: {swtor_name:{max_swtor_name_length}}', end="")
+                element_report = element_report + f"   NAME: {swtor_name:{max_swtor_name_length}}"
 
 
                 if swtor_filepath.endswith(".mag"):
@@ -773,11 +830,21 @@ class ZGSWTOR_OT_area_assembler(Operator):
                                         element["assetName"] = swtor_filepath
                                         break
                             else:
-                                print("  WARNING: NO .GR2 OBJECT REFERENCED IN FILE")
+                                element_report = element_report + "  WARNING: NO .GR2 OBJ. REFERENCED IN FILE"
                                 continue
                     except FileNotFoundError:
-                        print(" -- file not found")  # Console.
+                        element_report = element_report + " -- file not found"
                         continue
+
+
+
+                if swtor_filepath.endswith(".spt"):
+                    # .SPT SPEEDTREE REFERENCE
+                    # The actual mesh is the same filepath but ending with .gr2
+                    swtor_filepath = swtor_filepath.replace(".spt", ".gr2")
+                    is_speedtree = True
+                else:
+                    is_speedtree = False
 
 
 
@@ -788,8 +855,48 @@ class ZGSWTOR_OT_area_assembler(Operator):
                 else:
                     location_objects_collection = bpy.data.collections[json_name]
 
-                if swtor_filepath not in already_existing_objects:
 
+
+                if swtor_filepath in already_existing_objects:
+                    # -------------------------------------------------------------------------------------------------------------------
+                    # DUPLICATING ALREADY IMPORTED OBJECTS AS INSTANCES:
+                    # …To make the importing faster. If object's path is in the already_existing_objects dict,
+                    # don't import through the .gr2 Addon and just duplicate from mesh data.
+
+                    # If the mesh data is "" that means that the original object was made of discardables
+                    # (colliders, etc.) that the user decided to exclude, so, we don't duplicate it. 
+                    if already_existing_objects[swtor_filepath] == "":
+                        element_report = element_report + "DISCARDED   "
+                        continue
+
+
+                    element_report = element_report + "DUPLICATED  "
+
+                    imported_objects = [ bpy.data.objects.new(name= swtor_id, object_data=already_existing_objects[swtor_filepath][0]) ]
+                    imported_objects_amount = len(already_existing_objects[swtor_filepath])
+
+                    link_objects_to_collection(imported_objects, location_objects_collection, move = True)
+
+                    # If the already existing object was a multi-object (the dict's value lists more than a single mesh data block),
+                    # create children objects out of them using the meshes' names as their names, and parent them to the first object
+                    # created just before. In this way, the parent can be processed as a single object by the rest of the code and
+                    # the children objects go along for the ride.
+                    if len(already_existing_objects[swtor_filepath]) > 1:
+                        for i in range( 1, len(already_existing_objects[swtor_filepath]) ):
+                            multi_object_child = bpy.data.objects.new(name= already_existing_objects[swtor_filepath][i].name,
+                                                                      object_data= already_existing_objects[swtor_filepath][i])
+
+                            link_objects_to_collection(multi_object_child, location_objects_collection, move = True)
+
+                            parent_with_transformations(multi_object_child, imported_objects[0], inherit_transformations = False)
+
+                        element_report = element_report + "(MULTI-MESH)"
+
+                    blender_object = imported_objects[0]
+                                        
+
+                else:
+                    # -------------------------------------------------------------------------------------------------------------------
                     # IMPORTING NEW OBJECTS:
                     # …through Darth Atroxa's bpy.ops.import_mesh.gr2.
                     if not gr2HasParams:
@@ -802,15 +909,18 @@ class ZGSWTOR_OT_area_assembler(Operator):
                     if os.path.isfile(gr2_filepath):
                         try:
                             with suppress_stdout():  # To silence Darth Atroxa's print() outputs
-                                result = bpy.ops.import_mesh.gr2(filepath=gr2_filepath, enforce_neutral_settings=True)
+                                if gr2HasParams:
+                                    result = bpy.ops.import_mesh.gr2(filepath=gr2_filepath, enforce_neutral_settings=True)
+                                else:
+                                    result = bpy.ops.import_mesh.gr2(filepath=gr2_filepath)
                             if result == "CANCELLED":
-                                print(f"\n\nWARNING: .gr2 importer addon failed to import {swtor_id} - {str( Path(swtor_resources_folderpath) / Path(swtor_filepath) )}\n")
+                                element_report = element_report + f"\n\nWARNING: .gr2 importer addon failed to import {swtor_id} - {str( Path(swtor_resources_folderpath) / Path(swtor_filepath) )}\n"
                                 continue
                             else:
-                                print("IMPORTED    ", end="")
+                                element_report = element_report + "IMPORTED    "
                         except:
-                            print(f"\n\nWARNING: the .gr2 Importer addon CRASHED while importing:\n{swtor_id} - {str( Path(swtor_resources_folderpath) / Path(swtor_filepath) )}\n")
-                            print("Despite that, the Area Importer addon will keep on importing the rest of the objects")
+                            element_report = element_report + f"\n\nWARNING: the .gr2 Importer addon CRASHED while importing:\n{swtor_id} - {str( Path(swtor_resources_folderpath) / Path(swtor_filepath) )}\n"
+                            element_report = element_report + "           Despite that, the Area Importer addon will keep on importing the rest of the objects\n"
                             continue
                         
                         if not gr2HasParams:
@@ -821,189 +931,176 @@ class ZGSWTOR_OT_area_assembler(Operator):
                             imported_objects = [bpy.data.objects[obj_name] for obj_name in objs_names]
                         imported_objects_amount = len(imported_objects)
 
+                        # Reducing multiple LOD speedtree imports to highest poly object
+                        # (doesn't consider Collision Objects if set to be imported at
+                        # the import_mesh.gr2 operator params level).
+                        # Also, applying some crude smarts if the object's name has "tree"
+                        # and the meshes have "lod" but not "lod0" (although "lod0" typically
+                        # wouldn't happen as the main mesh's name is changed to the filename)
+                        if (is_speedtree or "tree" in swtor_name) and imported_objects_amount > 1:
+                            imported_tree_lods = imported_objects[:]
+                            highest_poly_count = 0
+                            for obj in imported_tree_lods:
+                                poly_count = len(obj.data.polygons)
+                                if poly_count > highest_poly_count:
+                                    highest_poly_count = poly_count
+                                    highest_poly_object = obj
+                                    
+                            imported_objects = [highest_poly_object]
+                            for obj in imported_tree_lods:
+                                if obj != imported_objects[0] and "lod" in obj.name and not "lod0" in obj.name:
+                                    bpy.data.objects.remove(obj, do_unlink=True)
+
+                        
                         link_objects_to_collection(imported_objects, location_objects_collection, move = True)
                     else:
-                        print("FILE NOT FOUND. DISCARDED")
-                        continue
-
-                else:
-                    
-                    # DUPLICATING ALREADY IMPORTED OBJECTS AS INSTANCES:
-                    # …To make the importing faster. If object's path is in the already_existing_objects dict,
-                    # don't import through the .gr2 Addon and just duplicate from mesh data.
-
-                    # If the mesh data is None that means that the original object was made of discardables
-                    # (colliders, etc.) that the user decided to exclude, so, we don't duplicate it. 
-                    if already_existing_objects[swtor_filepath] == "":
-                        print("DISCARDED")
+                        element_report = element_report + "FILE NOT FOUND. DISCARDED\n"
                         continue
 
 
-                    print("DUPLICATED  ", end="")
 
-                    imported_objects = [ bpy.data.objects.new(name= swtor_id, object_data= already_existing_objects[swtor_filepath][0]) ]
-                    imported_objects_amount = 1
+                    # Single object vs. multi-object processing ---------------------------------------------
 
-                    link_objects_to_collection(imported_objects, location_objects_collection, move = True)
-
-                    # If the already existing object was a multi-object (the dict's value lists more than a single mesh data block)
-                    # create children objects out of them using the meshes' names as their names, and parent them to the first object
-                    # created just before. In this way, the parent can be processed as a single object by the rest of the code and
-                    # the children objects go a long for the ride.
-                    if len(already_existing_objects[swtor_filepath]) > 1:
-                        for i in range( 1, len(already_existing_objects[swtor_filepath]) ):
-                            multi_object_child = bpy.data.objects.new(
-                                name= already_existing_objects[swtor_filepath][i].name,
-                                object_data= already_existing_objects[swtor_filepath][i]
-                                )
-
-                            link_objects_to_collection(multi_object_child, location_objects_collection, move = True)
-
-                            parent_with_transformations(multi_object_child, imported_objects[0], inherit_transformations = False)
-
-                        print("MULTI-OBJECT", end="")
-
-
-
-                # Single object vs. multi-object processing ---------------------------------------------
-
-                if imported_objects_amount == 0:  # collider objects, depending on .gr2 importer settings
-                    print()  # adds line feed to previous print()
-                    continue
-
-
-                if imported_objects_amount == 1:
-
-                    # SINGLE OBJECT (OR ALREADY EXISTING MULTI-OBJECT) -------
-
-                    blender_object = imported_objects[0]
-                    # Add imported object's path and mesh data to dedupe dict.
-                    already_existing_objects[swtor_filepath] = [blender_object.data]
-
-                    # If object is a dbo, replace it with an Empty to
-                    # cover for it being a parent object
-                    if swtor_name.startswith("dbo"):
-                        if self.SkipDBOObjects == True:
-                            blender_object = replace_with_empty(blender_object)
-
-                            link_objects_to_collection(blender_object, location_objects_collection, move = True)
-
-                            print("DBO to EMPTY ", end="")
-                        else:
-                            print("DBO ", end="")
-
-                    blender_object.name = swtor_id
-                    print()  # adds line feed to previous print()
-                else:
-
-                    # IMPORTED MULTI-OBJECT ----------------------------------
-
-                    print("MULTI-OBJECT ", end="")
-
-                    # imported_objects_meshnames_and_names will store:
-                    # Key = object's mesh's name.
-                    # Value = object's name.
-                    # to help determine which object will act as parent by
-                    # finding the one whose mesh data name (which spares us
-                    # the usual .00x suffixes) is closest to the filename.
-                    imported_objects_meshnames_and_names = {}
-
-
-                    # List to fill with objects to discard
-                    # if set so in the relevant checkbox
-                    discardables = []
-
-                    for imported_object in imported_objects:
-
-                        # Check object's name and materials to detect discardable ones.
-                        is_discardable = False
-                        if self.SkipDBOObjects == True:
-                            if imported_object.name.startswith("dbo"):
-                                is_discardable = True
-                            else:
-                                if imported_object.material_slots:
-                                    for material_slot in imported_object.material_slots:
-                                        if material_slot.name in materials_to_exclude_objects_by:
-                                            is_discardable = True
-
-                        # Add object to list of discardables if checkbox is true,
-                        # otherwise rename them with their meshes' names (which could produce .00x suffixes)
-                        if is_discardable == True:
-                            discardables.append(imported_object)
-                            continue
-                        else:
-                            imported_objects_meshnames_and_names[imported_object.data.name] = imported_object.name
-
-                    # Delete discardables from imported_objects and from bpy.data.objects
-                    if discardables:
-                        for discardable in discardables:
-                            bpy.data.objects.remove(discardable, do_unlink=True)
-                            imported_objects.remove(discardable)
-                    
-
-
-                    # It can happen that a multi-object is entirely composed of non-renderable
-                    # objects, so, objects_to_group might be actually empty after discarding them.
-                    if len(imported_objects) == 0:
-                        already_existing_objects[swtor_filepath] = ""
-                        print("DISCARDED")
+                    if imported_objects_amount == 0:  # collider objects, depending on .gr2 importer settings
                         continue
 
-                    # Also, there could be a single object left.
-                    if len(imported_objects) == 1:
+
+                    if imported_objects_amount == 1:
+
+                        # SINGLE OBJECT (OR ALREADY EXISTING MULTI-OBJECT) -------
+
                         blender_object = imported_objects[0]
-                        blender_object.name = swtor_id
+                        # Add imported object's path and mesh data to dedupe dict.
                         already_existing_objects[swtor_filepath] = [blender_object.data]
-                        print()  # adds line feed to previous print()
+
+                        # If object is a dbo, replace it with an Empty to
+                        # cover for it being a parent object
+                        if swtor_name.startswith("dbo"):
+                            if self.SkipDBOObjects == True:
+                                blender_object = replace_with_empty(blender_object)
+
+                                link_objects_to_collection(blender_object, location_objects_collection, move = True)
+
+                                element_report = element_report + "DBO to EMPTY "
+                            else:
+                                element_report = element_report + "DBO "
+
+                        blender_object.name = swtor_id
+                    else:
+
+                        # IMPORTED MULTI-OBJECT ----------------------------------
+
+                        element_report = element_report + "MULTI-OBJECT "
+
+                        # imported_objects_meshnames_and_names will store:
+                        # Key = object's mesh's name.
+                        # Value = object's name.
+                        # to help determine which object will act as parent by
+                        # finding the one whose mesh data name (which spares us
+                        # the usual .00x suffixes) is closest to the filename.
+                        imported_objects_meshnames_and_names = {}
 
 
+                        # List to fill with objects to discard
+                        # if set so in the relevant checkbox
+                        discardables = []
+
+                        for imported_object in imported_objects:
+
+                            # Check object's name and materials to detect discardable ones.
+                            is_discardable = False
+                            if self.SkipDBOObjects == True:
+                                if imported_object.name.startswith("dbo"):
+                                    is_discardable = True
+                                else:
+                                    if imported_object.material_slots:
+                                        for material_slot in imported_object.material_slots:
+                                            if material_slot.name in materials_to_exclude_objects_by:
+                                                is_discardable = True
+
+                            # Add object to list of discardables if checkbox is true,
+                            # otherwise rename them with their meshes' names (which could produce .00x suffixes)
+                            if is_discardable == True:
+                                discardables.append(imported_object)
+                                continue
+                            else:
+                                imported_objects_meshnames_and_names[imported_object.data.name] = imported_object.name
+
+                        # Delete discardables from imported_objects and from bpy.data.objects
+                        if discardables:
+                            for discardable in discardables:
+                                bpy.data.objects.remove(discardable, do_unlink=True)
+                                imported_objects.remove(discardable)
+                        
 
 
-                    # If there are more than one, and we've chosen not to
-                    # merge them into a single object, we need to select
-                    # a main one to parent the rest to. We go for the one
-                    # whose name is closest to the .gr2 filename.
-                    if len(imported_objects) > 1:
-                        if self.MergeMultiMeshObjects == False:
-                            multi_object_data_list = []
+                        # It can happen that a multi-object is entirely composed of non-renderable
+                        # objects, so, objects_to_group might be actually empty after discarding them.
+                        if len(imported_objects) == 0:
+                            already_existing_objects[swtor_filepath] = ""
+                            element_report = element_report + "DISCARDED   "
+                            continue
 
-                            parent_name = imported_objects_meshnames_and_names[ find_closest_match(list(imported_objects_meshnames_and_names), swtor_name) ]
-                            
-                            blender_object = bpy.data.objects[parent_name]
-                            multi_object_data_list.append(blender_object.data)
-
-                            for imported_object in imported_objects:
-                                if imported_object.name != parent_name:
-                                    parent_with_transformations(imported_object, blender_object, inherit_transformations = False)
-                                    multi_object_data_list.append(imported_object.data)
-
-                            already_existing_objects[swtor_filepath] = multi_object_data_list
-
-
-                        else:
-                            # Join objects into a single one (using bpy.ops because
-                            # the alternative is sisyphean: meshes, materials…).
-                            deselectall()
-                            for imported_object in imported_objects:
-                                imported_object.select_set(state= True)
-                            bpy.context.view_layer.objects.active = imported_objects[0]
-                            bpy.ops.object.join()
-                            blender_object = bpy.context.view_layer.objects.active
-                            deselectall()
+                        # Also, there could be a single object left.
+                        if len(imported_objects) == 1:
+                            blender_object = imported_objects[0]
+                            blender_object.name = swtor_id
                             already_existing_objects[swtor_filepath] = [blender_object.data]
 
 
-                        blender_object.name = swtor_id
-                        
-                        print()  # adds line feed to previous print()
 
 
+                        # If there are more than one, and we've chosen not to
+                        # merge them into a single object, we need to select
+                        # a main one to parent the rest to. We go for the one
+                        # whose name is closest to the .gr2 filename.
+                        if len(imported_objects) > 1:
+                            if self.MergeMultiMeshObjects == False:
+                                # If we are using the .gr2 Importer Add-on with job reports
+                                # we can read them and assume the first obj. is the main one.
+                                if gr2HasParams:
+
+                                    multi_object_data_list = []
+                                    blender_object = imported_objects[0]
+                                    multi_object_data_list.append(blender_object.data)
+                                    for i in range(1, len(imported_objects)):
+                                        parent_with_transformations(imported_objects[i], blender_object, inherit_transformations = False)
+                                        multi_object_data_list.append(imported_objects[i].data)
+
+                                else:
+
+                                    multi_object_data_list = []
+
+                                    parent_name = imported_objects_meshnames_and_names[ find_closest_match(list(imported_objects_meshnames_and_names), swtor_name) ]
+                                    
+                                    blender_object = bpy.data.objects[parent_name]
+                                    multi_object_data_list.append(blender_object.data)
+
+                                    for imported_object in imported_objects:
+                                        if imported_object.name != parent_name:
+                                            parent_with_transformations(imported_object, blender_object, inherit_transformations = False)
+                                            multi_object_data_list.append(imported_object.data)
+
+                                already_existing_objects[swtor_filepath] = multi_object_data_list
+
+                            else:
+                                # Join objects into a single one (using bpy.ops because
+                                # the alternative is sisyphean: meshes, materials…).
+                                deselectall()
+                                for imported_object in imported_objects:
+                                    imported_object.select_set(state= True)
+                                bpy.context.view_layer.objects.active = imported_objects[0]
+                                bpy.ops.object.join()
+                                blender_object = bpy.context.view_layer.objects.active
+                                deselectall()
+                                already_existing_objects[swtor_filepath] = [blender_object.data]
 
 
+                            blender_object.name = swtor_id
 
 
-            # After all this processing, there's only one object,
-            # to transform, no matter if imported, duplicated, and
+            # After all this processing, there's only one object
+            # to transform, no matter if imported or duplicated, and
             # parenting the rest of a multi-object.
             #
             # Position, Rotate and Scale the object.
@@ -1011,29 +1108,26 @@ class ZGSWTOR_OT_area_assembler(Operator):
             # to the very end of the whole process, as doing it now
             # would lead to extra nested rotations after the general
             # parenting stage that we don't know how to correct.
-
-            if not swtor_name.endswith(".hms"):
-                position = [element["position"][0], 
-                            element["position"][1],
-                            element["position"][2]]
             
-                rotation = [radians( element["rotation"][0]), 
-                            radians( element["rotation"][1]),
-                            radians( element["rotation"][2])]
+            # region final transforms
 
-                scale =    [element["scale"][0], 
-                            element["scale"][1],
-                            element["scale"][2]]
-            else:
-                scale = [0.001, 0.001, 0.001]
+            position = [element["position"][0], 
+                        element["position"][1],
+                        element["position"][2]]
+        
+            rotation = [radians( element["rotation"][0]), 
+                        radians( element["rotation"][1]),
+                        radians( element["rotation"][2])]
+
+            scale =    [element["scale"][0], 
+                        element["scale"][1],
+                        element["scale"][2]]
+            
             blender_object.location = position
             blender_object.rotation_mode = 'ZXY'
             blender_object.rotation_euler = rotation
             blender_object.scale = scale
 
-            # Resize lights to something more reasonable
-            if swtor_name.endswith(".lit"):
-                scale = scale / 10
 
             # Fill custom properties to the object to facilitate
             # other processes.
@@ -1054,14 +1148,19 @@ class ZGSWTOR_OT_area_assembler(Operator):
             # blender_object["swtor_finalPositionX"] = str(item["finalPosition"]["0"])
             # blender_object["swtor_finalPositionY"] = str(item["finalPosition"]["1"])
             # blender_object["swtor_finalPositionZ"] = str(item["finalPosition"]["2"])
+            
+            # endregion
 
 
-        print(LINEBACK + "DONE!")
+        print(f"{LINEBACK}{element_report}\n")  # Last element's report
+
+        print(LINEBACK, LINEBACK + "DONE!")
 
         # -------------------------------------------------------------------------------
         # FINAL PROCESSING PASSES -------------------------------------------------------
         # -------------------------------------------------------------------------------
 
+        # region Final Processing
 
         # Parenting pass
 
@@ -1111,19 +1210,15 @@ class ZGSWTOR_OT_area_assembler(Operator):
         print("\n\nDELETING UNUSED EMPTIES:\n------------------------\n")
         scene = bpy.context.scene
 
-        # Create a list to store empties that should be deleted
-        empties_to_delete = []
-
         # Iterate through all objects in the scene
-        for obj in scene.objects:
+        del_empties_count = 0
+        for obj in scene.objects[:]:
             if obj.type == 'EMPTY':
                 # Check if the empty is a parent or child of other objects
                 if not obj.parent and not obj.children:
-                    empties_to_delete.append(obj)
-
-        # Delete the unused empties
-        for obj in empties_to_delete:
-            bpy.data.objects.remove(obj, do_unlink=True)     
+                    bpy.data.objects.remove(obj, do_unlink=True)
+                    del_empties_count += 1
+                    print(f"{LINEBACK}Deleted Empties : {del_empties_count}")
         
         print(LINEBACK + "DONE!")
         
@@ -1205,6 +1300,7 @@ class ZGSWTOR_OT_area_assembler(Operator):
         print("\n\n")
         print("SETTINGS USED:\n")
         print("SKIP DBO OBJECTS: ", str(self.SkipDBOObjects))
+        print("IMPORT TERRAIN ONLY"), str(self.TerrainOnly)
         print("ADD PLACEHOLDER LIGHTS: ", str(self.CreateSceneLights))
         print("MERGE MULTI-MESH OBJECTS ", str(self.MergeMultiMeshObjects))
         print("APPLY FINAL ROTATION: ", str(self.ApplyFinalRotation))
@@ -1226,12 +1322,12 @@ class ZGSWTOR_OT_area_assembler(Operator):
         print("------------------------------------------")
         print("\nALL DONE!\n\nHAVE A NICE DAY.\n\nBYE <3!")
     
-    
+        bpy.context.window.cursor_set("DEFAULT")
     
         return {'FINISHED'}
     
 
-
+        # endregion
 
 
 
@@ -1260,6 +1356,11 @@ def register():
     bpy.types.Scene.ZGSAA_SkipDBOObjects = bpy.props.BoolProperty(
         description="Don't import design blockout (DBO) objects such as blockers, portals, etc",
         default=True,
+    )
+    bpy.types.Scene.ZGSAA_TerrainOnly = bpy.props.BoolProperty(
+        name="Import Terrain Objects Only",
+        description="Import terrain objects only, mostly for diagnostic purposes",
+        default=False,
     )
     bpy.types.Scene.ZGSAA_CreateSceneLights = bpy.props.BoolProperty(
         description="Automatically create basic scene lighting based on in game lighting nodes.\nIf they exceed the amount of 100, they will be created\nas Excluded From The View Layer for performance reasons",
@@ -1298,6 +1399,7 @@ def unregister():
     del bpy.types.Scene.ZGSAA_ApplySceneScale
     del bpy.types.Scene.ZGSAA_SceneScaleFactor
     del bpy.types.Scene.ZGSAA_SkipDBOObjects
+    del bpy.types.Scene.ZGSAA_TerrainOnly
     del bpy.types.Scene.ZGSAA_CreateSceneLights
     del bpy.types.Scene.ZGSAA_CollectionObjects
     del bpy.types.Scene.ZGSAA_MergeMultiMeshObjects
@@ -1317,48 +1419,11 @@ if __name__ == "__main__":
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # -------------------------------------------------------------------------------
 # UTLITY FUNCTIONS --------------------------------------------------------------
 # -------------------------------------------------------------------------------
 
-
+# region functions
 
 
 
@@ -1440,6 +1505,37 @@ def calculate_base_center_matrix(objects):
     translation_matrix = Matrix.Translation(translation_vector)
 
     return translation_matrix
+
+
+
+
+def offset_origin(obj, offset_x=0.0, offset_y=0.0, offset_z=0.0):
+    '''
+    Offset the polys of an object's mesh
+    without moving the object's origin
+    '''
+    # Ensure we're in object mode
+    if bpy.context.object.mode != 'OBJECT':
+        bpy.ops.object.mode_set(mode='OBJECT')
+    
+    # Get the mesh data
+    mesh = obj.data
+    
+    # Create a bmesh from the mesh data
+    bm = bmesh.new()
+    bm.from_mesh(mesh)
+    
+    # Apply the offset to the vertices in the bmesh
+    for vert in bm.verts:
+        vert.co += Vector( (offset_x, offset_y, offset_z) )
+    
+    # Update the mesh data from the bmesh
+    bm.to_mesh(mesh)
+    mesh.update()
+    
+    # Reset the bmesh
+    bm.free()
+
 
 
 
@@ -1725,7 +1821,9 @@ def finalrotation():
                             proportional_size=1,
                             use_proportional_connected=False,
                             use_proportional_projected=False,
-                            release_confirm=True)
+                            release_confirm=True,
+                            center_override=(0,0,0),
+                            use_accurate=True,)
             
     return
 
@@ -1786,3 +1884,5 @@ def scalescene(scale_factor=10.0):
         
     return
     
+    
+# endregion

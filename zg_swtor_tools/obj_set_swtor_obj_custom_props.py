@@ -4,7 +4,7 @@ import bpy
 class ZGSWTOR_OT_set_swtor_obj_custom_props(bpy.types.Operator):
     bl_idname = "zgswtor.set_swtor_obj_custom_props"
     bl_label = "Set Custom Properties"
-    bl_description = "This tool will be very rarely used, but it can come in handy when dealing with\nobjects, SWTOR's or otherwise, imported with different scales or axis order types.\n\nIt manually applies to a selection of objects, or to all objects in the Scene,\ncustom Object Properties that are relevant to SWTOR tools such as animation\nimporters or Modifiers (and to non-SWTOR objects that will co-exist with them),\nso that it is easy to coordinate them.\n\nIt doesn't actually perform the conversions these properties imply. For that,\nthere is the Apply tool above, which annotates the properties nanyway, if set so"
+    bl_description = "This tool will be very rarely used, but it can come in handy when dealing with\nobjects, SWTOR's or otherwise, imported with different scales or axis order types.\n\nIt manually creates or modifies, or deletes, in a selection or all objects in the Scene,\ncustom Object Properties that are relevant to SWTOR tools such as animation\nimporters or Modifiers (and to non-SWTOR objects that will co-exist with them),\nso that it is easy to coordinate them.\n\nIt doesn't actually perform the conversions these properties imply. For that,\nthere is the Apply tool, which annotates the properties anyway, if set so"
     bl_options = {'REGISTER', 'UNDO'}
     
     
@@ -18,8 +18,15 @@ class ZGSWTOR_OT_set_swtor_obj_custom_props(bpy.types.Operator):
     
     use_selection_only: bpy.props.BoolProperty(
         name="Apply To Selected Objects Only",
-        description="Set custom object properties in selected objects only",
+        description="Set SWTOR custom object properties in selected objects only",
         default=True,
+        options={'HIDDEN'}
+    )
+    
+    delete_props: bpy.props.BoolProperty(
+        name="Delete Custom SWTOR Properties",
+        description="Delete custom SWTOR object properties in selected or all objects",
+        default=False,
         options={'HIDDEN'}
     )
     
@@ -44,9 +51,16 @@ class ZGSWTOR_OT_set_swtor_obj_custom_props(bpy.types.Operator):
         
         objects = context.scene.objects if not self.use_selection_only else context.selected_objects
         
-        for obj in objects:
-            obj["gr2_axis_conversion"] = self.gr2_axis_conversion
-            obj["gr2_scale"] = self.gr2_scale
+        if not self.delete_props:
+            for obj in objects:
+                obj["gr2_axis_conversion"] = self.gr2_axis_conversion
+                obj["gr2_scale"] = self.gr2_scale
+        else:
+            for obj in objects:
+                if "gr2_axis_conversion" in obj:
+                    del obj["gr2_axis_conversion"]
+                if "gr2_scale" in obj:
+                    del obj["gr2_scale"]
         
         return {'FINISHED'}
 

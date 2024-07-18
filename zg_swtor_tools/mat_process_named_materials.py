@@ -192,12 +192,10 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
 
                 is_collision_object = False
 
-                for mat_slot in ob.material_slots:
-
+                for mat in ob.data.materials:  # This is more direct than checking material_slots
 
  # MATERIAL PROCESSING STARTS HERE ------------------------------------------------------------------
  
-                    mat = mat_slot.material
                     print("          Material: ", mat.name)
                     
                     try:

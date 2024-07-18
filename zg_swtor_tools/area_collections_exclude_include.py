@@ -106,10 +106,14 @@ class ZGSWTOR_OT_exclude_include_collections(bpy.types.Operator):
         name="Affect Selected Collections' Hierarchies",
         description="Process Collections' hierarchies of children Collections, if any",
         default=True,
+        options={'HIDDEN'},
     )
 
 
     def execute(self, context):
+        
+        bpy.context.window.cursor_set("WAIT")
+
         self.recursive = bpy.context.scene.EAC_recursive
         
         layer_collections_dict = create_layer_collections_dictionary()
@@ -148,6 +152,9 @@ class ZGSWTOR_OT_exclude_include_collections(bpy.types.Operator):
                     if collection.children_recursive:
                         for child in collection.children_recursive:
                             layer_collections_dict[child.name].exclude = False
+
+
+        bpy.context.window.cursor_set("DEFAULT")
 
         return {'FINISHED'}
 

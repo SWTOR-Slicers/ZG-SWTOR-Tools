@@ -91,6 +91,10 @@ class ZGSWTOR_OT_group_collections(bpy.types.Operator):
 
 
     def execute(self, context):
+        
+        bpy.context.window.cursor_set("WAIT")
+
+
         self.position = context.scene.GC_coll_grouping_position
         self.separator = context.scene.GC_coll_grouping_separator
         self.disable_collections = context.scene.GC_disable_collections
@@ -110,6 +114,9 @@ class ZGSWTOR_OT_group_collections(bpy.types.Operator):
             # Disable all collections in the view layer as a precaution against
             # Blender becoming unresponsive.
             bpy.ops.zgswtor.exclude_include_collections(action='DISABLE_ALL')
+            
+            
+        bpy.context.window.cursor_set("DEFAULT")
             
         return {'FINISHED'}
 

@@ -1,0 +1,142 @@
+import bpy
+import bmesh
+
+# ------------------------------------------------------------------------------------------------
+
+def separate_by_specific_materials(obj_or_obj_name, materials_names, separate = True):
+
+    """
+    Separates an object's polys associated to specified materials
+    into separate objects per those materials. By default it
+    deletes those polys and materials from the original object.
+    
+    Args:
+        obj_or_obj_name (bpy.types.object or string): object to be separated.
+        materials_names (list): list of materials names.
+        separate (bool, optional): If False, no separate objects are produced and the polys are just deleted.
+    Returns:
+        list of bpy.types.object: list of separated objects, empty if there were no materials matches.
+    """
+
+    if type(obj_or_obj_name) == str:
+        original_obj = bpy.data.objects[obj_or_obj_name]
+    else:
+        original_obj = obj_or_obj_name
+        
+    original_mesh = original_obj.data
+    new_objs = []
+    
+    # Get material indices to separate
+    mat_indices = [i for i, mat in enumerate(original_mesh.materials) if mat.name in materials_names]
+    
+    if separate:
+        for mat_index in mat_indices:
+            # Create a duplicate object
+            new_obj = original_obj.copy()
+            new_obj.data = original_obj.data.copy()
+            bpy.context.collection.objects.link(new_obj)
+            new_obj.name = f"{original_obj.name}_{original_mesh.materials[mat_index].name}"
+            
+            # Create a new bmesh to work with
+            bm = bmesh.new()
+            bm.from_mesh(new_obj.data)
+            
+            # Iterate through all faces and hide those that don't use the current material
+            faces_to_delete = [f for f in bm.faces if f.material_index != mat_index]
+            bmesh.ops.delete(bm, geom=faces_to_delete, context='FACES')
+            
+            # Update the mesh
+            bm.to_mesh(new_obj.data)
+            bm.free()
+            
+            new_objs.append(new_obj)
+    
+    # Update original object to remove specified materials' polys
+    bm = bmesh.new()
+    bm.from_mesh(original_mesh)
+    faces_to_delete = [f for f in bm.faces if f.material_index in mat_indices]
+    bmesh.ops.delete(bm, geom=faces_to_delete, context='FACES')
+    bm.to_mesh(original_mesh)
+    bm.free()
+
+    # Update original object to remove specified materials' material slots
+    for i, slot in enumerate(original_obj.material_slots[:]):  # Use a copy of the list to modify the original safely
+        if slot.material and slot.material.name in materials_names:
+            # Remove the material slot by removing the object.data.materials' element (by index)
+            original_obj.data.materials.pop(index=i)
+
+    return new_objs
+
+
+
+# ------------------------------------------------------------------------------------------------
+
+
+
+def replace_with_empty(obj):
+    """
+    ChatGPT-generated code (like pulling teeth).
+    Preserves the object's original name (and its parent and children relationships.
+
+    Args:
+        obj (bpy.types.Object): object to be replaced.
+
+    Returns:
+        obj (bpy.types.Object): replacement Empty object.
+    """    
+
+    # No checks to force exception if wrongly fed.
+    # if obj is None:
+    #     print("Object is None. Exiting.")
+    #     return
+    
+    
+    # Save the object's name and world transformation matrix
+    obj_name = obj.name
+    obj_matrix_world = obj.matrix_world.copy()
+    
+    # Save the parent
+    parent = obj.parent
+    
+    # Save the children and their world matrices
+    children = [(child, child.matrix_world.copy()) for child in obj.children]
+    
+    
+    # Create a new empty object
+    empty = bpy.data.objects.new(f"{obj.name}_empty", None)
+    bpy.context.collection.objects.link(empty)
+    
+    # Set the empty's world transformation to match the original object
+    empty.matrix_world = obj_matrix_world
+    
+    # Set the parent of the empty to be the same as the original object's parent
+    if parent is not None:
+        empty.parent = parent
+        empty.matrix_parent_inverse = obj.matrix_parent_inverse
+    
+    # Re-parent the children to the empty and restore their world transformations
+    for child, world_matrix in children:
+        child.parent = empty
+        child.matrix_world = world_matrix
+    
+    # Optionally, transfer custom properties, constraints, etc. from the original object to the empty
+    for prop in obj.keys():
+        if prop not in "_RNA_UI":
+            empty[prop] = obj[prop]
+    
+    # Store the object's name
+    obj_name = obj.name
+    
+    # Delete the original object
+    bpy.data.objects.remove(obj)
+
+    # Make sure empty's name is correct after original object
+    # is no more and its name has been freed, to avoid .001s
+    # (BF intends to make collisions control stricter in the future).
+    empty.name = obj_name
+
+    return empty
+
+
+
+# ------------------------------------------------------------------------------------------------

@@ -33,7 +33,7 @@ def requirements_checks():
     # -----------------------------
     # .gr2 Add-on checks
     
-    if "io_scene_gr2" not in addon_utils.addons_fake_modules:
+    if "io_scene_gr2" not in [mod.__name__ for mod in addon_utils.modules()]:
         checks["gr2"] = False
         checks["gr2_status"] = "NOT INSTALLED"
         checks["gr2_status_verbose"] = "NOT INSTALLED. No .gr2 Importer Add-on is currently installed."
@@ -43,7 +43,7 @@ def requirements_checks():
         checks["gr2HasParams_status_verbose"] = "NOT AVAILABLE. No .gr2 Importer Add-on is currently installed."
         
     else:
-        
+        # if "io_scene_gr2" in bpy.context.preferences.addons:  # More robust?
         if addon_utils.check("io_scene_gr2")[1]:
             checks["gr2"] = True
             checks["gr2_status"] = "ENABLED"

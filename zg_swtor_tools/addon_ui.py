@@ -11,8 +11,10 @@ Y_SCALING_INFO = 0.75
 Y_SCALING_SPACER = 0.6
 
 
-
+# ---------------------------------------------------------------
 # 3D VIEWPORT PANEL ---------------------------------------------
+# ---------------------------------------------------------------
+
 
 # Addon Status sub-panel
 class ZGSWTOR_PT_status(bpy.types.Panel):
@@ -97,6 +99,10 @@ class ZGSWTOR_PT_status(bpy.types.Panel):
 
 
 
+# ---------------------------------------------------------------
+
+
+
 # Area Tools sub-panel
 class ZGSWTOR_PT_area_tools(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
@@ -112,7 +118,10 @@ class ZGSWTOR_PT_area_tools(bpy.types.Panel):
         layout = self.layout
         layout.scale_y = Y_SCALING_GRAL
 
+
+
         # area_assembler UI
+        # ------------------------
         tool_section = layout.box().column(align=True)
         tool_section.scale_y = 1.0
         tool_section.enabled = checks["resources"]
@@ -149,6 +158,7 @@ class ZGSWTOR_PT_area_tools(bpy.types.Panel):
         
             
         tool_section_props.prop(context.scene, "ZGSAA_SkipDBOObjects",        text="Skip dbo Objects")
+        tool_section_props.prop(context.scene, "ZGSAA_TerrainOnly",           text="Import Terrain Only")
         tool_section_props.prop(context.scene, "ZGSAA_CreateSceneLights",     text="Create Scene Lights")
         tool_section_props.prop(context.scene, "ZGSAA_CollectionObjects",     text="Collect Objects By Type")
         tool_section_props.prop(context.scene, "ZGSAA_MergeMultiMeshObjects", text="Merge Multi-Mesh Objs.")
@@ -169,6 +179,7 @@ class ZGSWTOR_PT_area_tools(bpy.types.Panel):
         
         
         # exclude_all_collections UI
+        # ------------------------
         tool_section = layout.box().column(align=False)
         tool_section.label(text="Outliner Collections' Visibility")
 
@@ -190,8 +201,8 @@ class ZGSWTOR_PT_area_tools(bpy.types.Panel):
         
         
         
-        
         # group_collections UI
+        # ------------------------
         tool_section = layout.box().column(align=False)
         
         tool_section.label(text="Group Areas' Collections")
@@ -219,6 +230,7 @@ class ZGSWTOR_PT_area_tools(bpy.types.Panel):
 
 
         # area_reset_group_transforms UI
+        # ------------------------
         # tool_section = layout.box().column(align=False)
         # tool_section.label(text="Repositioning Tools")
         # op = tool_section.operator("zgswtor.reset_group_transforms", text="Reset Position As A Group")
@@ -228,6 +240,9 @@ class ZGSWTOR_PT_area_tools(bpy.types.Panel):
         # op = tool_section.operator("zgswtor.reset_group_transforms", text="Unparent Keeping Transforms")
         # op.action = "UNPARENT"
 
+
+
+# ---------------------------------------------------------------
 
 
 
@@ -247,6 +262,8 @@ class ZGSWTOR_PT_character_tools(bpy.types.Panel):
         layout.scale_y = Y_SCALING_GRAL
 
 
+
+        # ------------------------
         # character_assembler UI
         tool_section = layout.box().column(align=True)
         
@@ -292,7 +309,9 @@ class ZGSWTOR_PT_character_tools(bpy.types.Panel):
         tool_section.prop(context.scene, "zg_correct_twilek_eyes_uv", text="Correct Twi'lek Eyes' UVs")
         
         
+        
         # prefixer UI
+        # ------------------------
         tool_section = layout.box()
         
         tool_section_info = tool_section.column(align=True)
@@ -309,7 +328,9 @@ class ZGSWTOR_PT_character_tools(bpy.types.Panel):
         col.prop(context.scene, "zg_prefix_mats_skeletons_bool", text="Materials & Skeletons Too")
 
 
+
         # merge_phys_vertex_groups UI
+        # ------------------------
         tool_section = layout.box()
         
         col = tool_section.column(align=True)
@@ -336,6 +357,9 @@ class ZGSWTOR_PT_character_tools(bpy.types.Panel):
 
 
 
+# ---------------------------------------------------------------
+
+
 
 # Materials Tools sub-panel
 class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
@@ -353,7 +377,9 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         layout.scale_y = Y_SCALING_GRAL
 
 
+
         # set_backface_culling UI
+        # ------------------------
         tool_section = layout.box()
         row = tool_section.row(align=True)
         row.operator("zgswtor.set_backface_culling", text="Set Backface Culling On").action="BACKFACE_CULLING_ON"
@@ -363,7 +389,9 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         in_row.operator("zgswtor.set_backface_culling", text="Off").action="BACKFACE_CULLING_OFF"
 
 
-        # PROCESS NAMED MATERIALS UI
+
+        # process_named_materials UI
+        # ------------------------
         tool_section = layout.box().column(align=True)
         tool_section.enabled = checks["resources"] and checks["gr2"]
         tool_section.alert = tool_section.enabled is False
@@ -385,10 +413,10 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         process_mats_all = tool_section.prop(context.scene, "use_collect_colliders_bool", text="Collect Collider Objects")
 
 
+
         # CUSTOM SWTOR SHADERS SECTION
         # add_custom_external_swtor_shaders UI
-        # combined with
-        # customize_swtor_shaders UI
+        # ------------------------
         tool_section = layout.box().column(align=True)
         tool_section.enabled = checks["custom_shaders"]
         tool_section.alert = tool_section.enabled is False
@@ -420,6 +448,7 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         tool_section.separator(factor=1.4)
 
         # skinsettings_ng_in_3d_viewer UI
+        # ------------------------
         # (belongs to the same Custom Shaders toolset)
         tool_section.label(text="Apply Skin Settings Group")
         tool_section.operator("zgswtor.skinsettings_ng_in_3d_viewer", text="Create & Apply To Selection")
@@ -431,6 +460,7 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
 
 
         # set_custom_shaders_values UI
+        # ------------------------
         # (belongs to the same Custom Shaders toolset)
 
         tool_section = layout.box().column(align=True)
@@ -482,8 +512,8 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
 
 
 
-
         # deduplicate_images, deduplicate_nodegroups and deduplicate_materials UIs
+        # ------------------------
         tool_section = layout.box().column(align=True)
         tool_section.operator("zgswtor.deduplicate_materials", text="Deduplicate All Materials")
         tool_section.operator("zgswtor.deduplicate_nodegroups", text="Deduplicate All Nodegroups")
@@ -494,10 +524,14 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
 
 
         # set_dds UIs
+        # ------------------------
         tool_section = layout.box()
         col=tool_section.column(align=False)
         col.operator("zgswtor.set_dds", text="Set all .dds to Non-Color")
 
+
+
+# ---------------------------------------------------------------
 
 
 
@@ -511,12 +545,13 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
 
     def draw(self, context):
         
-
         layout = self.layout
         layout.scale_y = Y_SCALING_GRAL
 
 
+
         # quickscale UI
+        # ------------------------
         tool_section = layout.box().column(align=False)
         row = tool_section.row(align=True).label(text="QuickScale Selected Objects")
         row = tool_section.row(align=True)
@@ -527,7 +562,9 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
         row.operator("zgswtor.quickscale", text="Up").action = "UPSCALE"
 
 
+
         # Apply Transforms UI
+        # ------------------------
         row = tool_section.row(align=True)
 
         row.label(text="Apply")
@@ -545,11 +582,11 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
         col=tool_section.column(align=True)
         col.scale_y = Y_SCALING_INFO
         if selected_obj:
-            col.enabled = False
             col.separator()
-            col.label(text="Active object (representative)")
+            col.label(text="Active Obj. Data (represent.):")
             
             row = col.row(align=True)
+            row.enabled = False
             rotation_mode = selected_obj.rotation_mode
             if rotation_mode == 'QUATERNION':
                 row.prop(selected_obj, "rotation_quaternion", text="")
@@ -559,6 +596,7 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
                 row.prop(selected_obj, "rotation_euler", text="")
             
             row = col.row(align=True)
+            row.enabled = False
             row.prop(selected_obj, "scale", text="")
             
             if 'gr2_scale' in selected_obj:
@@ -571,28 +609,9 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
             pass
 
 
-        # set_swtor_obj_custom_props UI
-        col=tool_section.column(align=True)
-
-        col.label(text="Set Obj. Props. Manually To")
-        split = col.split(factor= 0.7, align=True)
-        col_left, col_right = split.column(align=True), split.column(align=True)
-
-        set_props = col_left.operator("zgswtor.set_swtor_obj_custom_props", text="Selected Objects")
-        col_left.enabled = len(bpy.context.selected_objects) != 0
-        set_props.use_selection_only = True
-
-        set_props = col_right.operator("zgswtor.set_swtor_obj_custom_props", text="All")
-        col_right.enabled = len(bpy.data.objects) != 0
-        set_props.use_selection_only = False
-        
-        col.prop(context.scene, "OCP_gr2_axis_conversion")
-        col.prop(context.scene, "OCP_gr2_scale")
-
-
-
 
         # remove_doubles UI
+        # ------------------------
         tool_section = layout.box()
         col=tool_section.column(align=False)
         col.label(text="Merge Double Vertices")
@@ -609,20 +628,37 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
         remove_doubles.use_selection_only = False
 
         # remove_doubles_edit_mode UI
+        # ------------------------
         col.operator("zgswtor.remove_doubles_edit_mode", text="Selected Verts. (Coarse)")
 
-        # plus a couple of useful Blender tools
+
+
+        # clear_splitnormals_layers UI
+        # ------------------------
         # tool_section = layout.box()
         # col=tool_section.column(align=False)
-        # col.separator()
-        # col.operator("mesh.customdata_custom_splitnormals_clear")
-        # col.separator()
-        # tris_to_quads = col.operator("mesh.tris_convert_to_quads")
+        # col.label(text="Clear Split Normals Layers")
+        
+        # split = col.split(factor= 0.7, align=True)
+        # col_left, col_right = split.column(align=True), split.column(align=True)
+
+        # clear_spl_normals = col_left.operator("zgswtor.clear_splitnormals_layers", text="Selected Objects")
+        # col_left.enabled = len(bpy.context.selected_objects) != 0
+        # clear_spl_normals.use_selection_only = True
+
+        # clear_spl_normals = col_right.operator("zgswtor.clear_splitnormals_layers", text="All")
+        # col_right.enabled = len(bpy.data.objects) != 0
+        # clear_spl_normals.use_selection_only = False
+
+                
+        # tris_to_quads = col.operator("mesh.tris_convert_to_quads", text="Tris to Quads (Comparing)")
         # tris_to_quads.uvs = True
         # tris_to_quads.materials = True
 
 
+
         # set_modifiers UI
+        # ------------------------
         tool_section = layout.box()
         col=tool_section.column(align=False)
         col.label(text="Add Modifiers To Selection")
@@ -659,6 +695,70 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
 
 
 
+        # set_swtor_obj_custom_props UI
+        # ------------------------
+        tool_section = layout.box()
+
+        col=tool_section.column(align=True)
+        
+        col.label(text="Set Obj. Properties Manually")
+        split = col.split(factor= 0.7, align=True)
+        col_left, col_right = split.column(align=True), split.column(align=True)
+
+        set_props = col_left.operator("zgswtor.set_swtor_obj_custom_props", text="Selected Objects")
+        col_left.enabled = len(bpy.context.selected_objects) != 0
+        set_props.use_selection_only = True
+        set_props.delete_props = False
+
+        set_props = col_right.operator("zgswtor.set_swtor_obj_custom_props", text="All")
+        col_right.enabled = len(bpy.data.objects) != 0
+        set_props.use_selection_only = False
+        set_props.delete_props = False
+        
+        split = col.split(factor= 0.9, align=True)
+        split.prop(context.scene, "OCP_gr2_axis_conversion")
+        split = col.split(factor= 0.8, align=True)
+        split.prop(context.scene, "OCP_gr2_scale")
+
+        # Show object data related to this tool
+        # (completely implemented here, no operators called)
+        selected_obj = context.object
+        
+        col=tool_section.column(align=True)
+        col.scale_y = Y_SCALING_INFO
+        if selected_obj:
+            col.label(text="Active Obj. Data (represent.):")
+                        
+            if 'gr2_scale' in selected_obj:
+                col.label(text=f"gr2_axis_conversion: {selected_obj['gr2_axis_conversion']}")
+                col.label(text=f"gr2_scale: {selected_obj['gr2_scale']}")
+            else:
+                col.label(text="No gr2_axis_conversion info.")
+                col.label(text="No gr2_scale info.")
+        else:
+            pass
+
+        col=tool_section.column(align=True)
+
+        col.label(text="Clear Objetcs Properties")
+        split = col.split(factor= 0.7, align=True)
+        col_left, col_right = split.column(align=True), split.column(align=True)
+
+        set_props = col_left.operator("zgswtor.set_swtor_obj_custom_props", text="Selected Objects")
+        col_left.enabled = len(bpy.context.selected_objects) != 0
+        set_props.use_selection_only = True
+        set_props.delete_props = True
+
+        set_props = col_right.operator("zgswtor.set_swtor_obj_custom_props", text="All")
+        col_right.enabled = len(bpy.data.objects) != 0
+        set_props.use_selection_only = False
+        set_props.delete_props = True
+
+
+
+# ---------------------------------------------------------------
+
+
 
 # Pose/Sculpt Tools sub-panel
 class ZGSWTOR_PT_pose_sculpt_tools(bpy.types.Panel):
@@ -673,7 +773,10 @@ class ZGSWTOR_PT_pose_sculpt_tools(bpy.types.Panel):
         layout = self.layout
         layout.scale_y = Y_SCALING_GRAL
 
+
+
         # Pose Position / Reset Position UI
+        # ------------------------
         # (this one is fully defined here, without
         # calling any Add-on operators)
         tool_section = layout.box().column(align=True)
@@ -689,18 +792,21 @@ class ZGSWTOR_PT_pose_sculpt_tools(bpy.types.Panel):
                     armature_buttons.prop(obj.data, "pose_position", expand=True)
 
 
+
         # clear_bone_translations UI
+        # ------------------------
         tool_section = layout.box().column(align=True)
         tool_section.operator("zgswtor.clear_bone_translations", text="Clear Bones' Translations")
 
          
         # selected_vertices_to_sculpt_mask UI
+        # ------------------------
         tool_section = layout.box()
         tool_section.operator("zgswtor.selected_vertices_to_sculpt_mask", text="Mask Selected Verts. from Sculpting")
-        
 
 
 
+# ---------------------------------------------------------------
 
 
 
@@ -721,7 +827,10 @@ class ZGSWTOR_PT_baking_tools(bpy.types.Panel):
         layout = self.layout
         layout.scale_y = Y_SCALING_GRAL
 
+
+
         # bake_convert_to_legacy_materials UI
+        # ------------------------
         tool_section = layout.box().column(align=True)
 
         tool_section.label(text="Convert To Legacy Materials")
@@ -740,12 +849,16 @@ class ZGSWTOR_PT_baking_tools(bpy.types.Panel):
         tool_section.prop(context.scene, "zg_add_baking_targets_bool", text="Add Baking Target Nodes")
 
 
+
         # correct_twilek_uv UI
+        # ------------------------
         tool_section = layout.box()
         tool_section.operator("zgswtor.correct_twilek_uv", text="Correct Twi'lek head's UVs")
 
 
+
         # bake_save_baked_images UI
+        # ------------------------
         tool_section = layout.box()
         tool_heading = tool_section.column(align=True)
         tool_heading.scale_y = Y_SCALING_INFO
@@ -782,8 +895,10 @@ class ZGSWTOR_PT_shader_tools(bpy.types.Panel):
         
         checks = requirements_checks()
 
+
+
         # skinsettings_ng_in_shader_editor UI
-        
+        # ------------------------        
         tool_section.operator("zgswtor.skinsettings_ng_in_shader_editor", text="Add New Skin Settings Group").action="ADD_NEW_SKINSETTINGS"
         row = tool_section.row()
         in_row = row.row(align=False)  # for setting a non-50% contiguous row region

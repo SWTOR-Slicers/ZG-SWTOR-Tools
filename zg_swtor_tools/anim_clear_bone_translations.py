@@ -8,6 +8,9 @@ class ZGSWTOR_OT_clear_bone_translations(bpy.types.Operator):
     
         
     def execute(self, context):
+        
+        bpy.context.window.cursor_set("WAIT")
+
         obj = context.object
         if obj.type != 'ARMATURE':
             self.report({'ERROR'}, "Active object is not an armature")
@@ -32,6 +35,8 @@ class ZGSWTOR_OT_clear_bone_translations(bpy.types.Operator):
                 continue
             bone.location = (0.0, 0.0, 0.0)
         
+        bpy.context.window.cursor_set("DEFAULT")
+
         self.report({'INFO'}, "Cleared bone translation data")
         return {'FINISHED'}
 
