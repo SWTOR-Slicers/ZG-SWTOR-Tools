@@ -10,8 +10,10 @@ ADDON_ROOT = __file__.rsplit(__name__.rsplit(".")[0])[0] + __name__.rsplit(".")[
 
 
 def requirements_checks():
-    '''Returns a dict with both boolean and string reports on the existence
-    and validity of some resources necessary for certain tools to work'''
+    '''
+    Returns a dict with both boolean and string reports on the existence
+    and validity of some resources necessary for certain tools to work
+    '''
     
     checks = {}
 
@@ -31,19 +33,39 @@ def requirements_checks():
     # -----------------------------
     # .gr2 Add-on checks
     
-    checks["gr2"] = addon_utils.check("io_scene_gr2")[1]
-
-    if "io_scene_gr2" not in addon_utils.addons_fake_modules:
+    if "io_scene_gr2" not in [mod.__name__ for mod in addon_utils.modules()]:
+        checks["gr2"] = False
         checks["gr2_status"] = "NOT INSTALLED"
         checks["gr2_status_verbose"] = "NOT INSTALLED. No .gr2 Importer Add-on is currently installed."
-
-    if addon_utils.check("io_scene_gr2")[1]:
-        checks["gr2_status"] = "ENABLED"
-        checks["gr2_status_verbose"] = "ENABLED. A .gr2 Importer Add-on is installed and enabled."
+        
+        checks["gr2HasParams"] = False
+        checks["gr2HasParams_status"] = "NOT AVAILABLE"
+        checks["gr2HasParams_status_verbose"] = "NOT AVAILABLE. No .gr2 Importer Add-on is currently installed."
+        
     else:
-        checks["gr2_status"] = "DISABLED"
-        checks["gr2_status_verbose"] = "DISABLED. A .gr2 Importer Add-on is installed, but still needs to be enabled."
-
+        # if "io_scene_gr2" in bpy.context.preferences.addons:  # More robust?
+        if addon_utils.check("io_scene_gr2")[1]:
+            checks["gr2"] = True
+            checks["gr2_status"] = "ENABLED"
+            checks["gr2_status_verbose"] = "ENABLED. A .gr2 Importer Add-on is installed and enabled."
+            
+            if hasattr(bpy.context.preferences.addons["io_scene_gr2"].preferences, "gr2_scale_object"):
+                checks["gr2HasParams"] = True
+                checks["gr2HasParams_status"] = "AVAILABLE"
+                checks["gr2HasParams_status_verbose"] = "AVAILABLE. This .gr2 Importer Add-on has Prefs settings."
+            else:
+                checks["gr2HasParams"] = False
+                checks["gr2HasParams_status"] = "NOT AVAILABLE"
+                checks["gr2HasParams_status_verbose"] = "NOT AVAILABLE. This .gr2 Importer Add-on has no Prefs settings, might be an old version."
+                
+        else:
+            checks["gr2"] = True
+            checks["gr2_status"] = "DISABLED"
+            checks["gr2_status_verbose"] = "DISABLED. A .gr2 Importer Add-on is installed, but still needs to be enabled."
+                    
+            checks["gr2HasParams"] = False
+            checks["gr2HasParams_status"] = "NOT AVAILABLE"
+            checks["gr2HasParams_status_verbose"] = "NOT AVAILABLE. A .gr2 Importer Add-on is installed, but still needs to be enabled."
 
 
 
@@ -126,5 +148,6 @@ def requirements_checks():
             checks["custom_shaders"] = False
             checks["custom_shaders_status"] = "NOT FOUND"
             checks["custom_shaders_status_verbose"] = "NOT FOUND. No .blend file can't be found at the specified path."
+
 
     return checks
