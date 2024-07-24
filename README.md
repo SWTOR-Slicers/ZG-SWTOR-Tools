@@ -7,6 +7,7 @@
 ---
 
 ### [Download the latest release](https://github.com/SWTOR-Slicers/ZG-SWTOR-Tools/releases/latest).
+### Make sure to download the latest [.gr2 Importer Add-on](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x), too.
 
 ---
 
