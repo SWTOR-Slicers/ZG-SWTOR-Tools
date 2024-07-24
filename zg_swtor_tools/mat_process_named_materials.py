@@ -53,10 +53,9 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
     
     @classmethod
     def poll(cls,context):
-        if bpy.data.objects:
+        if bpy.data.objects and checks['gr2']:
             return True
-        else:
-            return False
+        return False
 
 
     # Property for the UI buttons to call different actions.

@@ -1,35 +1,46 @@
 # ZeroGravitas' SWTOR Tools.
 
-### WARNING: this Add-on is Blender 3.6.12 / 4.0.x-compatible, but some of its tools depend on having installed a 4.0-compatible .gr2 Importer Add-on in turn (there is a beta of such available [here](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x/releases/tag/v4.0.0-alpha).
+### Now Blender 4.0.2-compatible (if the [4.0-compatible .gr2 Importer Add-on](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x/releases/latest) is installed).
+
+**NOT Blender 4.1 or higher-compatible yet!!!**
 
 ---
 
-**Download the latest release [here](https://github.com/SWTOR-Slicers/ZG-SWTOR-Tools/releases/latest)**.
+### [Download the latest release](https://github.com/SWTOR-Slicers/ZG-SWTOR-Tools/releases/latest).
 
 ---
 
 **This Blender Add-on provides with a miscellanea of tools to import, assemble, texture and improve upon Star Wars: The Old Republic's game assets. It grows in features as new ideas come up. Quality of code-wise, "this is not a place of honor": It Just (Kinda) Works™.**
 
-**This Add-on relies on foundational efforts by fellow slicers, such as the [.gr2 Importer Addon](https://github.com/SWTOR-Slicers/WikiPedia/wiki/ZG-SWTOR-https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x), which works under the hood in places, and the [Slicers GUI Tool](https://github.com/SWTOR-Slicers/WikiPedia/wiki/ZG-SWTOR-https://github.com/SWTOR-Slicers/Slicers-GUI), which allows for extracting the game assets we play with, plus game information exported by tools in [Jedipedia.net](https://https://swtor.jedipedia.net/en) and [TORCommunity.com](https://torcommunity.com/).** It should be pointed out that the .gr2 Importer Add-on is receiving some major features (including preferences settings) that interact with the ZG SWTOR Tools.
+**This Add-on relies on foundational efforts by fellow slicers, such as the [.gr2 Importer Addon](https://github.com/SWTOR-Slicers/WikiPedia/wiki/ZG-SWTOR-https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x), which works under the hood in places, and the [Slicers GUI Tool](https://github.com/SWTOR-Slicers/WikiPedia/wiki/ZG-SWTOR-https://github.com/SWTOR-Slicers/Slicers-GUI), which allows for extracting the game assets we play with, plus game information exported by tools in [Jedipedia.net](https://https://swtor.jedipedia.net/en) and [TORCommunity.com](https://torcommunity.com/).**
 
 
-**The [ZG SWTOR Tools' pages in our Wiki](https://github.com/SWTOR-Slicers/WikiPedia/wiki/ZG-SWTOR-Tools-Add-on) are yet to be updated.** Everything has extensive tooltips, though.
+### Check the [ZG SWTOR Tools' pages in our Wiki](https://github.com/SWTOR-Slicers/WikiPedia/wiki/ZG-SWTOR-Tools-Add-on) for installation instructions and each tool's user guide.
 
-
-<!---
-**Check the [ZG SWTOR Tools' pages in our Wiki](https://github.com/SWTOR-Slicers/WikiPedia/wiki/ZG-SWTOR-Tools-Add-on) for installation instructions and each tool's user guide.**
---->
 
 
 ![](README_images/zg_swtor_tools_collapsed.png) 
 
 
-## Recent changes in v.4.0.0
-(We are adopting a numbering scheme that parallels Blender's for major and minor numbers. The third number will refer to this Add-on's actual progress)
+## Recent changes:
 
-* Compatibility with Blender 4.0.x (4.1.x depends on the .gr2 Importer Add-on's compatibility, in places).
-* Major bug fixes and improvements in the Area Assembler.
-* Many additions to the Character Assembler and other tools.
-* Better status reporting.
-* Sundry User Interface changes (subpanel organization, tooltips…).
-* Bugfixes.
+2024-07:
+
+* Compatibility with Blender 4.0.x (depends on the .gr2 Importer Add-on's own compatibility).
+* The Add-on interacts with the .gr2 Importer Add-on's new features, exposing some of them in the Status Panel. Several Objects Tools use them (see Object Tools page's prologue).
+* Area Assembler:
+  * Corrects a bug in its instancer code (responsible for duplicating already imported objects to speed up assembling): now **more objects ought to land in their correct places** instead of ending up floating around at random.
+  * **Terrains no longer show fissures thanks to an improved SWTOR Terrain Extractor. please download it and regenerate your terrains with it**.
+  * **NEW: It assembles 64-bit SpeedTrees** now, filling a Tython or a Dromund Kaas with trees.
+  * **Makes sure whole imported areas are consistently placed relative to the scene's origin**. In theory, merging partial Area Assemblies into a final scene wwith everything fitting correctly ought to be possible.
+* Group Areas in Subcollections: works far better and easier now.
+* Character Assembler (in combination with improvements in the .gr2 Importer Add-on):
+  * Solves an issue with NPCs' skin areas showing armor material instead of skin.
+  * **NEW: it pplies DirectionMaps to hair and fur**.
+  * Corrects an issue with Twi'lek eyes' UVs that kept them from baking correctly.
+  * **NEW: it can separate the eyes into a different object**, which some third party rigging systems prefer.
+  * **NEW: it can make each eye a separate object**, adjusting their origins so that we can control them with both bones and conventional rotations at once.
+* **NEW: Merge Physics Bones' Vertex Groups**: helps with Cloth Physics applications.
+* **NEW: Set Objects' Properties Manually**: for management of .gr2 object properties (nothing to see here, move along).
+* **NEW: Clear bone Translations**: to solve imported animations and poses' distorted limbs.
+* **NEW: Correct Twi'lek eyes' UVs.**: same as in the Character Assembler, but applicable to already imported models.

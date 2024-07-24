@@ -53,8 +53,8 @@ class ZGSWTOR_OT_set_swtor_obj_custom_props(bpy.types.Operator):
         
         if not self.delete_props:
             for obj in objects:
-                obj["gr2_axis_conversion"] = self.gr2_axis_conversion
-                obj["gr2_scale"] = self.gr2_scale
+                obj["gr2_axis_conversion"] = context.scene.OCP_gr2_axis_conversion
+                obj["gr2_scale"] = context.scene.OCP_gr2_scale
         else:
             for obj in objects:
                 if "gr2_axis_conversion" in obj:
@@ -73,11 +73,11 @@ class ZGSWTOR_OT_set_swtor_obj_custom_props(bpy.types.Operator):
 def register():
     bpy.utils.register_class(ZGSWTOR_OT_set_swtor_obj_custom_props)
     
-    bpy.types.Scene.OCP_use_selection_only = bpy.props.BoolProperty(
-        name="Apply To Selected Objects Only",
-        description="Set custom object properties in selected objects only",
-        default=False,
-    )
+    # bpy.types.Scene.OCP_use_selection_only = bpy.props.BoolProperty(
+    #     name="Apply To Selected Objects Only",
+    #     description="Set custom object properties in selected objects only",
+    #     default=False,
+    # )
     
     bpy.types.Scene.OCP_gr2_axis_conversion = bpy.props.BoolProperty(
         name="gr2_axis_conversion",
@@ -94,7 +94,7 @@ def register():
 def unregister():
     bpy.utils.unregister_class(ZGSWTOR_OT_set_swtor_obj_custom_props)
     
-    del bpy.types.Scene.OCP_use_selection_only
+    # del bpy.types.Scene.OCP_use_selection_only
     del bpy.types.Scene.OCP_gr2_axis_conversion
     del bpy.types.Scene.OCP_gr2_scale
 

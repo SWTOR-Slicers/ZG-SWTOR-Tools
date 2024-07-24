@@ -30,11 +30,13 @@ class ZGSWTOR_PT_status(bpy.types.Panel):
         layout = self.layout
         layout.scale_y = Y_SCALING_GRAL
 
+        # ZG Prefs
         tool_section_zgpref = layout.column(align=False)
         tool_section_zgpref.scale_y = Y_SCALING_GRAL
         tool_section_zgpref.scale_y = Y_SCALING_GRAL
         tool_section_zgpref.operator("zgswtor.open_zg_addon_preferences", text="ZG SWTOR Tools Prefs")
 
+        # ZG Status report
         tool_section_zgstatus = layout.column(align=True)
         tool_section_zgstatus.scale_y = Y_SCALING_INFO
 
@@ -59,16 +61,19 @@ class ZGSWTOR_PT_status(bpy.types.Panel):
             tool_section_info.label(text="to satisfy certain requirements")
             tool_section_info.label(text="(more info in their tooltips).")
 
+        tool_section_zgpref.alert = False  # red color off
 
-        tool_section_zgpref.alert = False
 
-
+        # .gr2 Prefs
         if checks["gr2_status"] == "DISABLED":
+            
             tool_section_gr2pref = layout.column(align=False)
             tool_section_gr2pref.scale_y = Y_SCALING_GRAL
             tool_section_gr2pref.separator(factor=Y_SCALING_SPACER)
             tool_section_gr2pref.operator("zgswtor.open_gr2_addon_preferences", text=".gr2 Add-on's Prefs")
+            
         elif checks["gr2_status"] == "ENABLED":
+            
             if checks['gr2HasParams']:
                 gr2_addon_prefs = bpy.context.preferences.addons["io_scene_gr2"].preferences
 
@@ -90,7 +95,7 @@ class ZGSWTOR_PT_status(bpy.types.Panel):
                 tool_section_gr2pref.operator("zgswtor.open_gr2_addon_preferences", text=".gr2 Add-on's Full Prefs")
                 
 
-
+        # Use SWTOR Objects' custom properties data option
         tool_section = layout.column()
         tool_section.scale_y = Y_SCALING_GRAL
 
@@ -124,7 +129,7 @@ class ZGSWTOR_PT_area_tools(bpy.types.Panel):
         # ------------------------
         tool_section = layout.box().column(align=True)
         tool_section.scale_y = 1.0
-        tool_section.enabled = checks["resources"]
+        tool_section.enabled = checks["resources"] and checks["gr2"]
         tool_section.alert = tool_section.enabled is False
         
         tool_section.label(text="SWTOR Area Assembler")
@@ -269,8 +274,10 @@ class ZGSWTOR_PT_character_tools(bpy.types.Panel):
         
         tool_section.label(text="Character Assembler")
 
+        tool_section.enabled = checks["gr2"]
+        tool_section.alert = not checks["gr2"]
+
         if not checks["resources"]:
-        # tool_section.enabled = checks["resources"]
             tool_section_info = tool_section.column(align=True)
             tool_section_info.scale_y = Y_SCALING_INFO
             tool_section_info.alert = True
@@ -288,7 +295,7 @@ class ZGSWTOR_PT_character_tools(bpy.types.Panel):
         
         # Options whose availability depends on a 'resources' folder in Preferences
         tool_section_dimmables = tool_section.column(align=True)
-        tool_section_dimmables.enabled = checks["resources"]
+        tool_section_dimmables.enabled = checks["resources"] and checks["gr2"]
         tool_section_dimmables.prop(context.scene, "zg_swca_gather_only_bool", text="Gather Assets only")
         tool_section_dimmables.prop(context.scene, "zg_swca_dont_overwrite_bool", text="Don't Overwrite Assets")
         
@@ -418,14 +425,14 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         # add_custom_external_swtor_shaders UI
         # ------------------------
         tool_section = layout.box().column(align=True)
-        tool_section.enabled = checks["custom_shaders"]
-        tool_section.alert = tool_section.enabled is False
         
         tool_section.row(align=True).label(text="Convert to Custom Shaders")
         # tool_section.operator("zgswtor.customize_swtor_shaders", text="Convert to Custom Shaders")
         
         split = tool_section.split(factor= 0.7, align=True)
+
         col_left, col_right = split.column(align=True), split.column(align=True)
+        col_left.alert = col_right.alert = not checks["gr2"]
 
         process_mats_sel = col_left.operator("zgswtor.customize_swtor_shaders", text="Selected Objects")
         col_left.enabled = len(bpy.context.selected_objects) != 0
@@ -438,10 +445,14 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         dimmable_row1 = tool_section.row(align=True)
         dimmable_row1.enabled = context.scene.enable_adding_custom_shaders
         dimmable_row1.operator("zgswtor.add_custom_external_swtor_shaders", text="Just Add Shaders To Project")
+        
         dimmable_row2 = tool_section.row(align=True)
         dimmable_row2.enabled = context.scene.enable_linking_custom_shaders
         dimmable_row2.prop(context.scene, "use_linking_bool", text="Link instead of Append")
-        tool_section.prop(context.scene, "preserve_atroxa_bool", text="Preserve Original Shaders")
+        
+        dimmable_row3 = tool_section.row(align=True)
+        dimmable_row3.enabled = checks["gr2"]
+        dimmable_row3.prop(context.scene, "preserve_atroxa_bool", text="Preserve Original Shaders")
         
 
 
@@ -853,7 +864,7 @@ class ZGSWTOR_PT_baking_tools(bpy.types.Panel):
         # correct_twilek_uv UI
         # ------------------------
         tool_section = layout.box()
-        tool_section.operator("zgswtor.correct_twilek_uv", text="Correct Twi'lek head's UVs")
+        tool_section.operator("zgswtor.correct_twilek_uv", text="Correct Twi'lek eyes' UVs")
 
 
 
@@ -939,7 +950,15 @@ class ZGSWTOR_PT_shader_tools(bpy.types.Panel):
 
 
 
-# Registrations
+
+
+
+
+
+# ---------------------------------------------------------------
+# Registrations -------------------------------------------------
+# ---------------------------------------------------------------
+
 
 classes = [
     ZGSWTOR_PT_status,

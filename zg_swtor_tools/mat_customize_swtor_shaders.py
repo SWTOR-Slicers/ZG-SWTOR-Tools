@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 from .utils.addon_checks import requirements_checks
+checks = requirements_checks()
 
 
 def selected_outliner_items(context):
@@ -34,10 +35,9 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
     @classmethod
     def poll(cls,context):
-        if bpy.data.materials:
+        if bpy.data.materials and bpy.data.objects and checks['gr2']:
             return True
-        else:
-            return False
+        return False
 
 
     # Properties
