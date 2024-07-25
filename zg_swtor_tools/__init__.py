@@ -7,12 +7,12 @@ import importlib
 bl_info = {
     "name": "ZG SWTOR Tools",
     "author": "ZeroGravitas",
-    "version": (4, 0, 0),
-    "blender": (3, 1, 0),
+    "version": (2, 0, 1),
+    "blender": (3, 5, 0),
     "category": "SWTOR",
     "location": "View 3D > Sidebar > ZG SWTOR",
     "description": "Diverse SWTOR asset-handling tools",
-    "doc_url": "https://github.com/SWTOR-Slicers/zg_swtor_tools",
+    "doc_url": "https://github.com/SWTOR-Slicers/WikiPedia/wiki/ZG-SWTOR-Tools-Add-on",
     "tracker_url": "",
 }
 
@@ -56,7 +56,7 @@ modulesNames = [
     'mat_skinsettings_ng_in_shader_editor',
 
     'obj_apply_transforms',
-    'obj_clear_splitnormals_layer',
+    # 'obj_clear_splitnormals_layer',
     'obj_set_swtor_obj_custom_props',
     'obj_quickscale',
     'obj_remove_doubles',

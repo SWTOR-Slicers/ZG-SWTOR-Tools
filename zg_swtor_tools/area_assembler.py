@@ -948,7 +948,7 @@ class ZGSWTOR_OT_area_assembler(Operator):
                                     
                             imported_objects = [highest_poly_object]
                             for obj in imported_tree_lods:
-                                if obj != imported_objects[0] and "lod" in obj.name and not "lod0" in obj.name:
+                                if obj != imported_objects[0] and "_lod" in obj.name and not "_lod0" in obj.name:
                                     bpy.data.objects.remove(obj, do_unlink=True)
 
                         

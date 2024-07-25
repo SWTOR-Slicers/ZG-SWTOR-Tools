@@ -1,6 +1,7 @@
 import bpy
 
 import bmesh
+import mathutils
 from mathutils import Vector, Matrix
 import numpy as np
 import time
@@ -292,74 +293,164 @@ def translate_uv_coordinates(mesh_object, material_slot = None, uv_offset = (0,0
 
     return False
 
-def duplicate_obj(obj_or_obj_name):
+def separate_eyes(self, obj_to_separate):
     
-    if type(obj_or_obj_name) == str:
-        obj = bpy.data.objects[obj_or_obj_name]
+    # SEPARATE BY MATERIAL ----------------
+    
+    objs_before_separating = list(bpy.data.objects)
+    
+    # Make object Active
+    bpy.context.view_layer.objects.active = obj_to_separate
+    # Switch object to edit mode
+    bpy.ops.object.mode_set(mode='EDIT')
+    
+    # Separate by material
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.separate(type='MATERIAL')
+    
+    # Switch back to object mode
+    bpy.ops.object.mode_set(mode='OBJECT')
+        
+    separated_obj = list( set(bpy.data.objects).difference(objs_before_separating) )[0]
+    
+    
+    # Determine which object is the eyes: the remainder of the original,
+    # which still exists in bpy.data.objects, modified by the operator,
+    # or the new one resulting from separating by material.
+    # Uses polycount as eye detector (eyes' polycount < head's polycount).
+    if len(separated_obj.data.polygons) < len(obj_to_separate.data.polygons):
+        eyes_obj = separated_obj
+        head_obj = obj_to_separate
     else:
-        obj = obj_or_obj_name
+        eyes_obj = obj_to_separate
+        head_obj = separated_obj
+    
+    # Some renaming to avoid ".00x" suffixes.
+    # (this could be smarter but I can't be bothered)
+    if head_obj.name[-3:].isdigit():
+        head_obj.name = head_obj.name[:-4]
+    head_obj.data.name = head_obj.name
         
-    # Create a new object data-block that is a copy of the original object's data
-    # including transforms, modifiers, constraints, parents and Collections.
-    new_data = obj.data.copy()
+    if eyes_obj.name[-3:].isdigit():
+        eyes_obj.name = eyes_obj.name[:-4] + ".eyes"
+    else:
+        eyes_obj.name = eyes_obj.name + ".eyes"
+    eyes_obj.data.name = eyes_obj.name
     
-    # Create a new object with the copied data
-    new_obj = bpy.data.objects.new(obj.name + ".copy", new_data)
-    
-    # Link the new object to the same collection(s) as the original object
-    for col in obj.users_collection:
-        col.objects.link(new_obj)
-    
-    # Copy all properties from the original object to the new object
-    new_obj.location = obj.location.copy()
-    new_obj.rotation_euler = obj.rotation_euler.copy()
-    new_obj.rotation_quaternion = obj.rotation_quaternion.copy()
-    new_obj.scale = obj.scale.copy()
-    new_obj.data = new_data
-    
-    # Copy custom properties
-    for prop in obj.keys():
-        if prop != "_RNA_UI":  # Ignore the RNA UI property
-            new_obj[prop] = obj[prop]
-    
-# Copy all modifiers
-    for mod in obj.modifiers:
-        new_mod = new_obj.modifiers.new(name=mod.name, type=mod.type)
-        for attr in dir(mod):
-            if not attr.startswith("_") and attr not in {"type", "name", "rna_type"}:
-                try:
-                    setattr(new_mod, attr, getattr(mod, attr))
-                except AttributeError:
-                    pass
-        
-        # Special handling for Armature modifiers
-        if mod.type == 'ARMATURE':
-            new_mod.object = mod.object
-        
-    # Copy animation data
-    if obj.animation_data:
-        new_obj.animation_data_create()
-        new_obj.animation_data.action = obj.animation_data.action
-        new_obj.animation_data.action = obj.animation_data.action.copy()
-    
-    # Copy constraints
-    for constr in obj.constraints:
-        new_constr = new_obj.constraints.new(type=constr.type)
-        for attr in dir(constr):
-            if not attr.startswith("_") and attr not in {"type", "name", "rna_type"}:
-                try:
-                    setattr(new_constr, attr, getattr(constr, attr))
-                except AttributeError:
-                    pass
-    
-    return new_obj
+    if not self.separate_each_eye:
+        return eyes_obj, None, None, head_obj
 
-def separate_obj_by_specific_materials(obj_or_obj_name, materials_names, separate = True):
+
+    # SEPARATE BY SIDE OF YZ ----------------
+    
+    objs_before_separating = list(bpy.data.objects)
+    
+    # Separate by selection
+    select_faces_right_of_plane(eyes_obj, threshold=0.0)
+    bpy.ops.mesh.separate(type="SELECTED")
+
+    # Switch back to object mode
+    bpy.ops.object.mode_set(mode='OBJECT')
+    
+    objs_after_separating_by_yz = list(bpy.data.objects)
+    
+    separated_objs = list( set(objs_after_separating_by_yz).difference(objs_before_separating) )
+    
+    eye_l_obj = eyes_obj
+    eye_r_obj = separated_objs[0]
+    
+    eye_l_obj.name = eye_l_obj.name + ".l"
+    eye_l_obj.data.name = eye_l_obj.name
+    
+    eye_r_obj.name = eye_r_obj.name[:-4] + ".r"
+    eye_r_obj.data.name = eye_r_obj.name
+
+
+    # REPOSITION EYES' ORIGINS ----------------
+
+    highest_vertex, lowest_vertex = find_highest_lowest_vertices(eye_l_obj)
+    new_origin_location = (highest_vertex + lowest_vertex) / 2
+    set_mesh_origin(eye_l_obj, new_origin_location)
+    
+    highest_vertex, lowest_vertex = find_highest_lowest_vertices(eye_r_obj)
+    new_origin_location = (highest_vertex + lowest_vertex) / 2
+    set_mesh_origin(eye_r_obj, new_origin_location)
+
+    return None, eye_r_obj, eye_l_obj, head_obj
+
+def select_faces_right_of_plane(obj, threshold=0.0):
+    # Make object Active
+    bpy.context.view_layer.objects.active = obj
+    # Switch object to edit mode
+    bpy.ops.object.mode_set(mode='EDIT')
+    # Deselect all
+    bpy.ops.mesh.select_all(action='DESELECT')
+
+    bm = bmesh.from_edit_mesh(obj.data)
+
+    # Define the YZ plane
+    plane_normal = Vector((1, 0, 0))  # Normal vector of the YZ plane
+    plane_origin = Vector((0, 0, 0))  # Origin point of the YZ plane
+
+    for face in bm.faces:
+        # Calculate the center of the face
+        face_center = sum((v.co for v in face.verts), Vector()) / len(face.verts)
+        
+        # Calculate the vector from the origin to the face center
+        vec_to_center = face_center - plane_origin
+
+        # Calculate the dot product between the vector to the center and the plane normal
+        dot_product = vec_to_center.dot(plane_normal)
+
+        # If dot product is greater than the threshold, select the face
+        if dot_product > threshold:
+            face.select = True
+
+    bmesh.update_edit_mesh(obj.data)
+
+def find_highest_lowest_vertices(obj):
+    # Get the mesh data from the object
+    mesh = obj.data
+    
+    # Initialize variables to store highest and lowest vertices
+    highest_vertex = None
+    lowest_vertex = None
+    
+    # Initialize variables to store maximum and minimum Z coordinates
+    max_z = -float('inf')
+    min_z = float('inf')
+    
+    # Iterate through all vertices in the mesh
+    for vert in mesh.vertices:
+        # Get the world coordinates of the vertex
+        world_vert = obj.matrix_world @ vert.co
+        
+        # Update highest and lowest vertices based on Z coordinate
+        if world_vert.z > max_z:
+            max_z = world_vert.z
+            highest_vertex = world_vert
+        
+        if world_vert.z < min_z:
+            min_z = world_vert.z
+            lowest_vertex = world_vert
+    
+    return highest_vertex, lowest_vertex
+
+def set_mesh_origin(obj, pos):
+    '''Given a mesh object set it's origin to a given position.'''
+    # Casting pos to vector so you can pass in tuples or lists
+    pos = Vector(pos)
+    mat = Matrix.Translation(pos - obj.location)
+    obj.location = pos
+    obj.data.transform(mat.inverted())
+    # obj.data.update()
+
+def separate_by_specific_materials(obj_or_obj_name, materials_names, separate = True):
 
     """
     Separates an object's polys associated to specified materials
     into separate objects per those materials. By default it
-    deletes those polys AND materials from the original object.
+    deletes those polys and materials from the original object.
     
     Args:
         obj_or_obj_name (bpy.types.object or string): object to be separated.
@@ -418,148 +509,6 @@ def separate_obj_by_specific_materials(obj_or_obj_name, materials_names, separat
             original_obj.data.materials.pop(index=i)
 
     return new_objs
-
-def delete_polygons_on_side(obj_or_obj_name, side='LEFT'):
-    
-    if type(obj_or_obj_name) == str:
-        obj = bpy.data.objects[obj_or_obj_name]
-    else:
-        obj = obj_or_obj_name
-
-    # Ensure we're in object mode
-    if obj.mode != 'OBJECT':
-        bpy.ops.object.mode_set(mode='OBJECT')
-
-    # Get the mesh data
-    mesh = obj.data
-
-    # Create a BMesh from the mesh data
-    bm = bmesh.new()
-    bm.from_mesh(mesh)
-
-    # Select polygons based on the side parameter
-    for face in bm.faces:
-        center = face.calc_center_median()
-        if side == 'LEFT' and center.x < 0:
-            face.select_set(True)
-        elif side == 'RIGHT' and center.x >= 0:
-            face.select_set(True)
-        else:
-            face.select_set(False)
-
-    # Remove the selected faces
-    bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.select], context='FACES')
-
-    # Update the mesh with the BMesh data
-    bm.to_mesh(mesh)
-    bm.free()
-
-    # Update the scene to reflect changes. NECESSARY???
-    # mesh.update()  # This refreshes the mesh data
-    # obj.data.update()  # Ensure that the object data is up-to-date
-    # bpy.context.view_layer.update()  # Refresh the view layer to reflect changes
-
-    print(f"Polygons on the {side} side have been deleted.")
-
-def find_highest_lowest_vertices(obj_or_obj_name):
-    
-    if type(obj_or_obj_name) == str:
-        obj = bpy.data.objects[obj_or_obj_name]
-    else:
-        obj = obj_or_obj_name
-
-    # Get the mesh data from the object
-    mesh = obj.data
-    
-    # Initialize variables to store highest and lowest vertices
-    highest_vertex = None
-    lowest_vertex = None
-    
-    # Initialize variables to store maximum and minimum Z coordinates
-    max_z = -float('inf')
-    min_z = float('inf')
-    
-    # Iterate through all vertices in the mesh
-    for vert in mesh.vertices:
-        # Get the world coordinates of the vertex
-        world_vert = obj.matrix_world @ vert.co
-        
-        # Update highest and lowest vertices based on Z coordinate
-        if world_vert.z > max_z:
-            max_z = world_vert.z
-            highest_vertex = world_vert
-        
-        if world_vert.z < min_z:
-            min_z = world_vert.z
-            lowest_vertex = world_vert
-    
-    return highest_vertex, lowest_vertex
-
-def get_highest_and_lowest_vertices(obj_or_obj_name):
-    
-    if type(obj_or_obj_name) == str:
-        obj = bpy.data.objects[obj_or_obj_name]
-    else:
-        obj = obj_or_obj_name
-
-    # Ensure we are in object mode
-    bpy.ops.object.mode_set(mode='OBJECT')
-    
-    # Create a bmesh from the object's mesh data
-    bm = bmesh.new()
-    bm.from_mesh(obj.data)
-    
-    # Transform matrix to convert local coordinates to global
-    global_matrix = obj.matrix_world
-    
-    highest_vertex = None
-    lowest_vertex = None
-    
-    for v in bm.verts:
-        global_coord = global_matrix @ v.co
-        if highest_vertex is None or global_coord.z > highest_vertex.z:
-            highest_vertex = global_coord
-        if lowest_vertex is None or global_coord.z < lowest_vertex.z:
-            lowest_vertex = global_coord
-    
-    bm.free()
-    
-    return highest_vertex, lowest_vertex
-
-def set_obj_origin(obj_or_obj_name, new_origin):
-
-    if type(obj_or_obj_name) == str:
-        obj = bpy.data.objects[obj_or_obj_name]
-    else:
-        obj = obj_or_obj_name
-
-    new_origin = Vector(new_origin)
-    
-    # Get the object's world matrix
-    obj_matrix = obj.matrix_world
-    
-    # Calculate the current origin in world space
-    current_origin_world = obj_matrix @ Vector((0, 0, 0))
-    
-    # Calculate the delta vector from current origin to new origin in world space
-    delta_world = new_origin - current_origin_world
-    
-    # Apply the inverse world matrix to get delta in object space
-    delta_object_space = obj_matrix.inverted() @ delta_world
-    
-    # Move the object's location to compensate for the delta
-    obj.location += delta_world
-    
-    # Transform the mesh data to correct for the origin adjustment
-    # Note: Applying the inverse translation in object space
-    obj.data.transform(Matrix.Translation(-delta_object_space))
-    
-    # Update the mesh data to apply the changes
-    obj.data.update()
-
-
-
-
 
 
 # Operator
@@ -971,58 +920,21 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
             
             # Separate character's eye objects
             if self.separate_eyes:
-                has_eyes = False
+                has_head = False
                 for obj in character_objects:
-                    if "head" in obj.name.lower():
+                    if "head" in obj.name:
                         if len(obj.material_slots) > 1:
-                            if "eye" in obj.material_slots[1].name.lower():
-                                has_eyes = True
-                                
-                                # Duplicate head object
-                                eyes_obj = duplicate_obj(obj)
-                                
-                                # Delete eyes' polys and material from head object
-                                separate_obj_by_specific_materials(obj, obj.material_slots[1].name, separate = False)
-                                
-                                # Delete head's polys and material from eyes object (the duplicate head object)
-                                separate_obj_by_specific_materials(eyes_obj, eyes_obj.material_slots[0].name, separate = False)
-                                
-                                if not self.separate_each_eye:
-                                    # Rename eyes object
-                                    eyes_obj.name = f"{obj.name}.eyes"
-                                    character_objects.append(eyes_obj)
-                                else:
-                                    eyes_obj_right = eyes_obj
-                                    eyes_obj_left  = duplicate_obj(eyes_obj)
+                            eyes_obj, eye_r_obj, eye_l_obj, head_obj = separate_eyes(self, obj)
+                    
+                            if eyes_obj:
+                                character_objects.append(head_obj)
                                     
-                                    delete_polygons_on_side(eyes_obj_right, side='LEFT')
-                                    highest_vertex, lowest_vertex = get_highest_and_lowest_vertices(eyes_obj_right)
-                                    new_origin_location = (highest_vertex.x, highest_vertex.y, (highest_vertex.z + lowest_vertex.z) / 2)
-                                    set_obj_origin(eyes_obj_right, new_origin_location)
-                                    
-                                    eyes_obj_right.name = f"{obj.name}.eyes.right"
-                                    character_objects.append(eyes_obj_right)
-
-                                    delete_polygons_on_side(eyes_obj_left, side='RIGHT')
-                                    highest_vertex, lowest_vertex = get_highest_and_lowest_vertices(eyes_obj_left)
-                                    new_origin_location = (highest_vertex.x, highest_vertex.y, (highest_vertex.z + lowest_vertex.z) / 2)
-                                    set_obj_origin(eyes_obj_left, new_origin_location)
-                                    
-                                    eyes_obj_left.name = f"{obj.name}.eyes.left"
-                                    character_objects.append(eyes_obj_left)
-                                    
-                                
-                                # eyes_obj, eye_r_obj, eye_l_obj, head_obj = separate_eyes(self, obj)
-                        
-                                if eyes_obj:
-                                    character_objects.append(eyes_obj)
-                                        
-                                # if eye_r_obj:
-                                #     character_objects.extend( [eye_r_obj, eye_l_obj, head_obj] )
+                            if eye_r_obj:
+                                character_objects.extend( [eye_r_obj, eye_l_obj, head_obj] )
                         else:
                             print("NO MATERIAL TO SEPARATE EYES BY:\nThis character's head object has no multiple materials that we could use\nto separate eye objects by.")
                         break
-                if not has_eyes:
+                if not has_head:
                     print("NO OBJECT WITH FACIAL FEATURES TO SEPARATE EYES FROM.\n")
 
             # Importing skeleton, if any, using Atroxa's .gr2 Importer Addon.

@@ -16,9 +16,14 @@ class ZGSWTOR_OT_remove_doubles(bpy.types.Operator):
     # (greys-out the UI button otherwise) 
     @classmethod
     def poll(cls,context):
-        for obj in bpy.data.objects:
-            if obj.type == "MESH":
-                return True
+        context = bpy.context
+        if context.area.type == 'VIEW_3D':
+            if context.mode == 'EDIT_MESH':
+                return False
+            elif context.mode == 'OBJECT':
+                for obj in bpy.data.objects:
+                    if obj.type == "MESH":
+                            return True
         return False
     
 

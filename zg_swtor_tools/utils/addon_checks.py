@@ -59,7 +59,7 @@ def requirements_checks():
                 checks["gr2HasParams_status_verbose"] = "NOT AVAILABLE. This .gr2 Importer Add-on has no Prefs settings, might be an old version."
                 
         else:
-            checks["gr2"] = True
+            checks["gr2"] = False
             checks["gr2_status"] = "DISABLED"
             checks["gr2_status_verbose"] = "DISABLED. A .gr2 Importer Add-on is installed, but still needs to be enabled."
                     

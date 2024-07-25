@@ -39,6 +39,7 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
 
 
     # METHODS
+    # region
 
     @staticmethod
     def add_subd(obj):
@@ -274,6 +275,7 @@ class ZGSWTOR_OT_set_modifiers(bpy.types.Operator):
                 if mod.type == "ARMATURE":
                     obj.modifiers[mod.name].use_deform_preserve_volume = False
 
+    # endregion
     
     
     def execute(self, context):
