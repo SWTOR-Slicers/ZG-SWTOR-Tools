@@ -53,7 +53,7 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
     
     @classmethod
     def poll(cls,context):
-        if bpy.data.objects and checks['gr2']:
+        if bpy.data.objects:
             return True
         return False
 
