@@ -1,8 +1,6 @@
 # ZeroGravitas' SWTOR Tools.
 
-### Now Blender 4.0.2-compatible (if the [4.0-compatible .gr2 Importer Add-on](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x/releases/latest) is installed).
-
-**NOT Blender 4.1 or higher-compatible yet!!!**
+### Now Blender 4.1/4.2-compatible (if the [4.1/4.2-compatible .gr2 Importer Add-on](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x/releases/latest) is installed).
 
 ---
 
@@ -24,6 +22,10 @@
 
 
 ## Recent changes:
+2024-09
+
+* Minor corrections in the Merge Doubles (Edit Mode) tool for compatibility with Blender 4.1 and higher.
+
 
 2024-07:
 
