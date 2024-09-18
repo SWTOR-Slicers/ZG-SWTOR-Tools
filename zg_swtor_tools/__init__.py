@@ -7,7 +7,7 @@ import importlib
 bl_info = {
     "name": "ZG SWTOR Tools",
     "author": "ZeroGravitas",
-    "version": (2, 0, 1),
+    "version": (2, 0, 2),
     "blender": (3, 5, 0),
     "category": "SWTOR",
     "location": "View 3D > Sidebar > ZG SWTOR",
@@ -23,7 +23,7 @@ bl_info = {
 
 # In add-on's main folder 
 modulesNames = [
-    'addon_sync_with_gr2',
+    'addon_sync_with_gr2_addon_props',
     'addon_preferences',
     'addon_open_prefs',
     'addon_ui',
@@ -40,6 +40,7 @@ modulesNames = [
     'char_character_assembler',
     'char_character_prefixer',
     'char_merge_phys_vertex_groups',
+    'char_pc_assembler',
 
     'mat_add_custom_external_swtor_shaders',
     'mat_customize_swtor_shaders',
@@ -56,7 +57,6 @@ modulesNames = [
     'mat_skinsettings_ng_in_shader_editor',
 
     'obj_apply_transforms',
-    # 'obj_clear_splitnormals_layer',
     'obj_set_swtor_obj_custom_props',
     'obj_quickscale',
     'obj_remove_doubles',

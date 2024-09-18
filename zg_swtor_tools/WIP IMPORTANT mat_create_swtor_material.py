@@ -24,16 +24,12 @@ class ZGSWTOR_OT_create_swtor_material(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     # ------------------------------------------------------------------
-    # Check that there are objects in the scene at all (greys-out the UI button otherwise)
     
     @classmethod
     def poll(cls,context):
         return True
 
     # ------------------------------------------------------------------
-    # Define some checkbox-type properties
-    # (they'll interact with scene-level properties
-    # used in the UI panel)
     
     material_name: bpy.props.StringProperty(
         name="Name of .mat file",
