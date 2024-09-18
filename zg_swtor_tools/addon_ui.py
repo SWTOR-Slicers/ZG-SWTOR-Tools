@@ -624,6 +624,7 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
         # remove_doubles UI
         # ------------------------
         tool_section = layout.box()
+        
         col=tool_section.column(align=False)
         col.label(text="Merge Double Vertices")
         
@@ -640,8 +641,22 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
 
         # remove_doubles_edit_mode UI
         # ------------------------
-        col.operator("zgswtor.remove_doubles_edit_mode", text="Selected Verts. (Coarse)")
-
+        # col.separator(factor=1)
+        
+        col=tool_section.column(align=False)
+        col.operator("zgswtor.remove_doubles_edit_mode", text="Selected Verts. (Edit Mode)")
+        
+        col_info=col.column(align=True)
+        col_info.scale_y = Y_SCALING_INFO
+        col_info.enabled = context.mode == 'EDIT_MESH'
+        
+        col_info.separator(factor=2)
+        col_info.label(text="Use ONLY if merging vertices")
+        col_info.label(text="creates NEW sharp edges:")
+        col.enabled = context.mode == 'EDIT_MESH'
+        btn_clear_sharp = col.operator("mesh.mark_sharp", text="Clear Sharps In Selected")
+        btn_clear_sharp.clear = True
+        col.prop(context.space_data.overlay, "show_edge_sharp", text="Display Sharp Edges", toggle=False)
 
 
         # clear_splitnormals_layers UI

@@ -29,6 +29,7 @@ ADDON_ROOT = __file__.rsplit(__name__.rsplit(".")[0])[0] + __name__.rsplit(".")[
 
 
 # Aux Functions
+# region
 
 def bind_objects_to_armature(objects, armature, single_armature_only=True):
     """
@@ -557,7 +558,7 @@ def set_obj_origin(obj_or_obj_name, new_origin):
     # Update the mesh data to apply the changes
     obj.data.update()
 
-
+# endregion
 
 
 
