@@ -40,7 +40,7 @@ modulesNames = [
     'char_character_assembler',
     'char_character_prefixer',
     'char_merge_phys_vertex_groups',
-    'char_pc_assembler',
+    # 'char_pc_assembler',
 
     'mat_add_custom_external_swtor_shaders',
     'mat_customize_swtor_shaders',
