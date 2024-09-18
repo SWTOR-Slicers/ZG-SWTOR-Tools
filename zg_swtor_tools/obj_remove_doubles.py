@@ -70,21 +70,45 @@ class ZGSWTOR_OT_remove_doubles(bpy.types.Operator):
         else:
             copy_of_selected_objects = [obj for obj in bpy.data.objects if obj.type == "MESH"]
                     
+        objs_amount = len(copy_of_selected_objects)
+        objs_count = 0
+        
+        # To avoid reprocessing meshes from instanced objects,
+        # we'll keep a list of those to check against.
+        instanced_meshes = []
 
         bpy.ops.object.select_all(action='DESELECT')
         for obj in copy_of_selected_objects:
-            if obj.type == 'MESH':
+            objs_count += 1
+            if obj.type == 'MESH' and obj.data.name not in instanced_meshes:
+                print(f"{objs_count*100/objs_amount:.0f} %")
                 print(obj.name)
 
+                # As the object can have its own scaling plus scalings
+                # inherited from parent objects, we get its accumulated
+                # scaling.
+                # Just in case there are non-uniform scalings, we are
+                # using the highest one among the axes.
+                obj_world_scale =  max(obj.matrix_world.to_scale())                
+                # Option 2: Use the average scale component (balanced option)
+                # global_scale = obj.matrix_world.to_scale()
+                # obj_world_scale = sum(global_scale) / len(global_scale)
+                
+                
+                # There is also the mesh-level scaling that the .gr2 importer
+                # or the Quickscaler's "Apply" tool can have imparted on the
+                # object.
                 if "gr2_scale" in obj and use_gr2_scale_custom_prop:
                     gr2_scale = obj["gr2_scale"]
-                    print("Mesh Scale from 'gr2_scale' property = {gr2_scale}")
+                    # print(f"Mesh Scale from 'gr2_scale' property = {gr2_scale}")
 
                 obj_initial_vert_count = len(obj.data.vertices)
                 context.view_layer.objects.active = obj
                 bpy.ops.object.editmode_toggle()
                 bpy.ops.mesh.select_all(action='SELECT')
-                bpy.ops.mesh.remove_doubles(threshold=1e-06 * gr2_scale, use_sharp_edge_from_normals=True)
+                # We multiply the eyeballed threshold for 1:1 object scale by
+                # both the applied mesh scale and the accumulated object-level scale.
+                bpy.ops.mesh.remove_doubles(threshold=1e-06 * gr2_scale * obj_world_scale, use_sharp_edge_from_normals=True)
                 bpy.ops.object.editmode_toggle()
 
                 # Calculate the vertex count difference to report how many vertices were merged.
@@ -94,6 +118,8 @@ class ZGSWTOR_OT_remove_doubles(bpy.types.Operator):
                 # https://blender.stackexchange.com/questions/8762/vertex-count-appears-incorrect-after-removing-doubles
                 # context.object.update_from_editmode()
                 # NO LONGER NECESSARY
+                
+                instanced_meshes.append(obj.data.name)
                 
                 context.view_layer.objects.active = None
                 vert_count_report += len(obj.data.vertices) - obj_initial_vert_count

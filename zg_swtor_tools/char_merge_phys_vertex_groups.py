@@ -7,7 +7,7 @@ import bmesh
 class ZGSWTOR_OT_merge_phys_vertex_groups(bpy.types.Operator):
     bl_idname = "zgswtor.merge_phys_vgs"
     bl_label = "ZG Merge Physics Vertex Groups"
-    bl_description = "Looks for Vertex Groups with names matching SWTOR physics bones' patterns\n(ending in double digit numbers) or using a manually input common text,\nand copies their vertices to a new Vertex Group named 'physics' to\nfacilitate applying Blender physics or custom bones by the user.\n\n• Requires entering a text to find partial matches by"
+    bl_description = "Looks for Vertex Groups with names matching SWTOR physics bones' patterns\n(ending in double digit numbers) or using a manually input common text,\nand copies their vertices to a new Vertex Group named 'physics' to\nfacilitate applying Blender physics or custom bones by the user.\n\n• If not using Best-Guess, requires entering a text to find partial matches by"
     bl_options = {'REGISTER', "UNDO"}
 
 

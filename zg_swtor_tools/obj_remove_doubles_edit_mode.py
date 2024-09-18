@@ -29,6 +29,7 @@ class ZGSWTOR_OT_remove_doubles_edit_mode(bpy.types.Operator):
 
         context.window.cursor_set("WAIT")  # Show wait cursor icon
 
+        obj=context.selected_objects[0]
 
         # Checking if we must handle SWTOR objects' custom properties about their meshes' scales
         use_gr2_scale_custom_prop = context.preferences.addons["zg_swtor_tools"].preferences.use_gr2_scale_custom_prop
@@ -43,12 +44,23 @@ class ZGSWTOR_OT_remove_doubles_edit_mode(bpy.types.Operator):
         else:
             gr2_scale = 1.0
 
+        # As the object can have its own scaling plus scalings
+        # inherited from parent objects, we get its accumulated
+        # scaling.
+        # Just in case there are non-uniform scalings, we are
+        # using the highest one among the axes.
+
+        obj_world_scale =  max(obj.matrix_world.to_scale())
+        
+        # Option 2: Use the average scale component (balanced option)
+        # global_scale = obj.matrix_world.to_scale()
+        # obj_world_scale = sum(global_scale) / len(global_scale)
+
+
         print(f"Global Scale for threshold calculation = {gr2_scale}")
         if use_gr2_scale_custom_prop:
             print("SWTOR objects with custom 'gr_scale' properties will use their own.")
         
-        obj=context.selected_objects[0]
-
         if "gr2_scale" in obj and use_gr2_scale_custom_prop:
             gr2_scale = obj["gr2_scale"]
 
@@ -66,7 +78,7 @@ class ZGSWTOR_OT_remove_doubles_edit_mode(bpy.types.Operator):
         # We are also preserving sharp edges, as in the object mode remove
         # doubles tool, although the use case suggests we wouldn't want
         # that here, but for now we'll keep consistency and see how it goes.
-        bpy.ops.mesh.remove_doubles(threshold = 1e-04 * gr2_scale, use_sharp_edge_from_normals=True)
+        bpy.ops.mesh.remove_doubles(threshold = 1e-04 * gr2_scale * obj_world_scale, use_sharp_edge_from_normals=True)
 
         # Calculate the vertex count difference to report how many
         # vertices were merged.
@@ -77,9 +89,6 @@ class ZGSWTOR_OT_remove_doubles_edit_mode(bpy.types.Operator):
         bpy.context.object.update_from_editmode()
         obj_final_vert_count = len(obj.data.vertices)
         vert_count_report = obj_initial_vert_count - obj_final_vert_count
-
-        # Use Autosmooth just in case
-        bpy.data.objects[obj.name].data.use_auto_smooth = True
 
         if vert_count_report > 0:
             # # Just in case, we do only the Normals averaging if some vertex
