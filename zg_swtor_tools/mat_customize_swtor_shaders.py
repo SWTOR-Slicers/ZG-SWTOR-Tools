@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 
 from .utils.addon_checks import requirements_checks
-checks = requirements_checks()
 
 
 def selected_outliner_items(context):
@@ -33,8 +32,10 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
     bl_description = 'Converts the .gr2 Add-on\'s smart modern SWTOR shaders to "dumb",\ntextures outside-type ones for easier customization.\n\n• Requires the modern .gr2 add-on to be enabled during the conversion\n• Requires setting a path to an appropriate .blend file holding\n   customizable SWTOR shaders in this Addon\'s Preferences'
     bl_options = {'REGISTER', 'UNDO'}
 
+
     @classmethod
     def poll(cls,context):
+        checks = requirements_checks()
         if bpy.data.materials and bpy.data.objects and checks['gr2']:
             return True
         return False

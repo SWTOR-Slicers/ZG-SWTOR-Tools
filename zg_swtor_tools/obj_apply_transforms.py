@@ -4,22 +4,33 @@ import bpy
 class ZGSWTOR_OT_apply_transforms(bpy.types.Operator):
     bl_idname = "zgswtor.apply_transforms"
     bl_label = "Apply Transforms & Custom Props"
-    bl_description = "Apply Transformations operators to convert SWTOR objects and skeletons' scales and axis orders\nso that they match others that were imported with different .gr2 import settings (for example,\nobjects imported with older versions of the .gr2 Importer Add-on and objects done with the\n most recent one's scale and/or axis conversion settings.\n\nIdeally, this tool would be applied to objects that are in a neutral position (0,0,0) and\n rotation (either 0º,0º,0º, or the old, usual axis-correcting 90º,0º,0º).\n\nannotated or modified accordingly"
+    bl_description = "Apply Transformations operators to convert SWTOR objects and skeletons' scales and rotations.\n\n• Requires a selection of objects\n\nTypically, they only might need to be used on SWTOR objects imported with the default, neutral\nsettings, which produce 1/10 of \"real life\" sizes and apply a 90º x-rotation to match Blender's\nZ-is-up axis scheme. For those, only applying Rotation and/or Scale is needed.\n\n(Position is there, too, but mostly for completeness' sake)\n\nThese tools are the same as the Apply tools Blender offers in the Object > Apply menu, but they\nare set to use the Apply Properties option (which would usually mean a trip to the Undo Box\nto tick its checkbox), so that the transforms are applied on any involved Modifiers and the like.\n\nIt is recommended to use these tools on objects that are in a neutral position (0,0,0) and\n rotation (either 0º,0º,0º, or the old, usual axis-correcting 90º,0º,0º)"
+
+
+    # Check that there is a selection of objects (greys-out the UI button otherwise) 
+    @classmethod
+    def poll(cls,context):
+        if bpy.context.selected_objects:
+            return True
+        else:
+            return False
 
 
     action: bpy.props.EnumProperty(
         name="Action",
         items=[
-            ('BOTH', "Both", "Apply Scale and Rotation transformations"),
-            ('SCALE', "Scale", "Apply scale transformation"),
+            ('LOCATION', "Position", "Apply position transformation"),
             ('ROTATION', "Rotation", "Apply rotation transformation"),
+            ('SCALE', "Scale", "Apply scale transformation"),
+            ('ROTATION_SCALE', "Rotation+Scale", "Apply Scale and Rotation transformations"),
+            ('ALL', "All", "Apply All transformations"),
         ],
         options={'HIDDEN'}
     )
     
     set_custom_props: bpy.props.BoolProperty(
         name="Set Custom .gr2 Object Properties",
-        description="Creates or modifies SWTOR Objects/Skeletons' custom properties to annotate\nscale and axis conversion data relative to what a SWTOR object with neutral\nimport settings would show (gr2_scale = 1.0, gr2_axis_conversion = False)",
+        description="Annotates SWTOR Objects/Skeletons with custom properties that store the\nscale and axis conversion data relative to what a SWTOR object with neutral\nimport settings would show (gr2_scale = 1.0, gr2_axis_conversion = False)\n\n(Position data isn't included)",
         default=True,
         options={'HIDDEN'}
     )
@@ -38,12 +49,16 @@ class ZGSWTOR_OT_apply_transforms(bpy.types.Operator):
                 if self.action == 'BOTH' or self.action == 'ROTATE':
                     obj['gr2_axis_conversion'] = obj.rotation_euler[0] != 1.5707963705062866
 
-        if self.action == 'SCALE':
-            bpy.ops.object.transform_apply(location=False, rotation=False, scale=True, properties=True)
+        elif self.action == 'LOCATION':
+            bpy.ops.object.transform_apply(location=True, rotation=False, scale=False, properties=True)
         elif self.action == 'ROTATION':
             bpy.ops.object.transform_apply(location=False, rotation=True, scale=False, properties=True)
-        elif self.action == 'BOTH':
+        if self.action == 'SCALE':
+            bpy.ops.object.transform_apply(location=False, rotation=False, scale=True, properties=True)
+        elif self.action == 'ROTATION_SCALE':
             bpy.ops.object.transform_apply(location=False, rotation=True, scale=True, properties=True)
+        elif self.action == 'ALL':
+            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True, properties=True)
 
 
         return {'FINISHED'}
@@ -57,7 +72,7 @@ def register():
     
     bpy.types.Scene.OAT_set_custom_props = bpy.props.BoolProperty(
         name="Set Custom .gr2 Object Properties",
-        description="Creates or modifies SWTOR Objects/Skeletons' custom properties to annotate\nscale and axis conversion data relative to what a SWTOR object with neutral\nimport settings would show (gr2_scale = 1.0, gr2_axis_conversion = False)",
+        description="Annotates SWTOR Objects/Skeletons with custom properties that store the\nscale and axis conversion data relative to what a SWTOR object with neutral\nimport settings would show (gr2_scale = 1.0, gr2_axis_conversion = False)\n\n(Position data isn't included)",
         default = True,
     )
     
