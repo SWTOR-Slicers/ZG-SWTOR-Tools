@@ -7,7 +7,7 @@ import importlib
 bl_info = {
     "name": "ZG SWTOR Tools",
     "author": "ZeroGravitas",
-    "version": (2, 0, 2),
+    "version": (2, 0, 3),
     "blender": (3, 5, 0),
     "category": "SWTOR",
     "location": "View 3D > Sidebar > ZG SWTOR",
@@ -40,7 +40,7 @@ modulesNames = [
     'char_character_assembler',
     'char_character_prefixer',
     'char_merge_phys_vertex_groups',
-    'char_pc_assembler',
+    # 'char_pc_assembler',
 
     'mat_add_custom_external_swtor_shaders',
     'mat_customize_swtor_shaders',

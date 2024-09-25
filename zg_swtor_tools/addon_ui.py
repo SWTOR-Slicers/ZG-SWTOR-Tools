@@ -572,22 +572,37 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
         in_row.prop(context.scene, "zgswtor_quickscale_factor", text="",)
         row.operator("zgswtor.quickscale", text="Up").action = "UPSCALE"
 
+        tool_section.separator(factor=2)
 
 
         # Apply Transforms UI
         # ------------------------
-        row = tool_section.row(align=True)
 
+        split = tool_section.split(factor= 0.75, align=False)
+        
+        col1 = split.column(align=True)
+        row = col1.row(align=True)
         row.label(text="Apply")
         row.operator("zgswtor.apply_transforms", text="Rot.").action = 'ROTATION'
         row.operator("zgswtor.apply_transforms", text="Scale").action = 'SCALE'
-        row.operator("zgswtor.apply_transforms", text="BOTH").action = 'BOTH'
-        col = tool_section.column(align=True)
-        col.prop(context.scene, "OAT_set_custom_props", text="Annotate As Obj. Props.")
+        row = col1.row(align=True)
+        row.operator("zgswtor.apply_transforms", text="Rotation + Scale").action = 'ROTATION_SCALE'
+        
+        col2 = split.column(align=True)
+        col2.operator("zgswtor.apply_transforms", text="Pos.").action = 'LOCATION'
+        col2.operator("zgswtor.apply_transforms", text="ALL").action = 'ALL'
+        
+        
+        
+        
+        row = tool_section.row(align=True)
+        row.prop(context.scene, "OAT_set_custom_props", text="Annotate Objs.")
 
 
-        # Show object data related to the previous tools
-        # (completely implemented here, no operators called)
+        # Show the active object's transforms data as a representative
+        # of all selected objects to be affected by the previous tool
+        # so that we can see that the tools have produced changes
+        # (completely implemented here, no operators called).
         selected_obj = context.object
         
         col=tool_section.column(align=True)
@@ -596,6 +611,10 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
             col.separator()
             col.label(text="Active Obj. Data (represent.):")
             
+            row = col.row(align=True)
+            row.enabled = False
+            row.prop(selected_obj, "location", text="")
+
             row = col.row(align=True)
             row.enabled = False
             rotation_mode = selected_obj.rotation_mode
