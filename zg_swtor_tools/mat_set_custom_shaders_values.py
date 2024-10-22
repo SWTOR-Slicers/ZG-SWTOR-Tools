@@ -237,27 +237,29 @@ class ZGSWTOR_OT_set_custom_shaders_values(bpy.types.Operator):
                         
                             node_tree = mat.node_tree
                             for node in node_tree.nodes:
-                                if node.name.startswith("SWTOR - "):
+                                if "swtor" in node.name.lower() or "koda" in node.name.lower():
                                     print("    Material: " + mat.name)
                                     for input in node.inputs:
                                         
-                                        if self.specular_checkbox and "Specular Strength" in input.name:
+                                        input_name = input.name.lower()
+                                        
+                                        if self.specular_checkbox and ("specular" in input_name and not "palette" in input_name ):
                                             input.default_value = self.specular
                                             material_was_changed = True
                                             
-                                        if self.roughness_checkbox and "Roughness Factor" in input.name:
+                                        if self.roughness_checkbox and "roughness" in input_name:
                                             input.default_value = self.roughness
                                             material_was_changed = True
                                             
-                                        if self.emission_checkbox and "Emission Strength" in input.name:
+                                        if self.emission_checkbox and ("emission strength" in input_name or "emissive strength" in input_name ):
                                             input.default_value = self.emission
                                             material_was_changed = True
                                             
-                                        if self.saturation_checkbox and "Emission Saturation Factor" in input.name:
+                                        if self.saturation_checkbox and ("emission saturation" in input_name or "emissive saturation" in input_name ):
                                             input.default_value = self.saturation
                                             material_was_changed = True
                                             
-                                        if self.normal_checkbox and "Normal Strength" in input.name:
+                                        if self.normal_checkbox and "normal strength" in input_name:
                                             input.default_value = self.normal
                                             material_was_changed = True
                                         
