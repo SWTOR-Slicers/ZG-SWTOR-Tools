@@ -1,6 +1,5 @@
 # ZeroGravitas' SWTOR Tools.
-
-### Now Blender 4.1/4.2-compatible (if the [4.1/4.2-compatible .gr2 Importer Add-on](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x/releases/latest) is installed).
+## (Blender 4.3 breaks our SWTOR materials-processing tools! Stay on 4.2 or earlier)
 
 ---
 
