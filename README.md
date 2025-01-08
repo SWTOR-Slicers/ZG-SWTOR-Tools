@@ -13,11 +13,6 @@
 
 ---
 
-### [Download the latest release](https://github.com/SWTOR-Slicers/ZG-SWTOR-Tools/releases/latest) (not compatible with Game Update 7.6!).
-### (Make sure to download the latest [.gr2 Importer Add-on](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x))
-
----
-
 **This Blender Add-on provides with a miscellanea of tools to import, assemble, texture and improve upon Star Wars: The Old Republic's game assets. It grows in features as new ideas come up. Quality of code-wise, "this is not a place of honor": It Just (Kinda) Works™.**
 
 **This Add-on relies on foundational efforts by fellow slicers, such as the [.gr2 Importer Addon](https://github.com/SWTOR-Slicers/WikiPedia/wiki/ZG-SWTOR-https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x), which works under the hood in places, and the [Slicers GUI Tool](https://github.com/SWTOR-Slicers/WikiPedia/wiki/ZG-SWTOR-https://github.com/SWTOR-Slicers/Slicers-GUI), which allows for extracting the game assets we play with, plus game information exported by tools in [Jedipedia.net](https://https://swtor.jedipedia.net/en) and [TORCommunity.com](https://torcommunity.com/).**
