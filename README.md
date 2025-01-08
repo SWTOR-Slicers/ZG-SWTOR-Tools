@@ -1,10 +1,11 @@
 # ZeroGravitas' SWTOR Tools.
-## (Blender 4.3 breaks our SWTOR materials-processing tools! Stay on 4.2 or earlier)
+## Blender 4.3 breaks our SWTOR materials-processing tools! Stay on 4.2 or earlier.
+## SWTOR Game Update 7.6' modernized skin materials broke our Character Assembler tool. Try the **[v2.0.5 Beta release](https://github.com/SWTOR-Slicers/ZG-SWTOR-Tools/releases/tag/2.0.4)** that solves that and other issues (WARNING: its use replaces a PC/NPC folder's already existing textures with current ones, classic or modernized. If wanting to preserve them, use the tool in a copy or a newly decompressed .zip).
 
 ---
 
-### [Download the latest release](https://github.com/SWTOR-Slicers/ZG-SWTOR-Tools/releases/latest).
-### Make sure to download the latest [.gr2 Importer Add-on](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x), too.
+### [Download the latest release](https://github.com/SWTOR-Slicers/ZG-SWTOR-Tools/releases/latest) (not compatible with Game Update 7.6!).
+### (Make sure to download the latest [.gr2 Importer Add-on](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x))
 
 ---
 
