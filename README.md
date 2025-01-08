@@ -1,7 +1,7 @@
 # ZeroGravitas' SWTOR Tools.
 ## Blender 4.3 breaks our SWTOR materials-processing tools! Stay on 4.2 or earlier.
 ---
-## SWTOR Game Update 7.6' modernized skin materials broke our Character Assembler tool. Try the **[v2.0.5 Beta release](https://github.com/SWTOR-Slicers/ZG-SWTOR-Tools/releases/edit/2.0.5-beta)** that solves that and other issues.
+## SWTOR Game Update 7.6' modernized skin materials broke our Character Assembler tool. Try the **[v2.0.5 Beta release](https://github.com/SWTOR-Slicers/ZG-SWTOR-Tools/releases/tag/2.0.5-beta)** that solves that and other issues.
 ### CAUTION: its use will replace a PC/NPC folder's already existing textures with classic or modernized ones, depending on the selected resources folder in Preferences. If wanting to avoid that, use the tool in a copy or a newly decompressed .zip's PC/NPC folder.
 
 (It will also litter the subfolders with unused textures of the opposite type because BS didn't keep the same filenames in all cases. We are seeing about having separate Materials subfolders to solve that)
