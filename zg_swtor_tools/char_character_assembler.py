@@ -707,6 +707,12 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
         # options={'HIDDEN'}
     )
 
+    npc_uses_skin: bpy.props.BoolProperty(
+        name="NPC Gear's Mat #2 is Skin",
+        description="When importing a Non-Creature-type NPC, assume that any 2nd. Material Slots in their armor,\nor clothes are skin. If unticked, a garment material is used, instead.\n\nAs TORCommunity.com's NPC database exports don't include 'materialSkinIndex' data\nwhich points out if a piece of garment with two material slots uses a skin or a garment\nmaterial, we must tell it which beforehand. If we know that none of the NPC's clothes\nor armor parts show skin (head aside), we can untick this checkbox",
+        default = True,
+        # options={'HIDDEN'}
+    )
 
 
     # File Browser for selecting paths.json file
@@ -723,6 +729,7 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
         self.separate_eyes = context.scene.zg_swca_separate_eyes
         self.separate_each_eye = context.scene.zg_swca_separate_each_eye
         self.correct_twilek_eyes_uv = context.scene.zg_correct_twilek_eyes_uv
+        self.npc_uses_skin = context.scene.zg_npc_uses_skin
 
         # Open File Browser.
         context.window_manager.fileselect_add(self)
@@ -938,7 +945,18 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
                         if "path" in json_data:
                             skeleton_model = json_data["path"]
                             if skeleton_model:
+                                # Creature-type NPCs might have wrong info from TORC, having a "new" bit
+                                # in their names that normally exists only in the eight basic humanoid skeletons.
                                 origin = str( Path(swtor_resources_folderpath) / Path(skeleton_model[1:]) )
+                                if not Path(origin).exists():
+                                    skeleton_model = str(Path(skeleton_model).parent / Path( str( Path(skeleton_model).name ).replace("new", "") ))
+                                    origin = str( Path(swtor_resources_folderpath) / Path(skeleton_model[1:]) )
+                                    
+                                    json_data["path"] = skeleton_model.replace("\\", "/")
+                                    skeleton_corrected_filepath = Path(self.filepath).parent / "skeleton_corrected.json"
+                                    with open(skeleton_corrected_filepath, 'w') as skeleton_corrected_file:
+                                        json.dump(json_data, skeleton_corrected_file)
+                                    
                                 destination = str( Path(character_skeleton_folderpath) / Path(skeleton_model).name )
                                 files_to_copy.append(["Skeleton", "model", origin, destination, ""])
                                 skeleton_exists = True
@@ -983,13 +1001,14 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
                             print("FILE ALREADY EXISTS IN DESTINATION. PRESERVED")
                         else:
                             # File copy as such:
-                            try:
-                                shutil.copy2(origin, destination)
-                                print("COPIED")
-                            except Exception as e:
-                                print("ERROR!!!-------- ", str(e))
-                                print()
-                                errors_report.append(body_part + " - " + asset_type + " - " + str(origin))
+                            if not ( destination.endswith('\\.dds') or destination.endswith('/.dds') ):
+                                try:
+                                    shutil.copy2(origin, destination)
+                                    print("COPIED")
+                                except Exception as e:
+                                    print("ERROR!!!-------- ", str(e))
+                                    print()
+                                    errors_report.append(body_part + " - " + asset_type + " - " + str(origin))
                         
                         print()
                             
@@ -1025,14 +1044,19 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
             
             # Calling Darth Atroxa's Character Importer in his .gr2 Importer Addon.
             try:
-                result = bpy.ops.import_mesh.gr2_json(filepath = corrected_json_data_filepath)
+                result = bpy.ops.import_mesh.gr2_json(filepath = corrected_json_data_filepath, npc_uses_skin = self.npc_uses_skin)
                 print(result)
                 if result == {"CANCELLED"}:
                     print(f"\n\nWARNING: .gr2 Importer Addon failed to import {self.filepath}\n\n")
                 else:
                     print("\n\nCharacter's Path File successfully processed by the .gr2 Importer Add-on!\n\n")
-            except:
+            except Exception as e:
                 print(f"\n\nWARNING: the .gr2 Importer addon CRASHED while importing:\n{self.filepath}\n\n")
+                print("Its error report was:")
+                print("-" * 80)
+                print(e)
+                print("-" * 80)
+                print()
                 print("CANCELLING CHARACTER IMPORT")
                 report_text = "The .gr2 Importer Add-on crashed while processing this character's Path file. \nPlease check if any of its assets is missing. "
                 if swtor_resources_folderpath == None:
@@ -1288,6 +1312,14 @@ def register():
         default = True,
     )
 
+    bpy.types.Scene.zg_npc_uses_skin = bpy.props.BoolProperty(
+        name="NPC Gear's Mat #2 is Skin",
+        description="When importing a Non-Creature-type NPC, assume that any 2nd. Material Slots\nin their armor or clothes are skin. If unticked, a garment material is used, instead.\n\nMOST NPC GEAR LACK SECOND MATERIALS, ANYWAY.\nTypical case actually needing this setting: cantina dancers.\n\nIn mixed use cases, the Material Slots' assignments can be easily corrected afterwards\nmanually. Skin materials are always made available, no matter if in use or not.\n\n(As TORCommunity.com's NPC database exports don't include 'materialSkinIndex' data,\nwhich points out if a piece of garment with two material slots uses a skin or a garment\nmaterial for the 2nd one, we must set that beforehand)",
+        default = True,
+        # options={'HIDDEN'}
+    )
+
+
 
 def unregister():
     bpy.utils.unregister_class(ZGSWTOR_OT_character_assembler) 
@@ -1299,6 +1331,7 @@ def unregister():
     del bpy.types.Scene.zg_swca_bind_to_skeleton_bool
     del bpy.types.Scene.zg_swca_separate_eyes
     del bpy.types.Scene.zg_correct_twilek_eyes_uv
+    del bpy.types.Scene.zg_npc_uses_skin
 
 
 if __name__ == "__main__":
