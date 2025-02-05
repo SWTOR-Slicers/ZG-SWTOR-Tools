@@ -1,15 +1,10 @@
 # ZeroGravitas' SWTOR Tools.
-## Blender 4.3 breaks our SWTOR materials-processing tools! Stay on 4.2 or earlier.
----
-## SWTOR Game Update 7.6' modernized skin materials broke our Character Assembler tool. Try the **[v2.0.5 Beta release](https://github.com/SWTOR-Slicers/ZG-SWTOR-Tools/releases/tag/2.0.5-beta)** that solves that and other issues.
-### CAUTION: its use will replace a PC/NPC folder's already existing textures with classic or modernized ones, depending on the selected resources folder in Preferences. If wanting to avoid that, use the tool in a copy or a newly decompressed .zip's PC/NPC folder.
 
-(It will also litter the subfolders with unused textures of the opposite type because BS didn't keep the same filenames in all cases. We are seeing about having separate Materials subfolders to solve that)
+* ### Not compatible with Blender 4.3 yet (it breaks SWTOR material creation)!
+* ### NPC import including Creature-type ones works far better now!
+* ### Compatible with Game Update 7.6 and higher's Modernized PC/NPC skin textures (requires downloading the [latest .gr2 Importer Add-on](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x/releases/latest)).
 
----
-
-### Latest Release [Download Link](https://github.com/SWTOR-Slicers/ZG-SWTOR-Tools/releases/latest) (not compatible with Game Update 7.6!).
-### Make sure to have the latest [.gr2 Importer Add-on](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x) (last updated Nov 6, 2024).
+  Depending on which resources folder is selected in the add-on's Preferences (extracted before or after Game Update 7.6), the tool gets the correct classic or modernized results. Check the Character Assembler tool's guide for details.
 
 ---
 
@@ -26,6 +21,12 @@
 
 
 ## Recent changes:
+2025-02
+
+* Support for SWTOR Game Update 7.6's modernized skin materials.
+* Support for the improvements in the .gr2 Add-on's NPC support.
+* Bug corrections in the Objects/Skeletons/Materials' names prefixer and Merge Physics tools.
+
 2024-09
 
 * Minor corrections in the Merge Doubles (Edit Mode) tool for compatibility with Blender 4.1 and higher.
