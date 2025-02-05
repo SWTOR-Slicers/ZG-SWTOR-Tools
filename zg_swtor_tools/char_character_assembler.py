@@ -708,8 +708,8 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
     )
 
     npc_uses_skin: bpy.props.BoolProperty(
-        name="NPC Gear's Mat #2 is Skin",
-        description="When importing a Non-Creature-type NPC, assume that any 2nd. Material Slots\nin armor or clothes are skin. If unticked, use a garment material instead.\n\nMOST NPC GEAR LACK SECOND MATERIALS, ANYWAY.\nTypical case actually using this checkbox: cantina dancers.\n\nIn mixed use cases, the Material Slots' assignments can be easily corrected\nmanually. Skin materials are always created, no matter if not in use.\n\n(TORCommunity.com's non-Creature NPC database exports don't include\n'materialSkinIndex' data indicating whether a piece of garment with\ntwo material slots uses skin or garment for the 2nd one. Hence this\ncheckbox)",
+        name="NPC Gear Can Show Skin",
+        description="When importing a non-Creature-type NPC, assume that any 2nd. Material Slots\nin armor or clothes are skin. If unticked, use a garment material instead.\n\nMOST NPC GEAR LACK SECOND MATERIALS, ANYWAY.\nTypical case actually using this checkbox: cantina dancers.\n\nIn mixed use cases, the Material Slots' assignments can be easily corrected\nmanually. Skin materials are always created, no matter if not in use.\n\n(TORCommunity.com's non-Creature NPC exports don't include this data)",
         default = True,
         # options={'HIDDEN'}
     )
@@ -1313,8 +1313,8 @@ def register():
     )
 
     bpy.types.Scene.zg_npc_uses_skin = bpy.props.BoolProperty(
-        name="NPC Gear's Mat #2 is Skin",
-        description="When importing a non-Creature-type NPC, assume that any 2nd. Material Slots\nin armor or clothes are skin. If unticked, use a garment material instead.\n\nMOST NPC GEAR LACK SECOND MATERIALS, ANYWAY.\nTypical case actually using this checkbox: cantina dancers.\n\nIn mixed use cases, the Material Slots' assignments can be easily corrected\nmanually. Skin materials are always created, no matter if not in use.\n\n(TORCommunity.com's non-Creature NPC database exports don't include\n'materialSkinIndex' data indicating whether a piece of garment with two\nmaterial slots uses skin or garment for the 2nd one. Hence this checkbox)",
+        name="NPC Gear Can Show Skin",
+        description="When importing a non-Creature-type NPC, assume that any 2nd. Material Slots\nin armor or clothes are skin. If unticked, use a garment material instead.\n\nMOST NPC GEAR LACK SECOND MATERIALS, ANYWAY.\nTypical case actually using this checkbox: cantina dancers.\n\nIn mixed use cases, the Material Slots' assignments can be easily corrected\nmanually. Skin materials are always created, no matter if not in use.\n\n(TORCommunity.com's non-Creature NPC exports don't include this data)",
         default = True,
         # options={'HIDDEN'}
     )

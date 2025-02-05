@@ -314,7 +314,7 @@ class ZGSWTOR_PT_character_tools(bpy.types.Panel):
         split_line.label()
         split_line.prop(context.scene, "zg_swca_separate_each_eye", text="As Two Eye Objects")
         tool_section.prop(context.scene, "zg_correct_twilek_eyes_uv", text="Correct Twi'lek Eyes' UVs")
-        tool_section.prop(context.scene, "zg_npc_uses_skin", text="NPC's 2nd Mats. Are Skin")
+        tool_section.prop(context.scene, "zg_npc_uses_skin", text="NPC Gear Can Show Skin")
         
         
         
