@@ -1,10 +1,11 @@
 # ZeroGravitas' SWTOR Tools.
-## (Blender 4.3 breaks our SWTOR materials-processing tools! Stay on 4.2 or earlier)
 
----
+* ### Not compatible with Blender 4.3 yet (it breaks SWTOR material creation)!
+* ### NPC import including Creature-type ones works far better now!
+* ### Compatible with Game Update 7.6 and higher's Modernized PC/NPC skin textures (requires downloading the [latest .gr2 Importer Add-on](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x/releases/latest)).
 
-### [Download the latest release](https://github.com/SWTOR-Slicers/ZG-SWTOR-Tools/releases/latest).
-### Make sure to download the latest [.gr2 Importer Add-on](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x), too.
+
+  Depending on which resources folder is selected in the add-on's Preferences (extracted before or after Game Update 7.6), the tool gets the correct classic or modernized results. Check the Character Assembler tool's guide for details.
 
 ---
 
@@ -21,6 +22,12 @@
 
 
 ## Recent changes:
+2025-02
+
+* Support for SWTOR Game Update 7.6's modernized skin materials.
+* Support for the improvements in the .gr2 Add-on's NPC support.
+* Bug corrections in the Objects/Skeletons/Materials' names prefixer and Merge Physics tools.
+
 2024-09
 
 * Minor corrections in the Merge Doubles (Edit Mode) tool for compatibility with Blender 4.1 and higher.
