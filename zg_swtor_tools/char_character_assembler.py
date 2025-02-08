@@ -751,6 +751,9 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
 
 
     def execute(self, context):
+        
+        context.window.cursor_set("WAIT")  # Show wait cursor icon
+
         start_time = time.time()
         # Terminal's VT100 escape codes (most terminals understand them).
         # See: http://www.climagic.org/mirrors/VT100_Escape_Codes.html
@@ -780,6 +783,7 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
         # Test the existence of the shaders subfolder to validate the SWTOR "resources" folder
         if Path(swtor_shaders_path).exists() == False:
             # self.report({"WARNING"}, "Please check this add-on's preferences' path to the extracted assets 'resources' folder.")
+            # bpy.context.window.cursor_set("DEFAULT")  # Show normal cursor icon
             # return {"CANCELLED"}
             swtor_resources_folderpath = None
 
@@ -803,6 +807,7 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
 
         if self.filepath.endswith("paths.json") == False:
             self.report({"WARNING"}, "The selected file isn't a 'path.json' file. Please select a correct one.")
+            bpy.context.window.cursor_set("DEFAULT")  # Show normal cursor icon
             return {"CANCELLED"}
         
         character_folder_name = Path(self.filepath).parent.parent.name
@@ -1062,6 +1067,7 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
                 if swtor_resources_folderpath == None:
                     report_text += "\nIf a SWTOR assets extraction's 'resources' folder is available, set it in this Add-on's Preferences and try again."
                 self.report({"WARNING"}, report_text)
+                bpy.context.window.cursor_set("DEFAULT")  # Show normal cursor icon
                 return {"CANCELLED"}
 
             print("==========================================")
@@ -1243,6 +1249,7 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
             print(f"TOTAL TIME ELAPSED: {(time.time() - start_time):.3f} s.")
             print()
             
+        bpy.context.window.cursor_set("DEFAULT")  # Show normal cursor icon
         return {'FINISHED'}
 
 
