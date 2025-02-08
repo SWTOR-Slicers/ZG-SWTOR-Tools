@@ -4,7 +4,6 @@
 * ### NPC import including Creature-type ones works far better now!
 * ### Compatible with Game Update 7.6 and higher's Modernized PC/NPC skin textures (requires downloading the [latest .gr2 Importer Add-on](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x/releases/latest)).
 
-
   Depending on which resources folder is selected in the add-on's Preferences (extracted before or after Game Update 7.6), the tool gets the correct classic or modernized results. Check the Character Assembler tool's guide for details.
 
 ---
