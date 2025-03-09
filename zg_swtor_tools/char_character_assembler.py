@@ -62,6 +62,8 @@ def replace_json_data_texturepaths_with_mat_data_ones(json_data, swtor_resources
         if "slotName" in elem:
             slotName = elem["slotName"]
             if slotName != "skinMats":
+                if not elem["materialInfo"]:
+                    continue
                 matPath = elem["materialInfo"]["matPath"]
                 ddsPaths =  elem["materialInfo"]["ddsPaths"]
 
