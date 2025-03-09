@@ -149,6 +149,10 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
             "Vegetation",
             ]
         
+        garment_like = [
+            "GarmentScrolling",
+        ]
+        
         diffuse_only_like = [
             "DiffuseFlat",
             "DiffuseFlatHueable",
@@ -710,7 +714,7 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
 
 
 
-                                elif matxml_derived == "Garment":
+                                elif matxml_derived == "Garment" or matxml_derived == "GarmentScrolling":
 
 
                                     # Add Garment Shader
