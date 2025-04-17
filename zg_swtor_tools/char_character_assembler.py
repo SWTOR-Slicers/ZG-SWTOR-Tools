@@ -57,7 +57,7 @@ def extract_mat_texture_data(mat_file_abs_path):
     
         return texture_data
 
-def replace_json_data_texturepaths_with_mat_data_ones(json_data, swtor_resources_folderpath):
+def replace_json_data_with_mat_data(json_data, swtor_resources_folderpath):
     for elem in json_data:
         if "slotName" in elem:
             slotName = elem["slotName"]
@@ -834,7 +834,7 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
                 character_materials_folderpath = str( Path(self.filepath).parent / "materials" )
                 character_skeleton_folderpath = str( Path(self.filepath).parent / "skeleton" )
                 
-                replace_json_data_texturepaths_with_mat_data_ones(json_data, swtor_resources_folderpath)
+                replace_json_data_with_mat_data(json_data, swtor_resources_folderpath)
                 
                 
                 # Save corrected .json info
