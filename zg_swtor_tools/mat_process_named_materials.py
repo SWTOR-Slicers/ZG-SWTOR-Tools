@@ -20,8 +20,6 @@ elif blender_version <= 4.2 :
 elif blender_version >= 4.3 :
     from .shd_additional_swtor_shaders_blen43 import create_AnimatedUV_material, create_EmissiveOnly_material
 
-from .shd_blen4_EmissiveOnly import convert_mat_to_SWTOR_EmissiveOnly_Shader
-
 
 # --------------------------------------------------------------
 # Basic SWTOR Shader types. First in each list are those we cover.

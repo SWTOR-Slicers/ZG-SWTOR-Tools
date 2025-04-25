@@ -1,8 +1,9 @@
 # ZeroGravitas' SWTOR Tools.
 
-* ### Compatible with Blender 4.3 and higher.
-* ### NPC import including Creature-type ones works far better now!
-* ### Compatible with Game Update 7.6 and higher's Modernized PC/NPC skin textures (requires downloading the [latest .gr2 Importer Add-on](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x/releases/latest)).
+* ### Requires downloading the [latest .gr2 Importer Add-on](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x/releases/latest).
+* ### Now compatible with Blender 4.3 and higher.  
+* ### NPC import including Creature-type ones works far better now.
+* ### Compatible with Game Update 7.6 and higher's Modernized PC/NPC skin textures. 
 
   Depending on which resources folder is selected in the add-on's Preferences (extracted before or after Game Update 7.6), the tool gets the correct classic or modernized results. Check the Character Assembler tool's guide for details.
 
@@ -10,7 +11,7 @@
 
 **This Blender Add-on provides with a miscellanea of tools to import, assemble, texture and improve upon Star Wars: The Old Republic's game assets. It grows in features as new ideas come up. Quality of code-wise, "this is not a place of honor": It Just (Kinda) Works™.**
 
-**This Add-on relies on foundational efforts by fellow slicers, such as the [.gr2 Importer Addon](https://github.com/SWTOR-Slicers/WikiPedia/wiki/ZG-SWTOR-https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x), which works under the hood in places, and the [Slicers GUI Tool](https://github.com/SWTOR-Slicers/WikiPedia/wiki/ZG-SWTOR-https://github.com/SWTOR-Slicers/Slicers-GUI), which allows for extracting the game assets we play with, plus game information exported by tools in [Jedipedia.net](https://https://swtor.jedipedia.net/en) and [TORCommunity.com](https://torcommunity.com/).**
+This Add-on relies on foundational efforts by fellow slicers, such as the **[.gr2 Importer Addon](https://github.com/SWTOR-Slicers/WikiPedia/wiki/ZG-SWTOR-https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x)**, which is invoked under the hood in places, and the **[ExtracTOR](https://github.com/SWTOR-Slicers/WikiPedia/wiki/Installing-Slicers-GUI-and-extracting-SWTOR-game-assets)**, **[Slicers GUI](https://github.com/SWTOR-Slicers/WikiPedia/wiki/ZG-SWTOR-https://github.com/SWTOR-Slicers/Slicers-GUI)**, and even ancient **TorMYP/EasyMYP** tools, which allow for extracting the game assets we play with in, to start with, plus game information exported by tools in **[Jedipedia.net](https://https://swtor.jedipedia.net/en)** and **[TORCommunity.com](https://torcommunity.com/)**.
 
 
 ### Check the [ZG SWTOR Tools' pages in our Wiki](https://github.com/SWTOR-Slicers/WikiPedia/wiki/ZG-SWTOR-Tools-Add-on) for installation instructions and each tool's user guide.
@@ -22,10 +23,10 @@
 
 ## Recent changes:
 2025-04
-* Support for Blender 4.3 and 4.4.
+* Tentative support for Blender 4.3 and 4.4.
 * New Named Materials Processor tool in the Shader Editor.
 * Revised, simplified EmissiveOnly material.
-* Attempts at subsituting unsupported SWTOR shaders with their closest supported ones. Might misfire. To check the original shader, check Blender's Material Inspector's Custom Properties subpanel.
+* Attempt at substituting unsupported SWTOR shaders with their closest supported ones. Might backfire. To check a material's original shader, check Blender's Material Inspector's Custom Properties subpanel.
 
 2025-02
 
