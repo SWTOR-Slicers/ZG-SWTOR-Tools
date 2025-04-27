@@ -444,7 +444,7 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
                                         mat.blend_method = 'CLIP'
                                         mat.shadow_method = 'CLIP'
                                     elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
-                                        mat_AlphaMode == 'Blend'
+                                        mat_AlphaMode = 'Blend'
                                         mat.blend_method = 'BLEND'
                                         mat.shadow_method = 'HASHED'
                                     else:
@@ -537,7 +537,7 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
                                         except:
                                             pass
                                     elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
-                                        mat_AlphaMode == 'Blend'
+                                        mat_AlphaMode = 'Blend'
                                         mat.blend_method = 'BLEND'
                                         mat.shadow_method = 'HASHED'
                                         try:
@@ -594,7 +594,7 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
                                         except:
                                             pass
                                     elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
-                                        mat_AlphaMode == 'Blend'
+                                        mat_AlphaMode = 'Blend'
                                         mat.blend_method = 'BLEND'
                                         mat.shadow_method = 'HASHED'
                                         try:
@@ -665,7 +665,7 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
                                         except:
                                             pass
                                     elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
-                                        mat_AlphaMode == 'Blend'
+                                        mat_AlphaMode = 'Blend'
                                         mat.blend_method = 'BLEND'
                                         mat.shadow_method = 'HASHED'
                                         try:
@@ -742,7 +742,7 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
                                         except:
                                             pass
                                     elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
-                                        mat_AlphaMode == 'Blend'
+                                        mat_AlphaMode = 'Blend'
                                         mat.blend_method = 'BLEND'
                                         mat.shadow_method = 'HASHED'
                                         try:
@@ -823,7 +823,7 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
                                         except:
                                             pass
                                     elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
-                                        mat_AlphaMode == 'Blend'
+                                        mat_AlphaMode = 'Blend'
                                         mat.blend_method = 'BLEND'
                                         mat.shadow_method = 'HASHED'
                                         try:
@@ -915,7 +915,7 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
                                         except:
                                             pass
                                     elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
-                                        mat_AlphaMode == 'Blend'
+                                        mat_AlphaMode = 'Blend'
                                         mat.blend_method = 'BLEND'
                                         mat.shadow_method = 'HASHED'
                                         try:

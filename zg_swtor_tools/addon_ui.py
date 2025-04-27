@@ -11,13 +11,14 @@ Y_SCALING_INFO = 0.75
 Y_SCALING_SPACER = 0.6
 
 
-# ---------------------------------------------------------------
-# 3D VIEWPORT PANEL ---------------------------------------------
-# ---------------------------------------------------------------
+# --------------------------------------------------------------------------------
+# 3D VIEWPORT PANEL --------------------------------------------------------------
+# --------------------------------------------------------------------------------
 
 
 # Addon Status sub-panel
-class ZGSWTOR_PT_status(bpy.types.Panel):
+class ZGSWTOR_PT_status_3dview(bpy.types.Panel):
+    
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "ZG SWTOR"
@@ -505,11 +506,13 @@ class ZGSWTOR_PT_materials_tools(bpy.types.Panel):
         split.scale_y = 0.7
         
         col = split.column(align=True)
-        col.prop(context.scene, "scsv_blend_mode_checkbox", text="Alpha Mode")
+        if checks["blender_version"] < 4.2:
+            col.prop(context.scene, "scsv_blend_mode_checkbox", text="Alpha Mode")
         col.prop(context.scene, "scsv_show_backface_checkbox", text="Show Backface")
 
         col = split.column(align=True)
-        col.prop(context.scene, "scsv_blend_mode", text="")
+        if checks["blender_version"] < 4.2:
+            col.prop(context.scene, "scsv_blend_mode", text="")
         col.prop(context.scene, "scsv_show_backface", text="")
 
         tool_section.separator(factor=1)
@@ -927,9 +930,70 @@ class ZGSWTOR_PT_baking_tools(bpy.types.Panel):
 
 
 
-# ---------------------------------------------------------------
-# SHADER EDITOR PANEL -------------------------------------------
-# ---------------------------------------------------------------
+# --------------------------------------------------------------------------------
+# SHADER EDITOR PANEL ------------------------------------------------------------
+# --------------------------------------------------------------------------------
+
+# Addon Status sub-panel
+class ZGSWTOR_PT_status_node_editor(bpy.types.Panel):
+    
+    bl_space_type = "NODE_EDITOR"
+    bl_region_type = "UI"
+    bl_category = "ZG SWTOR"
+    bl_label = "ZG SWTOR Tools Status"
+
+    def draw(self, context):
+        
+        checks = requirements_checks()
+
+        layout = self.layout
+        layout.scale_y = Y_SCALING_GRAL
+
+        # ZG Prefs
+        tool_section_zgpref = layout.column(align=False)
+        tool_section_zgpref.scale_y = Y_SCALING_GRAL
+        tool_section_zgpref.scale_y = Y_SCALING_GRAL
+        tool_section_zgpref.operator("zgswtor.open_zg_addon_preferences", text="ZG SWTOR Tools Prefs")
+
+        # ZG Status report
+        tool_section_zgstatus = layout.column(align=True)
+        tool_section_zgstatus.scale_y = Y_SCALING_INFO
+
+        tool_section_zgstatus.alert = not checks["gr2"]
+        tool_section_zgstatus.label(text="• .gr2 Add-on: " + checks["gr2_status"])
+
+        tool_section_zgstatus.alert = not checks["resources"]
+        tool_section_zgstatus.label(text="• 'resources' Folder: " + checks["resources_status"])
+
+        tool_section_zgstatus.alert = not checks["custom_shaders"]
+        tool_section_zgstatus.label(text="• Custom Shaders: " + checks["custom_shaders_status"])
+        
+        if (
+            checks["resources"] == False
+            or checks["custom_shaders"] == False
+            or checks["gr2"] == False
+            ):
+                        
+            tool_section_info = layout.column(align=True)
+            tool_section_info.scale_y = Y_SCALING_INFO
+            tool_section_info.label(text="Tools showing up in red need")
+            tool_section_info.label(text="to satisfy certain requirements")
+            tool_section_info.label(text="(more info in their tooltips).")
+
+        tool_section_zgpref.alert = False  # red color off
+
+
+        # .gr2 Prefs
+        if checks["gr2_status"] == "DISABLED":
+            
+            tool_section_gr2pref = layout.column(align=False)
+            tool_section_gr2pref.scale_y = Y_SCALING_GRAL
+            tool_section_gr2pref.separator(factor=Y_SCALING_SPACER)
+            tool_section_gr2pref.operator("zgswtor.open_gr2_addon_preferences", text=".gr2 Add-on's Prefs")
+
+            
+
+
 
 class ZGSWTOR_PT_shader_tools(bpy.types.Panel):
     bl_space_type = "NODE_EDITOR"
@@ -938,16 +1002,32 @@ class ZGSWTOR_PT_shader_tools(bpy.types.Panel):
     bl_label = "SWTOR Tools"
 
     def draw(self, context):
-        
-        layout = self.layout
-        tool_section = layout.box().column(align=False)
-        
+                
         checks = requirements_checks()
 
+        layout = self.layout
+
+        # process_named_materials UI
+        # ------------------------
+        tool_section = layout.box().column(align=True)
+        
+        tool_section.enabled = checks["resources"] and checks["gr2"] and bpy.context.material != None
+        tool_section.alert = not checks["resources"] and checks["gr2"]
+
+        tool_section.label(text="Named Materials Processor")
+            
+        process_mats_sel = tool_section.operator("zgswtor.process_named_mats", text="Process This Material")
+        if bpy.context.material:
+            process_mats_sel.convert_this_material = bpy.context.material.name
+        process_mats_sel.use_overwrite_bool = True
 
 
         # skinsettings_ng_in_shader_editor UI
-        # ------------------------        
+        # ------------------------
+        tool_section = layout.box().column(align=False)
+        tool_section.enabled = True
+        tool_section.alert = False
+
         tool_section.operator("zgswtor.skinsettings_ng_in_shader_editor", text="Add New Skin Settings Group").action="ADD_NEW_SKINSETTINGS"
         row = tool_section.row()
         in_row = row.row(align=False)  # for setting a non-50% contiguous row region
@@ -999,14 +1079,15 @@ class ZGSWTOR_PT_shader_tools(bpy.types.Panel):
 
 
 classes = [
-    ZGSWTOR_PT_status,
+    ZGSWTOR_PT_status_3dview,
     ZGSWTOR_PT_area_tools,
     ZGSWTOR_PT_character_tools,
     ZGSWTOR_PT_materials_tools,
     ZGSWTOR_PT_objects_tools,
     ZGSWTOR_PT_pose_sculpt_tools,
     ZGSWTOR_PT_baking_tools,
-    ZGSWTOR_PT_shader_tools
+    ZGSWTOR_PT_status_node_editor,
+    ZGSWTOR_PT_shader_tools,
 ]
 
 def register():

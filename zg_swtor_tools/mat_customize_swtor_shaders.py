@@ -4,6 +4,9 @@ from pathlib import Path
 
 from .utils.addon_checks import requirements_checks
 
+checks = requirements_checks()
+blender_version = checks["blender_version"]
+
 
 def selected_outliner_items(context):
     '''
@@ -171,14 +174,17 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                         # Set material's alpha, shadow and backface culling settings.
                         # Blend Mode to CLIP as a minimum for the extra
                         # transparency setting to work.
-                        mat.blend_method = "CLIP"
-                        mat.alpha_threshold = atroxa_node.alpha_test_value
                         
-                        if mat.blend_method == 'HASHED':
-                            mat.shadow_method = 'HASHED'
+                        if blender_version < 4.2:
+                            mat.blend_method = "CLIP"
+                            mat.alpha_threshold = atroxa_node.alpha_test_value
+                            if mat.blend_method == 'HASHED':
+                                mat.shadow_method = 'HASHED'
+                            else:
+                                mat.shadow_method = 'CLIP'
                         else:
-                            mat.shadow_method = 'CLIP'
-
+                            # "CLIP" and threshold have to be implemented as nodes
+                            mat.surface_render_method = 'DITHERED'
                         mat.use_backface_culling = False
 
 
