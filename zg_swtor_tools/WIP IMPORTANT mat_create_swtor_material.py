@@ -10,10 +10,10 @@ import addon_utils
 blender_version_major_number, blender_version_minor_number , _ = bpy.app.version
 if blender_version_major_number < 4:
     from .shd_blen3_EmissiveOnly import create_EmissiveOnly_nodegroup
-    from .shd_blen3_AnimatedUV import create_AnimatedUV_nodegroup
+    from .shd_blen36_AnimatedUV import create_AnimatedUV_nodegroup
 else:
     from .shd_blen4_EmissiveOnly import create_EmissiveOnly_nodegroup
-    from .shd_blen4_AnimatedUV import create_AnimatedUV_nodegroup
+    from .shd_blen40_AnimatedUV import create_AnimatedUV_nodegroup
 
 
 class ZGSWTOR_OT_create_swtor_material(bpy.types.Operator):
@@ -366,7 +366,7 @@ class ZGSWTOR_OT_create_swtor_material(bpy.types.Operator):
                     except:
                         pass
                 elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
-                    mat_AlphaMode == 'Blend'
+                    mat_AlphaMode = 'Blend'
                     mat.blend_method = 'BLEND'
                     mat.shadow_method = 'HASHED'
                     try:
@@ -374,7 +374,7 @@ class ZGSWTOR_OT_create_swtor_material(bpy.types.Operator):
                     except:
                         pass
                 else:
-                    mat_AlphaMode == 'None'
+                    mat_AlphaMode = 'None'
                     mat.blend_method = 'OPAQUE'
                     mat.shadow_method = 'NONE'
 
@@ -423,7 +423,7 @@ class ZGSWTOR_OT_create_swtor_material(bpy.types.Operator):
                     except:
                         pass
                 elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
-                    mat_AlphaMode == 'Blend'
+                    mat_AlphaMode = 'Blend'
                     mat.blend_method = 'BLEND'
                     mat.shadow_method = 'HASHED'
                     try:
@@ -431,7 +431,7 @@ class ZGSWTOR_OT_create_swtor_material(bpy.types.Operator):
                     except:
                         pass
                 else:
-                    mat_AlphaMode == 'None'
+                    mat_AlphaMode = 'None'
                     mat.blend_method = 'OPAQUE'
                     mat.shadow_method = 'NONE'
 
@@ -494,7 +494,7 @@ class ZGSWTOR_OT_create_swtor_material(bpy.types.Operator):
                     except:
                         pass
                 elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
-                    mat_AlphaMode == 'Blend'
+                    mat_AlphaMode = 'Blend'
                     mat.blend_method = 'BLEND'
                     mat.shadow_method = 'HASHED'
                     try:
@@ -502,7 +502,7 @@ class ZGSWTOR_OT_create_swtor_material(bpy.types.Operator):
                     except:
                         pass
                 else:
-                    mat_AlphaMode == 'None'
+                    mat_AlphaMode = 'None'
                     mat.blend_method = 'OPAQUE'
                     mat.shadow_method = 'NONE'
 
@@ -571,7 +571,7 @@ class ZGSWTOR_OT_create_swtor_material(bpy.types.Operator):
                     except:
                         pass
                 elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
-                    mat_AlphaMode == 'Blend'
+                    mat_AlphaMode = 'Blend'
                     mat.blend_method = 'BLEND'
                     mat.shadow_method = 'HASHED'
                     try:
@@ -579,7 +579,7 @@ class ZGSWTOR_OT_create_swtor_material(bpy.types.Operator):
                     except:
                         pass
                 else:
-                    mat_AlphaMode == 'None'
+                    mat_AlphaMode = 'None'
                     mat.blend_method = 'OPAQUE'
                     mat.shadow_method = 'NONE'
 
@@ -651,7 +651,7 @@ class ZGSWTOR_OT_create_swtor_material(bpy.types.Operator):
                     except:
                         pass
                 elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
-                    mat_AlphaMode == 'Blend'
+                    mat_AlphaMode = 'Blend'
                     mat.blend_method = 'BLEND'
                     mat.shadow_method = 'HASHED'
                     try:
@@ -659,7 +659,7 @@ class ZGSWTOR_OT_create_swtor_material(bpy.types.Operator):
                     except:
                         pass
                 else:
-                    mat_AlphaMode == 'None'
+                    mat_AlphaMode = 'None'
                     mat.blend_method = 'OPAQUE'
                     mat.shadow_method = 'NONE'
 
@@ -742,7 +742,7 @@ class ZGSWTOR_OT_create_swtor_material(bpy.types.Operator):
                     except:
                         pass
                 elif mat_AlphaMode == 'Full' or mat_AlphaMode == 'MultipassFull' or mat_AlphaMode == 'Add':
-                    mat_AlphaMode == 'Blend'
+                    mat_AlphaMode = 'Blend'
                     mat.blend_method = 'BLEND'
                     mat.shadow_method = 'HASHED'
                     try:
@@ -750,7 +750,7 @@ class ZGSWTOR_OT_create_swtor_material(bpy.types.Operator):
                     except:
                         pass
                 else:
-                    mat_AlphaMode == 'None'
+                    mat_AlphaMode = 'None'
                     mat.blend_method = 'OPAQUE'
                     mat.shadow_method = 'NONE'
 
