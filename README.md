@@ -1,6 +1,6 @@
 # ZeroGravitas' SWTOR Tools.
 
-* ### Requires downloading the [latest .gr2 Importer Add-on](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x/releases/latest) (it is included in the latest release's page).
+* ### Requires downloading the latest .gr2 Importer Add-on (it is included in this one's [latest release's page](https://github.com/SWTOR-Slicers/ZG-SWTOR-Tools/releases/latest)).
 * **Now compatible with Blender 4.3 and higher.**
 * **NPC import including Creature-type ones works far better now.**
 * **Compatible with Game Update 7.6 and higher's Modernized PC/NPC skin textures:** depending on which resources folder is selected in the add-on's Preferences (extracted before or after Game Update 7.6), the tool gets the correct classic or modernized results.
