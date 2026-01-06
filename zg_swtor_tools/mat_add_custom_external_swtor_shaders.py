@@ -1,7 +1,6 @@
 import bpy
 from bpy import app
 
-import os
 from pathlib import Path
 from bpy.app.handlers import persistent
 
@@ -48,11 +47,9 @@ class ZGSWTOR_OT_add_custom_external_swtor_shaders(bpy.types.Operator):
 
         shaders_lib_filepath = context.preferences.addons["zg_swtor_tools"].preferences.swtor_custom_shaders_blendfile_path
 
-        if Path(shaders_lib_filepath).exists() == False:
+        if not Path(shaders_lib_filepath).exists():
             self.report({"WARNING"}, "Unable to find a custom SWTOR shaders .blend file. Please check this add-on's preference settings: either the path to such file hasn't been introduced or is incorrect.")
             return {"CANCELLED"}
-
-        open_blend_filepath = bpy.data.filepath
 
         swtor_shaders_path = bpy.path.native_pathsep(shaders_lib_filepath + "/NodeTree")
 
@@ -62,6 +59,8 @@ class ZGSWTOR_OT_add_custom_external_swtor_shaders(bpy.types.Operator):
         else:
             report_text_ending = "appended."
 
+        # Shaders to import. There are a few auxiliary ones
+        # because those aren't inside the main ones.
         swtor_shaders_names = [
             "SWTOR - Creature Shader",
             "SWTOR - Eye Shader",
@@ -69,7 +68,9 @@ class ZGSWTOR_OT_add_custom_external_swtor_shaders(bpy.types.Operator):
             "SWTOR - HairC Shader",
             "SWTOR - SkinB Shader",
             "SWTOR - Uber Shader",
-            "SW Template - Character's Skin Settings"
+            "SW Template - Character's Skin Settings",
+            "SW Aux - GetSpecularLookup",
+            "SW Aux - GetSpecularLookupFromSwizzledTexture",
         ]
         
         if app.version >= (3, 0, 0):

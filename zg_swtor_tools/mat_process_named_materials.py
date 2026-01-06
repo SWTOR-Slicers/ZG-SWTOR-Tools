@@ -2,7 +2,6 @@
 # PEP-8 what's that. Read my Indent Rollercoaster Model manifest!
 # So, without further ado…
 
-from ast import Pass
 import bpy
 import pathlib
 import xml.etree.ElementTree as ET
@@ -131,7 +130,7 @@ def process_mats(self, mats_list = [], obj = None, already_processed_mats = [], 
                 continue
             
             # If there is a SWTOR shader already and overwriting is off.
-            if swtor_node_in_mat and self.use_overwrite_bool == False:
+            if swtor_node_in_mat and not self.use_overwrite_bool:
                 continue
             
 
@@ -167,14 +166,14 @@ def process_mats(self, mats_list = [], obj = None, already_processed_mats = [], 
 
             
         # Check that the SWTOR shader type is one we cover    
-        if  not matxml_derived in (atroxa_shader_types + ["EmissiveOnly", "AnimatedUV"]):
+        if  matxml_derived not in (atroxa_shader_types + ["EmissiveOnly", "AnimatedUV"]):
             continue  # Entirely disregard material and go for the next one
 
         # Delete Principled Shader (and everything else) if needed
         if (
-            (self.use_overwrite_bool == True)
+            self.use_overwrite_bool
             or (matxml_derived in atroxa_shader_types and not swtor_node_in_mat)
-            or (matxml_derived in ["EmissiveOnly", "AnimatedUV"] and not "_d DiffuseMap" in mat_nodes)
+            or (matxml_derived in ["EmissiveOnly", "AnimatedUV"] and "_d DiffuseMap" not in mat_nodes)
             ):
             
             for node in mat_nodes:
@@ -234,75 +233,75 @@ def process_mats(self, mats_list = [], obj = None, already_processed_mats = [], 
             matxml_value = matxml_input.find("value").text
 
 
-            # Parsing palette1 data
-            if matxml_semantic == "palette1":
-                vectval = str(matxml_value).split(',')
-                palette1_value = [
-                    float(vectval[0]),
-                    float(vectval[1]),
-                    float(vectval[2]),
-                    float(vectval[3]),
-                    ]
+            # # Parsing palette1 data
+            # if matxml_semantic == "palette1":
+            #     vectval = str(matxml_value).split(',')
+            #     palette1_value = [
+            #         float(vectval[0]),
+            #         float(vectval[1]),
+            #         float(vectval[2]),
+            #         float(vectval[3]),
+            #         ]
 
-            if matxml_semantic == "palette1Specular":
-                vectval = str(matxml_value).split(',')
-                palette1specular_value = [
-                    float(vectval[0]),
-                    float(vectval[1]),
-                    float(vectval[2]),
-                    1.0,
-                    ]
+            # if matxml_semantic == "palette1Specular":
+            #     vectval = str(matxml_value).split(',')
+            #     palette1specular_value = [
+            #         float(vectval[0]),
+            #         float(vectval[1]),
+            #         float(vectval[2]),
+            #         1.0,
+            #         ]
 
-            if matxml_semantic == "palette1MetallicSpecular":
-                vectval = str(matxml_value).split(',')
-                palette1metallicspecular_value = [
-                    float(vectval[0]),
-                    float(vectval[1]),
-                    float(vectval[2]),
-                    1.0,
-                    ]
-
-
-            # Parsing palette2 data
-            if matxml_semantic == "palette2":
-                vectval = str(matxml_value).split(',')
-                palette2_value = [
-                    float(vectval[0]),
-                    float(vectval[1]),
-                    float(vectval[2]),
-                    float(vectval[3]),
-                    ]
-
-            if matxml_semantic == "palette2Specular":
-                vectval = str(matxml_value).split(',')
-                palette2specular_value = [
-                    float(vectval[0]),
-                    float(vectval[1]),
-                    float(vectval[2]),
-                    1.0,
-                    ]
-
-            if matxml_semantic == "palette2MetallicSpecular":
-                vectval = str(matxml_value).split(',')
-                palette2metallicspecular_value = [
-                    float(vectval[0]),
-                    float(vectval[1]),
-                    float(vectval[2]),
-                    1.0,
-                    ]
+            # if matxml_semantic == "palette1MetallicSpecular":
+            #     vectval = str(matxml_value).split(',')
+            #     palette1metallicspecular_value = [
+            #         float(vectval[0]),
+            #         float(vectval[1]),
+            #         float(vectval[2]),
+            #         1.0,
+            #         ]
 
 
-            # Parsing Flushtone and FleshBrightness
-            if matxml_semantic == "FlushTone":
-                vectval = str(matxml_value).split(',')
-                flushtone_value = [
-                    float(vectval[0]),
-                    float(vectval[1]),
-                    float(vectval[2]),
-                    ]
+            # # Parsing palette2 data
+            # if matxml_semantic == "palette2":
+            #     vectval = str(matxml_value).split(',')
+            #     palette2_value = [
+            #         float(vectval[0]),
+            #         float(vectval[1]),
+            #         float(vectval[2]),
+            #         float(vectval[3]),
+            #         ]
+
+            # if matxml_semantic == "palette2Specular":
+            #     vectval = str(matxml_value).split(',')
+            #     palette2specular_value = [
+            #         float(vectval[0]),
+            #         float(vectval[1]),
+            #         float(vectval[2]),
+            #         1.0,
+            #         ]
+
+            # if matxml_semantic == "palette2MetallicSpecular":
+            #     vectval = str(matxml_value).split(',')
+            #     palette2metallicspecular_value = [
+            #         float(vectval[0]),
+            #         float(vectval[1]),
+            #         float(vectval[2]),
+            #         1.0,
+            #         ]
+
+
+            # # Parsing Flushtone and FleshBrightness
+            # if matxml_semantic == "FlushTone":
+            #     vectval = str(matxml_value).split(',')
+            #     flushtone_value = [
+            #         float(vectval[0]),
+            #         float(vectval[1]),
+            #         float(vectval[2]),
+            #         ]
                 
-            if matxml_semantic == "FleshBrightness":
-                fleshbrightness = float(str(matxml_value))
+            # if matxml_semantic == "FleshBrightness":
+            #     fleshbrightness = float(str(matxml_value))
 
             
             # Parsing and loading texture maps
@@ -525,7 +524,7 @@ def process_mats(self, mats_list = [], obj = None, already_processed_mats = [], 
 
                 # AnimatedUV Nodegroup Settings
                 if "animTexTint" in matxml_semantic:
-                    if not "," in matxml_value:
+                    if "," not in matxml_value:
                         matxml_value = matxml_value + "," + matxml_value + "," + matxml_value
                     vect_val = matxml_value.split(',')
                     AnimatedUV_node.inputs[matxml_semantic].default_value[0] = float(vect_val[0])
@@ -609,7 +608,7 @@ def link_objects_to_collection (objects, collection, move = False):
 
     for object in objects:
         # First, unlink from any collections it is in.
-        if object.users_collection and move == True:
+        if object.users_collection and move:
             for current_collections in object.users_collection:
                 current_collections.objects.unlink(object)
 
@@ -690,7 +689,7 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
 
         # Test the existence of the shaders subfolder to validate the SWTOR "resources" folder
         # THIS SHOULDN'T BE NECCESARY WITH THE USE OF requirements_checks
-        if swtor_shaders_path.exists() == False:
+        if not swtor_shaders_path.exists():
             self.report({"WARNING"}, "Unable to find the SWTOR Materials subfolder. Please check this add-on's preferences: either the path to the extracted assets 'resources' folder is incorrect or the resources > art > shaders > materials subfolder is missing.")
             return {"CANCELLED"}
 
@@ -728,7 +727,7 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
             self.use_collect_colliders_bool = bpy.context.scene.use_collect_colliders_bool
             self.use_overwrite_bool = bpy.context.scene.use_overwrite_bool
             
-            if self.use_selection_only == True:
+            if self.use_selection_only:
                 selected_objects = bpy.context.selected_objects
             else:
                 selected_objects = bpy.data.objects
@@ -749,6 +748,7 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
             amount_processed = 0
 
             for obj in selected_objects:
+                is_collider = False
                 amount_processed += 1
                 if obj.type == "MESH":
                     
@@ -769,7 +769,7 @@ class ZGSWTOR_OT_process_named_mats(bpy.types.Operator):
 
             # Adding collider objects to a Collection
             if self.use_collect_colliders_bool and collider_objects:
-                if not "Collider Objects" in bpy.context.scene.collection.children:
+                if "Collider Objects" not in bpy.context.scene.collection.children:
                     colliders_collection = bpy.data.collections.new("Collider Objects")
                     bpy.context.scene.collection.children.link(colliders_collection)
                 else:
