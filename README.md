@@ -22,7 +22,7 @@ This Add-on relies on foundational efforts by fellow slicers, such as the **[.gr
 ## Recent changes:
 2026-01
 * Area Assembler's final texturing step no longer fails.
-* Slight redo of the Convert to Custom Shaders tool's materials to properly support DirectionMaps' normals feed for Blender 5.x and previous versions.
+* Slight redo of the Convert to Custom Shaders tool's materials to properly support DirectionMaps' vector data feed for Blender 5.x and previous versions.
 
 2025-05
 * Tentative support for Blender 4.3 and 4.4.
