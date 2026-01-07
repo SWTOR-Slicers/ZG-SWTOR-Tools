@@ -51,9 +51,9 @@ class ZGSWTOR_PT_status_3dview(bpy.types.Panel):
         tool_section_zgstatus.label(text="• Custom Shaders: " + checks["custom_shaders_status"])
         
         if (
-            checks["resources"] == False
-            or checks["custom_shaders"] == False
-            or checks["gr2"] == False
+            not checks["resources"]
+            or not checks["custom_shaders"]
+            or not checks["gr2"]
             ):
                         
             tool_section_info = layout.column(align=True)
@@ -721,7 +721,7 @@ class ZGSWTOR_PT_objects_tools(bpy.types.Panel):
         grid.operator("zgswtor.set_modifiers", text="Solidify").action = "add_solidify"
         grid.operator("zgswtor.set_modifiers", text="Smooth Corrective").action = "add_smooth_corrective"
         shbutton=grid.row(align=True)
-        shbutton.active = (bpy.context.scene.ZGshrinkwrap_target != None)
+        shbutton.active = (bpy.context.scene.ZGshrinkwrap_target is not None)
         shbutton.operator("zgswtor.set_modifiers", text="Shrinkwrap").action = "add_shrinkwrap"
         row = col.row(align=True)
         split = row.split(factor=0.57, align=True)
@@ -923,6 +923,9 @@ class ZGSWTOR_PT_baking_tools(bpy.types.Panel):
         tool_controls.prop(context.scene, "SBI_common_text_in_names", text="")
         tool_controls.prop(context.scene, "SBI_case_sensitive", text="Match Upper/Lower Case")
         tool_controls.operator("zgswtor.save_images_by_substring", text="Choose Destination Folder")
+     
+     
+        
 
 
 
@@ -969,9 +972,9 @@ class ZGSWTOR_PT_status_node_editor(bpy.types.Panel):
         tool_section_zgstatus.label(text="• Custom Shaders: " + checks["custom_shaders_status"])
         
         if (
-            checks["resources"] == False
-            or checks["custom_shaders"] == False
-            or checks["gr2"] == False
+            not checks["resources"]
+            or not checks["custom_shaders"]
+            or not checks["gr2"]
             ):
                         
             tool_section_info = layout.column(align=True)
@@ -1011,7 +1014,7 @@ class ZGSWTOR_PT_shader_tools(bpy.types.Panel):
         # ------------------------
         tool_section = layout.box().column(align=True)
         
-        tool_section.enabled = checks["resources"] and checks["gr2"] and bpy.context.material != None
+        tool_section.enabled = checks["resources"] and checks["gr2"] and bpy.context.material is not None
         tool_section.alert = not checks["resources"] and checks["gr2"]
 
         tool_section.label(text="Named Materials Processor")
@@ -1037,7 +1040,7 @@ class ZGSWTOR_PT_shader_tools(bpy.types.Panel):
 
         # tool_section.operator("zgswtor.skinsettings_ng_in_shader_editor", text="Add existing Skin Settings Group").action="ADD_EXISTING_SKINSETTINGS"
         # build skinsettings nodegroups list
-        skinsettings_nodegroups = []
+        # skinsettings_nodegroups = []
         # for ng in bpy.data.node_groups:
         #     if "Skin Settings" in ng.name and not "Template" in ng.name:
         #         skinsettings_nodegroups.append(ng)

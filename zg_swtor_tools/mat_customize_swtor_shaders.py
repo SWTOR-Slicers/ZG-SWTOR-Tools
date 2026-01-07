@@ -1,6 +1,4 @@
 import bpy
-import os
-from pathlib import Path
 
 from .utils.addon_checks import requirements_checks
 
@@ -133,7 +131,7 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
         # I'm reading the selected objects here because for some reason
         # if I execute the external shaders linker the selection is lost.
-        if self.use_selection_only == True:
+        if self.use_selection_only:
             selected_objs = context.selected_objects
         else:
             selected_objs = bpy.data.objects
@@ -225,7 +223,7 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
 
                                     # Create texture node if it doesn't previously exist
                                     # Adjust position, size and other details
-                                    if not new_node_input_name in mat_nodes:
+                                    if new_node_input_name not in mat_nodes:
                                         txtr_node = mat_nodes.new(type='ShaderNodeTexImage')
                                         txtr_node.name = txtr_node.label = new_node_input_name
                                     else:
@@ -234,10 +232,14 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                                     
                                     txtr_node.location = (-350 - new_node_input_index * 16,
                                                           nodes_io_y_offset - new_node_input_index * nodes_io_y_incrmt)
+                                    # RotationMap's repositioning to accomodate feeding DirectionMaps' normals
+                                    if derived in ['CREATURE', 'SKINB', 'HAIRC'] and "rotation" in txtr_node.name.lower():
+                                        txtr_node.location[0] = txtr_node.location[0] - 360
+                                        rotMap_node = txtr_node
                                     
-                                    txtr_node.width = 300
+                                    txtr_node.width = 300.0
                                     if blender_version < 4:
-                                        txtr_node.width_hidden = 300
+                                        txtr_node.width_hidden = 300.0
                                     txtr_node.hide = True
 
                                     #link it to the SWTOR nodegroup (Color and Alpha)
@@ -245,34 +247,34 @@ class ZGSWTOR_OT_customize_swtor_shaders(bpy.types.Operator):
                                     mat_links.new(txtr_node.outputs[1], new_node.inputs[new_node_input_index+1])
 
                                     # Assign image to the texturemap node.
-                                    # If it has no assigned image, mute the node
+                                    # If it has no assigned image, mute the node.
                                     if atroxa_node[self.new_txmaps_to_atroxa[new_node_input_name] ]:
                                         txtr_node.image = atroxa_node[self.new_txmaps_to_atroxa[new_node_input_name] ]
                                     else:
                                         txtr_node.mute = True
 
-                                    # Create the links for feeding a DirectionMap with
-                                    # the Specular Lookup calculated inside the Nodegroup
+                                    # If the texture node was a DirectionMap, add a normals converter node
+                                    # and related links to RotationMap and DirectionMap.
                                     if new_node_input_name == "DirectionMap":
+                                        dirMap_node = txtr_node
+                                        # Add SWTOR Nodegroup
+                                        normals_convert_node = mat_nodes.new(type='ShaderNodeGroup')
+                                        normals_convert_node.node_tree = bpy.data.node_groups["SW Aux - GetSpecularLookupFromSwizzledTexture"]
 
-                                        bottom_y = ( -len(new_node.inputs) - len(new_node.outputs) - 20) * nodes_io_y_incrmt
+                                        normals_convert_node.width = 150.0
+                                        normals_convert_node.name = "SW Aux - GetSpecularFromSwizzledTexture"
+                                        normals_convert_node.location = txtr_node.location[0] - 180.0, txtr_node.location[1]
+                                        normals_convert_node.hide = True
+                                        normals_convert_node.use_custom_color = True
+                                        normals_convert_node.color = (0.0, 0.0, 0.0)
+
+                                        mat_links.new(rotMap_node.outputs[0], normals_convert_node.inputs[0])
+                                        mat_links.new(rotMap_node.outputs[1], normals_convert_node.inputs[1])
+
+                                        mat_links.new(normals_convert_node.outputs[0], dirMap_node.inputs[0])
                                         
-                                        rerouter_1 = mat_nodes.new(type="NodeReroute")
-                                        rerouter_1.location = 350, txtr_node.location[1]-10
-                                        rerouter_2 = mat_nodes.new(type="NodeReroute")
-                                        rerouter_2.location = 350, bottom_y
-                                        rerouter_3 = mat_nodes.new(type="NodeReroute")
-                                        rerouter_3.location = -650, bottom_y
-                                        rerouter_4 = mat_nodes.new(type="NodeReroute")
-                                        rerouter_4.location = -650, txtr_node.location[1]-10
                                         
-                                        mat_links.new(new_node.outputs["DirectionMap Vector"], rerouter_1.inputs[0])
-                                        mat_links.new(rerouter_1.outputs[0], rerouter_2.inputs[0])
-                                        mat_links.new(rerouter_2.outputs[0], rerouter_3.inputs[0])
-                                        mat_links.new(rerouter_3.outputs[0], rerouter_4.inputs[0])
-                                        mat_links.new(rerouter_4.outputs[0], txtr_node.inputs[0])
-                                        
-                        if context.scene.preserve_atroxa_bool == True:
+                        if context.scene.preserve_atroxa_bool:
                             # Reposition smart shader out of the way
                             atroxa_node.location = 600, 0
                         else:
