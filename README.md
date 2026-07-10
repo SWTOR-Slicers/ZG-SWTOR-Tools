@@ -1,9 +1,17 @@
 # ZeroGravitas' SWTOR Tools.
 
-* ### Requires downloading the latest .gr2 Importer Add-on (it is included in this one's [latest release's page](https://github.com/SWTOR-Slicers/ZG-SWTOR-Tools/releases/latest)).
-* **Now compatible with Blender 5.x.**
-* **NPC import including Creature-type ones works far better now.**
-* **Compatible with Game Update 7.6 and higher's Modernized PC/NPC skin textures:** depending on which resources folder is selected in the add-on's Preferences (extracted before or after Game Update 7.6), the tool gets the correct classic or modernized results.
+* ### Requires [Blender 3.6.23](https://www.blender.org/download/lts/3-6/) (last LTS release in that series) as a minimum.
+  Sadly, during 3.6.x' run, a bug regression in Blender nuked our SWTOR shaders' custom panels, making the supporting of these add-ons a real chore. **We *really* need you to be up to date with your Blender LTS editions' minor versions** (the third number, such as 3.6.**23**). 
+
+  This regression has occurred in other series, such as 4.0.x and 4.1.x (which were *terrible* due to their transitional state). Generally we try to be compatible with them all but, realistically, we can only offer support for LTS Blenders (3.6, 4.2, 4.5, soon 5.2), and their very latest minor versions, at that. 
+* ### The Character Assembler tool is now compatible with Jedipedia.net's new NPC exporter (using the matched version of the [.gr2 Importer Add-on](https://github.com/SWTOR-Slicers/Granny2-Plug-In-Blender-2.8x/releases/latest) included in this one's release page).
+
+  As Jedipedia exports plain JSON files instead of a zipped enclosing folder, it is recommended to put the file in a folder of your own. The add-on will create the appropriate Models and Materials subfolders inside instead of carelessly dropping them around.
+
+  At the moment no skeletons are gathered: we have to find them manually. This will be solved ASAP.
+* ### Compatible with Game Update 7.6 and higher's Modernized PC/NPC skin textures.
+
+  Depending on which resources folder is selected in the add-on's Preferences (extracted before or after Game Update 7.6), the tool gets the correct classic or modernized results. Check the Character Assembler tool's guide for details.
 
 ---
 
@@ -20,15 +28,10 @@ This Add-on relies on foundational efforts by fellow slicers, such as the **[.gr
 
 
 ## Recent changes:
-2026-01
-* Area Assembler's final texturing step no longer fails.
-* Slight redo of the Convert to Custom Shaders tool's materials to properly support DirectionMaps' vector data feed for Blender 5.x and previous versions.
+2026-07
+* Support for Jedipedia.net's new NPC JSON export: it accepts .json files with arbitrary names, and handles missing skeletons without crashing.
+* We are imposing Blender 3.6.23 LTS as the minimum required version of Blender, to avoid regressions and bugs out of our control that crash our tools.
 
-2025-05
-* Tentative support for Blender 4.3 and 4.4.
-* New Named Materials Processor tool in the Shader Editor.
-* Revised, simplified EmissiveOnly material.
-* Attempt at substituting unsupported SWTOR shaders with their closest supported ones (might backfire). To check a material's original shader, check Blender's Material Inspector's Custom Properties subpanel.
 
 2025-02
 

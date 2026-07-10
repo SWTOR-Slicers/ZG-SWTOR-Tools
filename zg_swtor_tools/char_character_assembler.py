@@ -94,13 +94,6 @@ def replace_json_data_with_mat_data(json_data, swtor_resources_folderpath):
                                 if ddsPath_key in modern_textures.keys():
                                     ddsPaths[ddsPath_key] = modern_textures[ddsPath_key]
 
-
-
-
-
-
-
-
 def bind_objects_to_armature(objects, armature, single_armature_only=True):
     """
     Bind a set of objects to an armature, producing Armature Modifiers in the process.
@@ -393,7 +386,7 @@ def duplicate_obj(obj_or_obj_name):
         if prop != "_RNA_UI":  # Ignore the RNA UI property
             new_obj[prop] = obj[prop]
     
-# Copy all modifiers
+    # Copy all modifiers
     for mod in obj.modifiers:
         new_mod = new_obj.modifiers.new(name=mod.name, type=mod.type)
         for attr in dir(mod):
@@ -645,7 +638,7 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
 
 
     # Properties
-    
+    # region
     gather_only: bpy.props.BoolProperty(
         name="Gather Assets Only",
         description="Don't Import The Character, and just copy the required assets\nto the Character's folder",
@@ -716,7 +709,8 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
         # options={'HIDDEN'}
     )
 
-
+    # endregion
+    
     # File Browser for selecting paths.json file
     def invoke(self, context, event):
 
@@ -803,16 +797,26 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
         print()
 
         # Check for the existence of a "black.dds" file in resources/art/defaultassets and add one if missing
+        # THIS IS ONLY NECESSARY FOR OLD SLICERS GUI APP'S ASSET EXTRACTIONS
         if swtor_resources_folderpath:
             place_black_dds(swtor_resources_folderpath)
 
 
-        if self.filepath.endswith("paths.json") == False:
-            self.report({"WARNING"}, "The selected file isn't a 'path.json' file. Please select a correct one.")
-            bpy.context.window.cursor_set("DEFAULT")  # Show normal cursor icon
-            return {"CANCELLED"}
+        # WE ARE RETIRING THIS CHECK, AS NEW JEDIPEDIA TOOLS PRODUCE .JSON FILES
+        # WITH COMPLEX, INFORMATIVE NAMES WHICH WE'D RATHER DON'T MANUALLY RENAME
+        # ANYMORE. FILE VALIDATION IS DONE AT THE PARSING OF THE .JSON DATA. 
+        # if self.filepath.endswith("paths.json") == False:
+        #     self.report({"WARNING"}, "The selected file isn't a 'path.json' file. Please select a correct one.")
+        #     bpy.context.window.cursor_set("DEFAULT")  # Show normal cursor icon
+        #     return {"CANCELLED"}
         
-        character_folder_name = Path(self.filepath).parent.parent.name
+        
+        # If the JSON file isn't part of a TORC folder, use as name of the
+        # character the name of the JSON file.
+        if self.filepath == "paths.json":
+            character_folder_name = Path(self.filepath).parent.parent.name        
+        else:
+            character_folder_name = Path(self.filepath).stem
 
         body_coll_name_in_outliner = "BODY"
         gear_coll_name_in_outliner = "GEAR"
@@ -825,66 +829,99 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
             
             files_to_copy = []
             
-            with open(self.filepath, 'r') as file:
-                json_data = json.load(file)
-                
-                # Fill list of files to copy to character folder
-                
-                character_models_folderpath = str( Path(self.filepath).parent / "models" )
-                character_materials_folderpath = str( Path(self.filepath).parent / "materials" )
-                character_skeleton_folderpath = str( Path(self.filepath).parent / "skeleton" )
-                
-                replace_json_data_with_mat_data(json_data, swtor_resources_folderpath)
-                
-                
-                # Save corrected .json info
-                corrected_json_data_filepath = str(self.filepath).replace("paths.json", "paths_corrected.json")
-
-                with open(corrected_json_data_filepath, 'w', encoding='utf-8') as json_file:
-                    json.dump(json_data, json_file, indent=4)
+            try:
+                # Attempt to open the file in read mode
+                with open(self.filepath, 'r') as f:
+                    json_data = json.load(f)
+                    print("File opened successfully!")
+            except json.JSONDecodeError:
+                print(f"Error: The content of the file {self.filepath} is not valid JSON.")
+                self.report({"WARNING"}, "The content of the file is not valid JSON data.")
+                bpy.context.window.cursor_set("DEFAULT")  # Show normal cursor icon
+                return {"CANCELLED"}
 
 
+            # SWTOR paths .json File validation
+            # (check for the existence of 'slotName' key:values in any element of the JSON data)
+            if not any(json_obj.get("slotName") for json_obj in json_data):
+                self.report({"WARNING"}, "The selected file isn't a PC or NPC JSON file.")
+                bpy.context.window.cursor_set("DEFAULT")  # Show normal cursor icon
+                return {"CANCELLED"}
+                
+            
+            # Fill list of files to copy to character folder
+            
+            character_models_folderpath = str( Path(self.filepath).parent / "models" )
+            character_materials_folderpath = str( Path(self.filepath).parent / "materials" )
+            character_skeleton_folderpath = str( Path(self.filepath).parent / "skeleton" )
+            
+            replace_json_data_with_mat_data(json_data, swtor_resources_folderpath)
+            
+            
+            # Save corrected .json info
+            corrected_json_data_filepath = str(self.filepath).replace("paths.json", "paths_corrected.json")
 
-                for element in json_data:
+            with open(corrected_json_data_filepath, 'w', encoding='utf-8') as json_file:
+                json.dump(json_data, json_file, indent=4)
+
+
+
+            for element in json_data:
+                if "slotName" not in element:
+                    # for stuff like metadata, skeleton data, etc.
+                    continue  
+                
+                slotName = element["slotName"]
+                
+                if slotName != "skinMats":
                     
-                    slotName = element["slotName"]
+                    # NOT SKIN MATERIALS
                     
-                    if slotName != "skinMats":
-                        
-                        # NOT SKIN MATERIALS
-                        
-                        if "models" in element:
-                            models =  element["models"]
-                            if models:
-                                for model in models:
-                                    if model[0:1] == "\\" or model[0:1] == "/":
-                                        model = model[1:]
-                                    origin = str( Path(swtor_resources_folderpath) / Path(model) )
-                                    destination = str( Path(character_models_folderpath) / slotName / Path(model).name )
-                                    files_to_copy.append([slotName, "model", origin, destination, ""])
-                                
-                        if "materialInfo" in element:
-                            materialInfo = element["materialInfo"]
+                    if "models" in element:
+                        models =  element["models"]
+                        if models:
+                            for model in models:
+                                if model[0:1] == "\\" or model[0:1] == "/":
+                                    model = model[1:]
+                                origin = str( Path(swtor_resources_folderpath) / Path(model) )
+                                destination = str( Path(character_models_folderpath) / slotName / Path(model).name )
+                                files_to_copy.append([slotName, "model", origin, destination, ""])
                             
-                            if "matPath" in materialInfo:
-                                matPath = materialInfo["matPath"]
-                                if matPath[0:1] == "\\" or matPath[0:1] == "/":
-                                    matPath = matPath[1:]
-                                origin = str( Path(swtor_resources_folderpath) / Path(matPath) )
-                                destination = str( Path(character_materials_folderpath) / slotName / Path(matPath).name )
-                                files_to_copy.append([slotName, "material definition", origin, destination, ""])
-                                
-                                additional_texturemaps = get_wrinkles_and_directionmaps(origin)
-                                if additional_texturemaps:
-                                    for additional_texturemap in additional_texturemaps:
-                                        if additional_texturemap[0:1] == "\\" or additional_texturemap[0:1] == "/":
-                                            additional_texturemap = additional_texturemap[1:]
-                                        origin = str( Path(swtor_resources_folderpath) / Path(additional_texturemap) )
-                                        destination = str( Path(character_materials_folderpath) / slotName / Path(additional_texturemap).name )
+                    if "materialInfo" in element:
+                        materialInfo = element["materialInfo"]
+                        
+                        if "matPath" in materialInfo:
+                            matPath = materialInfo["matPath"]
+                            if matPath[0:1] == "\\" or matPath[0:1] == "/":
+                                matPath = matPath[1:]
+                            origin = str( Path(swtor_resources_folderpath) / Path(matPath) )
+                            destination = str( Path(character_materials_folderpath) / slotName / Path(matPath).name )
+                            files_to_copy.append([slotName, "material definition", origin, destination, ""])
+                            
+                            additional_texturemaps = get_wrinkles_and_directionmaps(origin)
+                            if additional_texturemaps:
+                                for additional_texturemap in additional_texturemaps:
+                                    if additional_texturemap[0:1] == "\\" or additional_texturemap[0:1] == "/":
+                                        additional_texturemap = additional_texturemap[1:]
+                                    origin = str( Path(swtor_resources_folderpath) / Path(additional_texturemap) )
+                                    destination = str( Path(character_materials_folderpath) / slotName / Path(additional_texturemap).name )
+                                    files_to_copy.append([slotName, "texture map", origin, destination, ""])
+
+                        if "ddsPaths" in materialInfo:
+                            ddsPaths = materialInfo["ddsPaths"]
+                            if ddsPaths:
+                                for ddsPath in ddsPaths:
+                                    if ddsPaths[ddsPath].endswith(".dds"):
+                                        ddsPath = ddsPaths[ddsPath]
+                                        if ddsPath[0:1] == "\\" or ddsPath[0:1] == "/":
+                                            ddsPath = ddsPath[1:]
+                                        origin = str( Path(swtor_resources_folderpath) / Path(ddsPath) )
+                                        destination = str( Path(character_materials_folderpath) / slotName / Path(ddsPath).name )
                                         files_to_copy.append([slotName, "texture map", origin, destination, ""])
 
-                            if "ddsPaths" in materialInfo:
-                                ddsPaths = materialInfo["ddsPaths"]
+                        if "eyeMatInfo" in materialInfo:
+                            if "ddsPaths" in materialInfo["eyeMatInfo"]:
+                                ddsPaths = materialInfo["eyeMatInfo"]["ddsPaths"]
                                 if ddsPaths:
                                     for ddsPath in ddsPaths:
                                         if ddsPaths[ddsPath].endswith(".dds"):
@@ -892,133 +929,122 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
                                             if ddsPath[0:1] == "\\" or ddsPath[0:1] == "/":
                                                 ddsPath = ddsPath[1:]
                                             origin = str( Path(swtor_resources_folderpath) / Path(ddsPath) )
-                                            destination = str( Path(character_materials_folderpath) / slotName / Path(ddsPath).name )
-                                            files_to_copy.append([slotName, "texture map", origin, destination, ""])
-
-                            if "eyeMatInfo" in materialInfo:
-                                if "ddsPaths" in materialInfo["eyeMatInfo"]:
-                                    ddsPaths = materialInfo["eyeMatInfo"]["ddsPaths"]
-                                    if ddsPaths:
-                                        for ddsPath in ddsPaths:
-                                            if ddsPaths[ddsPath].endswith(".dds"):
-                                                ddsPath = ddsPaths[ddsPath]
-                                                if ddsPath[0:1] == "\\" or ddsPath[0:1] == "/":
-                                                    ddsPath = ddsPath[1:]
-                                                origin = str( Path(swtor_resources_folderpath) / Path(ddsPath) )
-                                                destination = str( Path(character_materials_folderpath) / "eye" / Path(ddsPath).name )
-                                                files_to_copy.append(["eye", "texture map", origin, destination, ""])
+                                            destination = str( Path(character_materials_folderpath) / "eye" / Path(ddsPath).name )
+                                            files_to_copy.append(["eye", "texture map", origin, destination, ""])
 
 
-                    else:
+                else:
 
-                        # SKIN MATERIALS (the dict hierarchy gets deeper and more confusing)
-                        
-                        if "materialInfo" in element:
-                            if "mats" in element["materialInfo"]:
-                                mats = element["materialInfo"]["mats"]
-                                for mat in mats:
-                                    mat_slotName = mat["slotName"]
-                                    
-                                    if "materialInfo" in mat:
-                                        mat_materialInfo = mat["materialInfo"]
+                    # SKIN MATERIALS (the dict hierarchy gets deeper and more confusing)
+                    
+                    if "materialInfo" in element:
+                        if "mats" in element["materialInfo"]:
+                            mats = element["materialInfo"]["mats"]
+                            for mat in mats:
+                                mat_slotName = mat["slotName"]
+                                
+                                if "materialInfo" in mat:
+                                    mat_materialInfo = mat["materialInfo"]
 
-                                        if "matPath" in mat_materialInfo:
-                                            matPath = materialInfo["matPath"]
-                                            if matPath[0:1] == "\\" or matPath[0:1] == "/":
-                                                matPath = matPath[1:]
-                                            origin = str( Path(swtor_resources_folderpath) / Path(matPath) )
-                                            destination = str( Path(character_materials_folderpath) / slotName / mat_slotName / Path(mat_materialInfo["matPath"]).name )
-                                            files_to_copy.append([slotName + ": " + mat_slotName, "material definition", origin, destination, ""])
+                                    if "matPath" in mat_materialInfo:
+                                        matPath = materialInfo["matPath"]
+                                        if matPath[0:1] == "\\" or matPath[0:1] == "/":
+                                            matPath = matPath[1:]
+                                        origin = str( Path(swtor_resources_folderpath) / Path(matPath) )
+                                        destination = str( Path(character_materials_folderpath) / slotName / mat_slotName / Path(mat_materialInfo["matPath"]).name )
+                                        files_to_copy.append([slotName + ": " + mat_slotName, "material definition", origin, destination, ""])
 
-                                    if "ddsPaths" in mat:
-                                        mat_ddsPaths = mat["ddsPaths"]
-                                        if mat_ddsPaths:
-                                            for ddsPath in mat_ddsPaths:
-                                                if mat_ddsPaths[ddsPath].endswith(".dds"):
-                                                    mat_ddsPath = mat_ddsPaths[ddsPath]
-                                                    if mat_ddsPath[0:1] == "\\" or mat_ddsPath[0:1] == "/":
-                                                        mat_ddsPath = mat_ddsPath[1:]
-                                                    origin = str( Path(swtor_resources_folderpath) / Path(mat_ddsPath) )
-                                                    destination = str( Path(character_materials_folderpath) / slotName / mat_slotName / Path(mat_ddsPath).name )
-                                                    files_to_copy.append([slotName + ": " + mat_slotName, "texture map", origin, destination, ""])
+                                if "ddsPaths" in mat:
+                                    mat_ddsPaths = mat["ddsPaths"]
+                                    if mat_ddsPaths:
+                                        for ddsPath in mat_ddsPaths:
+                                            if mat_ddsPaths[ddsPath].endswith(".dds"):
+                                                mat_ddsPath = mat_ddsPaths[ddsPath]
+                                                if mat_ddsPath[0:1] == "\\" or mat_ddsPath[0:1] == "/":
+                                                    mat_ddsPath = mat_ddsPath[1:]
+                                                origin = str( Path(swtor_resources_folderpath) / Path(mat_ddsPath) )
+                                                destination = str( Path(character_materials_folderpath) / slotName / mat_slotName / Path(mat_ddsPath).name )
+                                                files_to_copy.append([slotName + ": " + mat_slotName, "texture map", origin, destination, ""])
 
 
-                # If there is a companion "skeleton.json" file, process it too.
-                skeleton_exists = False
-                skeleton_filepath = Path(self.filepath).parent / "skeleton.json"
-                try:
-                    with open(skeleton_filepath, 'r') as skeleton_file:
-                        json_data = json.load(skeleton_file)
-                        if "path" in json_data:
-                            skeleton_model = json_data["path"]
-                            if skeleton_model:
-                                # Creature-type NPCs might have wrong info from TORC, having a "new" bit
-                                # in their names that normally exists only in the eight basic humanoid skeletons.
+            # If there is a companion "skeleton.json" file, process it too.
+            skeleton_exists = False
+            skeleton_filepath = Path(self.filepath).parent / "skeleton.json"
+            try:
+                with open(skeleton_filepath, 'r') as skeleton_file:
+                    json_data = json.load(skeleton_file)
+                    if "path" in json_data:
+                        skeleton_model = json_data["path"]
+                        if skeleton_model:
+                            # Creature-type NPCs might have wrong info from TORC, having a "new" bit
+                            # in their names that normally exists only in the eight basic humanoid skeletons.
+                            origin = str( Path(swtor_resources_folderpath) / Path(skeleton_model[1:]) )
+                            if not Path(origin).exists():
+                                skeleton_model = str(Path(skeleton_model).parent / Path( str( Path(skeleton_model).name ).replace("new", "") ))
                                 origin = str( Path(swtor_resources_folderpath) / Path(skeleton_model[1:]) )
-                                if not Path(origin).exists():
-                                    skeleton_model = str(Path(skeleton_model).parent / Path( str( Path(skeleton_model).name ).replace("new", "") ))
-                                    origin = str( Path(swtor_resources_folderpath) / Path(skeleton_model[1:]) )
-                                    
-                                    json_data["path"] = skeleton_model.replace("\\", "/")
-                                    skeleton_corrected_filepath = Path(self.filepath).parent / "skeleton_corrected.json"
-                                    with open(skeleton_corrected_filepath, 'w') as skeleton_corrected_file:
-                                        json.dump(json_data, skeleton_corrected_file)
-                                    
-                                destination = str( Path(character_skeleton_folderpath) / Path(skeleton_model).name )
-                                files_to_copy.append(["Skeleton", "model", origin, destination, ""])
-                                skeleton_exists = True
-                except Exception as error:
-                    pass
-                
+                                
+                                json_data["path"] = skeleton_model.replace("\\", "/")
+                                skeleton_corrected_filepath = Path(self.filepath).parent / "skeleton_corrected.json"
+                                with open(skeleton_corrected_filepath, 'w') as skeleton_corrected_file:
+                                    json.dump(json_data, skeleton_corrected_file)
+                                
+                            destination = str( Path(character_skeleton_folderpath) / Path(skeleton_model).name )
+                            files_to_copy.append(["Skeleton", "model", origin, destination, ""])
+                            skeleton_exists = True
+            except FileNotFoundError:
+                print("Error: there is no 'skeleton.json' file next to this one.\nNo skeleton object filepath could be read.")
+                print("This is to be expected if the JSON file is a NPC exported from Jedipedia.net.")
+                self.report({"WARNING"}, "There is no 'skeleton.json' file next to this one. No skeleton object filepath could be read.")
+            
 
 
 
-                # Process list of files to copy to character folder
-                
-                errors_report = []
-                body_part_heading = ""
-                
-                if files_to_copy:
-                    for element in files_to_copy:
-                        body_part = element[0]
-                        asset_type = element[1]
-                        origin = element[2]
-                        destination = element[3]
-                        report = element[4]
-                        
-                        if body_part != body_part_heading:
-                            print()
-                            print(f"{body_part.upper()} ASSETS")
-                            print("-" * 80)
-                            body_part_heading = body_part
-                            
-                        print(f"{asset_type.upper()}\nFROM: {origin}\nTO  : {destination}")
-
-                        # If any of the destination folders doesn't exist, create it
-                        # ('eye', typically, plus any new one such as 'skeleton')
-                        if Path(destination).parent.exists() == False:
-                            try:
-                                os.makedirs(Path(destination).parent, mode=0o777, exist_ok=True) # mode required to make folders user-accessible
-                                # Path(destination).parent.makedirs(parents=False, exist_ok=True)
-                                print("Creating " + str(Path(destination).parent) + "folder.\n")
-                            except Exception as e:
-                                print("ERROR!!!--------: The folder ",destination," didn't exist and when trying to create it an error occurred:\n",e,"\n")
-                        
-                        if Path(destination).exists() == True and self.dont_overwrite == True:
-                            print("FILE ALREADY EXISTS IN DESTINATION. PRESERVED")
-                        else:
-                            # File copy as such:
-                            if not ( destination.endswith('\\.dds') or destination.endswith('/.dds') ):
-                                try:
-                                    shutil.copy2(origin, destination)
-                                    print("COPIED")
-                                except Exception as e:
-                                    print("ERROR!!!-------- ", str(e))
-                                    print()
-                                    errors_report.append(body_part + " - " + asset_type + " - " + str(origin))
-                        
+            # Process list of files to copy to character folder
+            
+            errors_report = []
+            body_part_heading = ""
+            
+            if files_to_copy:
+                for element in files_to_copy:
+                    body_part = element[0]
+                    asset_type = element[1]
+                    origin = element[2]
+                    destination = element[3]
+                    report = element[4]
+                    
+                    if body_part != body_part_heading:
                         print()
-                            
+                        print(f"{body_part.upper()} ASSETS")
+                        print("-" * 80)
+                        body_part_heading = body_part
+                        
+                    print(f"{asset_type.upper()}\nFROM: {origin}\nTO  : {destination}")
+
+                    # If any of the destination folders doesn't exist, create it
+                    # ('eye', typically, plus any new one such as 'skeleton')
+                    if Path(destination).parent.exists() == False:
+                        try:
+                            os.makedirs(Path(destination).parent, mode=0o777, exist_ok=True) # mode required to make folders user-accessible
+                            # Path(destination).parent.makedirs(parents=False, exist_ok=True)
+                            print("Creating " + str(Path(destination).parent) + "folder.\n")
+                        except Exception as e:
+                            print("ERROR!!!--------: The folder ",destination," didn't exist and when trying to create it an error occurred:\n",e,"\n")
+                    
+                    if Path(destination).exists() == True and self.dont_overwrite == True:
+                        print("FILE ALREADY EXISTS IN DESTINATION. PRESERVED")
+                    else:
+                        # File copy as such:
+                        if not ( destination.endswith('\\.dds') or destination.endswith('/.dds') ):
+                            try:
+                                shutil.copy2(origin, destination)
+                                print("COPIED")
+                            except Exception as e:
+                                print("ERROR!!!-------- ", str(e))
+                                print()
+                                errors_report.append(body_part + " - " + asset_type + " - " + str(origin))
+                    
+                    print()
+                        
             print("ASSETS COPYING DONE!")
             print()
             if errors_report:
@@ -1150,7 +1176,7 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
                     print("NO OBJECT WITH FACIAL FEATURES TO SEPARATE EYES FROM.\n")
 
             # Importing skeleton, if any, using Atroxa's .gr2 Importer Addon.
-            if self.import_skeleton:
+            if self.import_skeleton and skeleton_exists:
                 objects_before_importing = list(bpy.data.objects)
 
                 skeleton_filepath = str( Path(character_skeleton_folderpath) / Path(skeleton_model).name )
@@ -1194,8 +1220,7 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
 
             # COLLECTIONING
             
-            # if skeleton_exists and self.import_skeleton:
-            if self.import_skeleton:
+            if self.import_skeleton and skeleton_exists:
                 if skeleton_object:
                     link_objects_to_collection(skeleton_object, character_folder_name, create = True, move = True)
 
@@ -1226,6 +1251,9 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
                             # Collect armor parts in collections, and collect those in G
                             if armor_gear_collections:
                                 link_collections_to_collection(gear_coll_name_in_outliner, character_folder_name, create = True, move = True)
+                    else:
+                        link_objects_to_collection(armor_gear_objects, gear_coll_name_in_outliner, create = True, move = True)
+                        link_collections_to_collection(gear_coll_name_in_outliner, character_folder_name, create = True, move = True)
                 else:
                     link_objects_to_collection(armor_gear_objects, character_folder_name, create = True, move = True)
             else:

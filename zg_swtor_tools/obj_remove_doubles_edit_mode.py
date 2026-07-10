@@ -10,7 +10,7 @@ class ZGSWTOR_OT_remove_doubles_edit_mode(bpy.types.Operator):
     bl_idname = "zgswtor.remove_doubles_edit_mode"
     bl_label = "ZG Remove Doubles in Edit Mode"
     bl_options = {'REGISTER', "UNDO"}
-    bl_description = "Removes selected double vertices (does a Merge by Distance\nin selected vertices using a coarser threshold of 0.00001),\nand applies a Normals > Average > Face Area to the whole object.\n\nIf a SWTOR object, this tool will look for the mesh scale it was\nimported with, to adjust the threshold accordingly.\n\n• Requires switching to Edit Mode.\n• Requires a selection of faces/edges/vertices."
+    bl_description = "Removes selected double vertices (does a Merge by Distance\nin selected vertices using a coarser threshold of 0.00001).\n\nIf a SWTOR object, this tool will look for the mesh scale it was\nimported with, to adjust the threshold accordingly.\n\n• Requires switching to Edit Mode.\n• Requires a selection of faces/edges/vertices."
 
     # Check that we are in Edit mode
     # and that we are editing a single object
