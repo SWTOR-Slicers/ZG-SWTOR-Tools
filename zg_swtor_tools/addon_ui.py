@@ -292,7 +292,7 @@ class ZGSWTOR_PT_character_tools(bpy.types.Panel):
             tool_section_info.alert = False
 
         tool_section.scale_y = 1.0
-        tool_section.operator("zgswtor.character_assembler", text="Select 'paths.json' File")
+        tool_section.operator("zgswtor.character_assembler", text="Select PC / NPC JSON File")
         
         # Options whose availability depends on a 'resources' folder in Preferences
         tool_section_dimmables = tool_section.column(align=True)

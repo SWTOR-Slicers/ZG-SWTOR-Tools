@@ -631,7 +631,8 @@ def set_obj_origin(obj_or_obj_name, new_origin):
 class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
     bl_label = "SWTOR Character Assembler"
     bl_idname = "zgswtor.character_assembler"
-    bl_description = "Processes the 'path.json' file in a Player Character/NPC folder\nexported by TORCommunity.com, filling its subfolders with all\nrelated objects and textures, then importing the Character\n\n• Requires setting the path to a 'resources' folder in this addon's Preferences.\n• Requires an enabled modern .gr2 Importer Addon (not the Legacy version)"
+    bl_description = "Select the JSON file of the Player Character or NPC to assemble.\n\n-TORCommunity.com's PC / NPC files:\n\n  Select the 'path.json' file inside a PC / NPC folder.\n  This tool will gather the required objects and textures\n  in its subfolders, and then assemble them.\n\n-Jedipedia.net's NPC files:\n\n  (We recommend to place the JSON file saved from Jedipedia\n  inside a folder so that everything is neatly grouped)\n\n  Select the saved JSON file. This tool will create, next to it,\n  Models and Materials folders where to gather the requisite\n  objects and textures, and then assemble them.\n\n\n• Requires setting the path to a 'resources' folder in this addon's Preferences.\n\n• Requires an enabled .gr2 Importer Add-on"
+
     bl_options = {'REGISTER', 'UNDO'}
 
     filepath: bpy.props.StringProperty(subtype='FILE_PATH')
