@@ -31,7 +31,6 @@ ADDON_ROOT = __file__.rsplit(__name__.rsplit(".")[0])[0] + __name__.rsplit(".")[
 # Aux Functions
 # region
 
-
 def extract_mat_texture_data(mat_file_abs_path):
     with open(mat_file_abs_path, 'r') as mat_file:
         tree = ET.parse(mat_file)
@@ -61,6 +60,8 @@ def replace_json_data_with_mat_data(json_data, swtor_resources_folderpath):
     for elem in json_data:
         if "slotName" in elem:
             slotName = elem["slotName"]
+            if slotName == "meta":
+                continue
             if slotName != "skinMats":
                 if not elem["materialInfo"]:
                     continue
@@ -121,46 +122,48 @@ def bind_objects_to_armature(objects, armature, single_armature_only=True):
                 # implementing it, it would be bpy.ops.object.parent_set(type='ARMATURE_AUTO')
 
 # THIS VARIANT IS NOT IN USE
-def bind_objects_to_armature_ops_version(objects, armature, automatic_weights=False):
-    """
-    Bind a set of objects to an armature, producing Armature Modifiers in the process.
+# def bind_objects_to_armature_ops_version(objects, armature, automatic_weights=False):
+# region
+#     """
+#     Bind a set of objects to an armature, producing Armature Modifiers in the process.
 
-    :param objects: A list of objects to be bound to the armature
-    :param armature: The armature object
-    :param automatic_weights: calculate automatic weights while parenting the objects
-    """
-    # Make sure the armature is in Object mode
-    bpy.ops.object.mode_set(mode='OBJECT')
+#     :param objects: A list of objects to be bound to the armature
+#     :param armature: The armature object
+#     :param automatic_weights: calculate automatic weights while parenting the objects
+#     """
+#     # Make sure the armature is in Object mode
+#     bpy.ops.object.mode_set(mode='OBJECT')
 
-    # Loop through each object in the list
-    for obj in objects:
-        # Ensure we are in Object mode
-        bpy.ops.object.mode_set(mode='OBJECT')
+#     # Loop through each object in the list
+#     for obj in objects:
+#         # Ensure we are in Object mode
+#         bpy.ops.object.mode_set(mode='OBJECT')
         
-        # Select the object
-        bpy.context.view_layer.objects.active = obj
-        obj.select_set(True)
+#         # Select the object
+#         bpy.context.view_layer.objects.active = obj
+#         obj.select_set(True)
 
-        # Add an Armature modifier to the object
-        mod = obj.modifiers.new(name="Armature", type='ARMATURE')
-        mod.object = armature
+#         # Add an Armature modifier to the object
+#         mod = obj.modifiers.new(name="Armature", type='ARMATURE')
+#         mod.object = armature
 
-        # THIS MIGHT HAVE ISSUES DONE AT THIS STEP, BECAUSE 'ARMATURE'
-        # DOUBLE-DIPS ON WHAT THE MODIFIER IS DOING ALREADY. MAYBE BETTER
-        # TO PARENT FIRST FOR 'ARMATURE-AUTO', THEN UNPARENT, THEN
-        # ADD THE MODIFIER, THEN PARENT NORMALLY.
-        if automatic_weights:
-            # Parent the object to the armature with automatic weights
-            bpy.ops.object.parent_set(type='ARMATURE_AUTO')
-        else:
-            bpy.ops.object.parent_set(type='ARMATURE')
+#         # THIS MIGHT HAVE ISSUES DONE AT THIS STEP, BECAUSE 'ARMATURE'
+#         # DOUBLE-DIPS ON WHAT THE MODIFIER IS DOING ALREADY. MAYBE BETTER
+#         # TO PARENT FIRST FOR 'ARMATURE-AUTO', THEN UNPARENT, THEN
+#         # ADD THE MODIFIER, THEN PARENT NORMALLY.
+#         if automatic_weights:
+#             # Parent the object to the armature with automatic weights
+#             bpy.ops.object.parent_set(type='ARMATURE_AUTO')
+#         else:
+#             bpy.ops.object.parent_set(type='ARMATURE')
 
-        # Deselect the object
-        obj.select_set(False)
+#         # Deselect the object
+#         obj.select_set(False)
 
-    # Select the armature at the end
-    bpy.context.view_layer.objects.active = armature
-    armature.select_set(True)
+#     # Select the armature at the end
+#     bpy.context.view_layer.objects.active = armature
+#     armature.select_set(True)
+# endregion
 
 def get_wrinkles_and_directionmaps(mat_file_abs_path):
     '''Reads a shader .mat file and returns any DirectionMap
@@ -815,8 +818,10 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
         # If the JSON file isn't part of a TORC folder, use as name of the
         # character the name of the JSON file.
         if self.filepath == "paths.json":
+            is_jedipedia_json = False
             character_folder_name = Path(self.filepath).parent.parent.name        
         else:
+            is_jedipedia_json = True
             character_folder_name = Path(self.filepath).stem
 
         body_coll_name_in_outliner = "BODY"
@@ -849,13 +854,29 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
                 bpy.context.window.cursor_set("DEFAULT")  # Show normal cursor icon
                 return {"CANCELLED"}
                 
+            # PROVISIONAL JEDIPEDIA JSON DATA SOLVER
+            # This deletes the "meta" slotName list element in the JSON data.
+            # Eventually this add-on ought to write in that element in a manner
+            # that fits the new .gr2 importer that Crunch is working on.
+            for json_obj in json_data:
+                if "slotName" in json_obj and json_obj["slotName"] == "meta":
+                        json_data.remove(json_obj)
+                        break
             
-            # Fill list of files to copy to character folder
-            
+            # -------------------------------------------------------------------------------
+            # Fill files_to_copy with the assets to copy to the character folder's subfolders
+            # -------------------------------------------------------------------------------
+            # region
+
+            # define paths for PC/NPC assets folders to copy assets to             
             character_models_folderpath = str( Path(self.filepath).parent / "models" )
             character_materials_folderpath = str( Path(self.filepath).parent / "materials" )
             character_skeleton_folderpath = str( Path(self.filepath).parent / "skeleton" )
             
+            
+            # Replace texturemaps filepaths in json data with those mentioned in the .mat files:
+            # they are always correct (TORC is buggy there) and also they solve the differences
+            # between legacy and modernized character textures.
             replace_json_data_with_mat_data(json_data, swtor_resources_folderpath)
             
             
@@ -866,15 +887,52 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
                 json.dump(json_data, json_file, indent=4)
 
 
-
+            # Go through every element in the json data and add it to the files_to_copy list
+            
             for element in json_data:
                 if "slotName" not in element:
-                    # for stuff like metadata, skeleton data, etc.
                     continue  
                 
                 slotName = element["slotName"]
                 
-                if slotName != "skinMats":
+                if slotName == "data":
+                    pass
+                
+                elif slotName == "skinMats":
+
+                    # SKIN MATERIALS (the dict hierarchy gets deeper and more confusing)
+                    
+                    if "materialInfo" in element:
+                        if "mats" in element["materialInfo"]:
+                            mats = element["materialInfo"]["mats"]
+                            for mat in mats:
+                                mat_slotName = mat["slotName"]
+                                
+                                if "materialInfo" in mat:
+                                    mat_materialInfo = mat["materialInfo"]
+
+                                    if "matPath" in mat_materialInfo:
+                                        matPath = materialInfo["matPath"]
+                                        if matPath[0:1] == "\\" or matPath[0:1] == "/":
+                                            matPath = matPath[1:]
+                                        origin = str( Path(swtor_resources_folderpath) / Path(matPath) )
+                                        destination = str( Path(character_materials_folderpath) / slotName / mat_slotName / Path(mat_materialInfo["matPath"]).name )
+                                        files_to_copy.append([slotName + ": " + mat_slotName, "material definition", origin, destination, ""])
+
+                                if "ddsPaths" in mat:
+                                    mat_ddsPaths = mat["ddsPaths"]
+                                    if mat_ddsPaths:
+                                        for ddsPath in mat_ddsPaths:
+                                            if mat_ddsPaths[ddsPath].endswith(".dds"):
+                                                mat_ddsPath = mat_ddsPaths[ddsPath]
+                                                if mat_ddsPath[0:1] == "\\" or mat_ddsPath[0:1] == "/":
+                                                    mat_ddsPath = mat_ddsPath[1:]
+                                                origin = str( Path(swtor_resources_folderpath) / Path(mat_ddsPath) )
+                                                destination = str( Path(character_materials_folderpath) / slotName / mat_slotName / Path(mat_ddsPath).name )
+                                                files_to_copy.append([slotName + ": " + mat_slotName, "texture map", origin, destination, ""])
+              
+                
+                else:
                     
                     # NOT SKIN MATERIALS
                     
@@ -934,42 +992,11 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
                                             files_to_copy.append(["eye", "texture map", origin, destination, ""])
 
 
-                else:
-
-                    # SKIN MATERIALS (the dict hierarchy gets deeper and more confusing)
-                    
-                    if "materialInfo" in element:
-                        if "mats" in element["materialInfo"]:
-                            mats = element["materialInfo"]["mats"]
-                            for mat in mats:
-                                mat_slotName = mat["slotName"]
-                                
-                                if "materialInfo" in mat:
-                                    mat_materialInfo = mat["materialInfo"]
-
-                                    if "matPath" in mat_materialInfo:
-                                        matPath = materialInfo["matPath"]
-                                        if matPath[0:1] == "\\" or matPath[0:1] == "/":
-                                            matPath = matPath[1:]
-                                        origin = str( Path(swtor_resources_folderpath) / Path(matPath) )
-                                        destination = str( Path(character_materials_folderpath) / slotName / mat_slotName / Path(mat_materialInfo["matPath"]).name )
-                                        files_to_copy.append([slotName + ": " + mat_slotName, "material definition", origin, destination, ""])
-
-                                if "ddsPaths" in mat:
-                                    mat_ddsPaths = mat["ddsPaths"]
-                                    if mat_ddsPaths:
-                                        for ddsPath in mat_ddsPaths:
-                                            if mat_ddsPaths[ddsPath].endswith(".dds"):
-                                                mat_ddsPath = mat_ddsPaths[ddsPath]
-                                                if mat_ddsPath[0:1] == "\\" or mat_ddsPath[0:1] == "/":
-                                                    mat_ddsPath = mat_ddsPath[1:]
-                                                origin = str( Path(swtor_resources_folderpath) / Path(mat_ddsPath) )
-                                                destination = str( Path(character_materials_folderpath) / slotName / mat_slotName / Path(mat_ddsPath).name )
-                                                files_to_copy.append([slotName + ": " + mat_slotName, "texture map", origin, destination, ""])
 
 
             # If there is a companion "skeleton.json" file, process it too.
             skeleton_exists = False
+            
             skeleton_filepath = Path(self.filepath).parent / "skeleton.json"
             try:
                 with open(skeleton_filepath, 'r') as skeleton_file:
@@ -993,9 +1020,32 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
                             files_to_copy.append(["Skeleton", "model", origin, destination, ""])
                             skeleton_exists = True
             except FileNotFoundError:
-                print("Error: there is no 'skeleton.json' file next to this one.\nNo skeleton object filepath could be read.")
-                print("This is to be expected if the JSON file is a NPC exported from Jedipedia.net.")
-                self.report({"WARNING"}, "There is no 'skeleton.json' file next to this one. No skeleton object filepath could be read.")
+                # for NPCs from TORC that had no companion skeleton.json file: 
+                # detect any body type data if possible
+                # ("_bmn_", etc. in the head object's filename).
+                bodytypes = ["bfa", "bfn", "bfs", "bfb", "bma", "bmn", "bms", "bmf"]
+
+                bodytype = None
+                for elem in files_to_copy:
+                    if elem[1] == "model":
+                        for bt in bodytypes:
+                            if bt in elem[2]:
+                                bodytype = bt
+                                break
+                    if bodytype:
+                        break
+                        
+                if bodytype:
+                    skeleton_model = f"{bodytype}new_skeleton.gr2" 
+                    origin = str( Path(swtor_resources_folderpath) / "art/dynamic/spec" / Path(skeleton_model).name )
+                    destination = str( Path(character_skeleton_folderpath) / Path(skeleton_model).name )
+                    files_to_copy.append(["Skeleton", "model", origin, destination, ""])
+                    skeleton_exists = True
+                    
+                else:
+                    print("Error: there is no 'skeleton.json' file next to this one.\nNo skeleton object filepath could be read.")
+                    print("This is to be expected if the JSON file is a NPC exported from Jedipedia.net.")
+                    self.report({"WARNING"}, "There is no 'skeleton.json' file next to this one. No skeleton object filepath could be read.")
             
 
 
@@ -1058,9 +1108,12 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
             else:
                 self.report({'INFO'}, "Character's Assets copied to its folder" )
             
+            # endregion
             
         
+        # ---------------------------
         # Importing objects if set so
+        # ---------------------------
         
         if self.gather_only == False:
             print("=============================================")
