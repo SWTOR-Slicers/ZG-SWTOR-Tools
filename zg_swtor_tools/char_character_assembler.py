@@ -887,8 +887,13 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
                 json.dump(json_data, json_file, indent=4)
 
 
+            # initialize some Jedipedia.net JSONs metadata
+            jp_charType: None
+            jp_charName: None
+            jp_nppPath : None
+            jp_BodyType: None
+
             # Go through every element in the json data and add it to the files_to_copy list
-            
             for element in json_data:
                 if "slotName" not in element:
                     continue  
@@ -896,8 +901,19 @@ class ZGSWTOR_OT_character_assembler(bpy.types.Operator):
                 slotName = element["slotName"]
                 
                 if slotName == "data":
-                    pass
-                
+                    # Use this to read Jedipedia.net JSONs' metadata
+                    if "jp_charType" in element:
+                        jp_charType = element("jp_charType")
+                        
+                    if "jp_charName" in element:
+                        jp_charName = element("jp_charName")
+                        
+                    if "jp_nppPath" in element:
+                        jp_nppPath = element("jp_nppPath")
+                        
+                    if "jp_BodyType" in element:
+                        jp_BodyType = element("jp_BodyType")
+                        
                 elif slotName == "skinMats":
 
                     # SKIN MATERIALS (the dict hierarchy gets deeper and more confusing)
@@ -1421,6 +1437,7 @@ def unregister():
     del bpy.types.Scene.zg_swca_import_skeleton_bool
     del bpy.types.Scene.zg_swca_bind_to_skeleton_bool
     del bpy.types.Scene.zg_swca_separate_eyes
+    del bpy.types.Scene.zg_swca_separate_each_eye
     del bpy.types.Scene.zg_correct_twilek_eyes_uv
     del bpy.types.Scene.zg_npc_uses_skin
 

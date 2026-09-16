@@ -28,6 +28,11 @@ This Add-on relies on foundational efforts by fellow slicers, such as the **[.gr
 
 
 ## Recent changes:
+
+2026-09
+* Corrected AnimatedUV shader (holograms, screens, etc.) in the Process Named Materials tool to take into account changes in Blender 5.2 LTS's Principled Shader.
+
+
 2026-07
 * Support for Jedipedia.net's new NPC JSON export: it accepts .json files with arbitrary names, and handles missing skeletons without crashing.
 * We are imposing Blender 3.6.23 LTS as the minimum required version of Blender, to avoid regressions and bugs out of our control that crash our tools.

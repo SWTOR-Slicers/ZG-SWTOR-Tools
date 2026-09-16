@@ -10,7 +10,9 @@ import re
 import datetime
 import time  # Import for timing
 
-# region (attempts at using hashing. Not working yet)
+# region
+# (attempts at using hashing for true deduplication, as an image
+# might keep the same name but have been modified. Not working yet)
 
 # def duplicate_and_delete_image(image_name):
 #     # Get the image by name
@@ -179,7 +181,7 @@ import time  # Import for timing
 
 
 
-def deduplicate_images_by_name_and_size():
+def deduplicate_images_by_name_and_image_size():
     """
     Deduplicate images in Blender based on name suffixes (_001, .001, etc.).
     Remaps users of duplicate images to the deduplicated one.
@@ -281,7 +283,7 @@ class ZGSWTOR_OT_deduplicate_images(bpy.types.Operator):
     def execute(self, context):
         bpy.context.window.cursor_set("WAIT")
 
-        duplicates_amount_report = deduplicate_images_by_name_and_size()
+        duplicates_amount_report = deduplicate_images_by_name_and_image_size()
         
         bpy.context.window.cursor_set("DEFAULT")
         self.report({'INFO'}, str(duplicates_amount_report) + " duplicate images deduped and set to zero users" )
